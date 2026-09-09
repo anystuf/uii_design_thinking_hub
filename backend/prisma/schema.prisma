@@ -1,0 +1,350 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  STUDENT
+  LECTURER
+  ADMIN
+  MENTOR
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SprintPhase {
+  EMPATHIZE
+  DEFINE
+  IDEATE
+  PROTOTYPE
+  TEST
+  FULL_SPRINT
+}
+
+enum LessonContentType {
+  VIDEO
+  ARTICLE
+  WORKSHOP
+  TEMPLATE
+  ASSIGNMENT
+}
+
+enum SprintStageType {
+  EMPATHIZE
+  DEFINE
+  IDEATE
+  PROTOTYPE
+  TEST
+}
+
+enum EvidenceType {
+  INTERVIEW
+  OBSERVATION
+  PERSONA
+  JOURNEY_MAP
+  AFFINITY_MAP
+  NEED_STATEMENT
+  IDEA
+  PROTOTYPE
+  TEST_RESULT
+  PHOTO
+  VIDEO
+  DOCUMENT
+  REFLECTION
+}
+
+enum ProjectStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+  PUBLISHED
+}
+
+enum ProjectMemberRole {
+  OWNER
+  MEMBER
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  REVISION_REQUESTED
+  APPROVED
+}
+
+enum PostVisibility {
+  COMMUNITY
+  PRIVATE
+}
+
+enum ReactionType {
+  LIKE
+  INSIGHTFUL
+  SUPPORT
+}
+
+enum StorageProvider {
+  MOCK
+  GOOGLE_DRIVE
+  SUPABASE
+}
+
+model User {
+  id                  String           @id @default(uuid())
+  microsoftId         String?          @unique
+  email               String           @unique
+  fullName            String
+  role                UserRole         @default(STUDENT)
+  createdCourses      Course[]         @relation("CourseCreator")
+  enrollments         Enrollment[]
+  ownedProjects       Project[]        @relation("ProjectOwner")
+  createdEvidence     Evidence[]       @relation("EvidenceCreator")
+  feedbackGiven       Feedback[]       @relation("FeedbackAuthor")
+  lessonProgress      LessonProgress[]
+  projectMemberships  ProjectMember[]
+  submissions         Submission[]     @relation("SubmissionAuthor")
+  posts               Post[]
+  comments            Comment[]
+  reactions           Reaction[]
+  notifications       Notification[]   @relation("NotificationRecipient")
+  notificationActions Notification[]   @relation("NotificationActor")
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+}
+
+model Course {
+  id                String       @id @default(uuid())
+  title             String
+  slug              String       @unique
+  description       String?
+  status            CourseStatus @default(DRAFT)
+  level             String
+  sprintPhase       SprintPhase  @default(FULL_SPRINT)
+  enforceStageOrder Boolean      @default(true)
+  createdById       String
+  createdBy         User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lessons           Lesson[]
+  enrollments       Enrollment[]
+  projects          Project[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Lesson {
+  id              String            @id @default(uuid())
+  courseId        String
+  course          Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  orderIndex      Int               @default(0)
+  durationMinutes Int               @default(0)
+  contentType     LessonContentType @default(ARTICLE)
+  videoUrl        String?
+  thumbnailUrl    String?
+  content         String?
+  isPreview       Boolean           @default(false)
+  publishedAt     DateTime?
+  progress        LessonProgress[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model Project {
+  id           String          @id @default(uuid())
+  title        String
+  description  String?
+  ownerId      String
+  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  courseId     String
+  course       Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status       ProjectStatus   @default(DRAFT)
+  currentStage SprintStageType @default(EMPATHIZE)
+  stages       SprintStage[]
+  evidence     Evidence[]
+  feedback     Feedback[]
+  members      ProjectMember[]
+  submissions  Submission[]
+  posts        Post[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model SprintStage {
+  id          String          @id @default(uuid())
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage       SprintStageType
+  completed   Boolean         @default(false)
+  completedAt DateTime?
+  evidence    Evidence[]
+  submissions Submission[]
+
+  @@unique([projectId, stage])
+}
+
+model Evidence {
+  id            String       @id @default(uuid())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprintStageId String
+  sprintStage   SprintStage  @relation(fields: [sprintStageId], references: [id], onDelete: Cascade)
+  submissionId  String?
+  submission    Submission?  @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  type          EvidenceType
+  title         String
+  description   String?
+  reflection    String?
+  createdById   String
+  createdBy     User         @relation("EvidenceCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  files         File[]
+  createdAt     DateTime     @default(now())
+}
+
+model File {
+  id               String          @id @default(uuid())
+  evidenceId       String
+  evidence         Evidence        @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  fileName         String
+  mimeType         String
+  size             Int
+  sharepointItemId String
+  sharepointUrl    String
+  provider         StorageProvider @default(MOCK)
+  uploadedAt       DateTime        @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model LessonProgress {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId       String
+  lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  watchedSeconds Int       @default(0)
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  lastViewedAt   DateTime  @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model ProjectMember {
+  id        String            @id @default(uuid())
+  projectId String
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      ProjectMemberRole @default(MEMBER)
+  joinedAt  DateTime          @default(now())
+
+  @@unique([projectId, userId])
+}
+
+model Submission {
+  id            String           @id @default(uuid())
+  projectId     String
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprintStageId String
+  sprintStage   SprintStage      @relation(fields: [sprintStageId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User             @relation("SubmissionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  version       Int
+  note          String?
+  status        SubmissionStatus @default(SUBMITTED)
+  evidence      Evidence[]
+  submittedAt   DateTime         @default(now())
+  reviewedAt    DateTime?
+
+  @@unique([projectId, sprintStageId, version])
+}
+
+model Post {
+  id          String         @id @default(uuid())
+  projectId   String
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  caption     String?
+  visibility  PostVisibility @default(COMMUNITY)
+  comments    Comment[]
+  reactions   Reaction[]
+  publishedAt DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([projectId])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Reaction {
+  id        String       @id @default(uuid())
+  postId    String
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      ReactionType @default(LIKE)
+  createdAt DateTime     @default(now())
+
+  @@unique([postId, userId, type])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  recipientId String
+  recipient   User      @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  type        String
+  entityType  String
+  entityId    String
+  message     String
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([recipientId, readAt, createdAt])
+}

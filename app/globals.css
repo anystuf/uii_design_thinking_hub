@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-serif-display: "Playfair Display";
+  --font-sans-sharp: "Inter";
+  --font-sans-ui: "Plus Jakarta Sans";
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #f6f8fc;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 85% 4%, rgba(243, 112, 33, 0.08), transparent 28rem),
+    radial-gradient(circle at 8% 0%, rgba(23, 63, 138, 0.08), transparent 30rem),
+    #f6f8fc;
+  color: #12284a;
+  font-family: var(--font-sans-sharp), Inter, system-ui, sans-serif;
+}
+
+::selection {
+  background: rgba(243, 112, 33, 0.22);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+select,
+input,
+textarea {
+  outline-color: #f37021;
+}
+
+button {
+  cursor: pointer;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sketch-underline {
+  position: relative;
+}
+
+.sketch-underline::after {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.22rem;
+  height: 0.55rem;
+  content: "";
+  background: linear-gradient(90deg, rgba(243,112,33,0), rgba(243,112,33,0.34), rgba(243,112,33,0));
+  transform: rotate(-0.6deg);
+  border-radius: 999px;
+  z-index: -1;
+}
+
+.studio-card {
+  border: 1px solid #e8ecf2;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(18, 40, 74, 0.08);
+}
+
+.marker-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.marker-hover::after {
+  content: "";
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 9px;
+  height: 3px;
+  background: rgba(243, 112, 33, 0.24);
+  transform: scaleX(0) rotate(-0.8deg);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.marker-hover:hover::after {
+  transform: scaleX(1) rotate(-0.8deg);
+}
