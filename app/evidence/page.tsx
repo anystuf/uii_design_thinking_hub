@@ -31,6 +31,7 @@ type Submission = {
   id: string; version: number; scopeKey: string; kind: 'PROJECT' | 'MILESTONE';
   note?: string | null; isLate: boolean; status: string; submittedAt: string;
   items: { id: string; evidenceVersion: Version }[];
+  assessments?: { id: string; totalScore: number; feedback?: string | null; decision: string; scores: { id: string; score: number; criterion: { title: string; maxScore: number } }[] }[];
 };
 type Iteration = { id: string; reason: string; nextDecision: string; mode?: Mode | null; createdAt: string };
 type UploadToken = { intentId: string; token: string; bucket: string; storageKey: string };
@@ -251,6 +252,7 @@ export default function EvidenceStudioPage() {
           </div>
           <nav className="flex gap-4 text-sm font-semibold">
             <Link href="/studio" className="text-[#153b77] hover:underline"><ArrowLeft size={15} className="mr-1 inline"/> Design Studio</Link>
+            <Link href="/notifications" className="text-[#153b77] hover:underline">Notifications</Link>
             <Link href="/learn" className="text-slate-500 hover:underline">Learning</Link>
           </nav>
         </div>
@@ -397,6 +399,13 @@ export default function EvidenceStudioPage() {
                         </div>
                         <p className="mt-2 text-xs text-slate-500">{new Date(item.submittedAt).toLocaleString('vi-VN')} {item.isLate ? '· Nộp muộn' : ''}</p>
                         {item.note && <p className="mt-2 text-sm">{item.note}</p>}
+                        {item.assessments?.map((assessment) => <div key={assessment.id} className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
+                          <p className="font-bold">{assessment.decision === 'APPROVED' ? '✓ Approved' : '↻ Revision requested'} · {assessment.totalScore}/100</p>
+                          {assessment.feedback && <p className="mt-1 whitespace-pre-wrap text-slate-700">{assessment.feedback}</p>}
+                          <div className="mt-2 space-y-1">{assessment.scores.map((score) => <p key={score.id} className="text-xs">
+                            {score.criterion.title}: {score.score}/{score.criterion.maxScore}
+                          </p>)}</div>
+                        </div>)}
                         <div className="mt-3 space-y-2">
                           {item.items.map((entry) => <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f6f8fc] p-3 text-xs">
                             <span>{entry.evidenceVersion.title} · evidence v{entry.evidenceVersion.version}</span>
