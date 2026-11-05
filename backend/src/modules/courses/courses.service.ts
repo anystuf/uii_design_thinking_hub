@@ -45,23 +45,71 @@ export class CoursesService {
     });
   }
 
+  async myEnrollments(user: AuthenticatedUser) {
+    return this.prisma.enrollment.findMany({
+      where: { userId: user.id },
+      include: { course: { select: { id: true, title: true, description: true, status: true, level: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async myProgress(id: string, user: AuthenticatedUser) {
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: id } },
+    });
+    if (!enrolled) throw new ForbiddenException('Course enrollment required.');
+
+    const lessons = await this.prisma.lesson.findMany({
+      where: { courseId: id, publishedAt: { not: null } },
+      select: { id: true },
+    });
+    const ids = lessons.map((lesson) => lesson.id);
+    const progress = ids.length
+      ? await this.prisma.lessonProgress.findMany({
+          where: { userId: user.id, lessonId: { in: ids } },
+          select: { lessonId: true, completed: true },
+        })
+      : [];
+    const completed = progress.filter((record) => record.completed).length;
+    return {
+      courseId: id,
+      totalLessons: lessons.length,
+      completedLessons: completed,
+      percent: lessons.length ? Math.round(completed * 100 / lessons.length) : 0,
+      lessons: progress,
+    };
+  }
+
   async findById(id: string, user: AuthenticatedUser) {
-    const course = await this.prisma.course.findUnique({
+    const course = await this.prisma.course.findUnique({ where: { id } });
+    if (!course) throw new NotFoundException('Course not found.');
+    this.assertCanView(course, user);
+
+    const enrolled = user.role === UserRole.STUDENT
+      ? Boolean(await this.prisma.enrollment.findUnique({
+          where: { userId_courseId: { userId: user.id, courseId: id } },
+        }))
+      : true;
+
+    const canManage = user.role === UserRole.ADMIN ||
+      (user.role === UserRole.LECTURER && course.createdById === user.id);
+
+    return this.prisma.course.findUnique({
       where: { id },
       include: {
-        lessons: { orderBy: { orderIndex: 'asc' } },
+        lessons: {
+          where: canManage
+            ? {}
+            : enrolled
+              ? { publishedAt: { not: null } }
+              : { isPreview: true, publishedAt: { not: null } },
+          orderBy: { orderIndex: 'asc' },
+        },
         createdBy: {
           select: { id: true, email: true, fullName: true, role: true },
         },
       },
     });
-
-    if (!course) {
-      throw new NotFoundException('Course not found.');
-    }
-
-    this.assertCanView(course, user);
-    return course;
   }
 
   async create(dto: CreateCourseDto, user: AuthenticatedUser) {

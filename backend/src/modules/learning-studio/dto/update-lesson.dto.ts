@@ -1,6 +1,7 @@
 import { LessonContentType } from '@prisma/client';
 import {
   IsEnum,
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -45,5 +46,9 @@ export class UpdateLessonDto {
   @IsEnum(LessonContentType)
   @IsOptional()
   contentType?: LessonContentType;
+
+  @IsBoolean()
+  @IsOptional()
+  isPublished?: boolean;
 }
 

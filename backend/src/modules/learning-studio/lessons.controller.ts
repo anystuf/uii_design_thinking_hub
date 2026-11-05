@@ -12,7 +12,7 @@ import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { DevAuthGuard } from '../../common/guards/dev-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -21,7 +21,7 @@ import { UpdateLessonProgressDto } from './dto/update-lesson-progress.dto';
 import { LessonsService } from './lessons.service';
 
 @Controller()
-@UseGuards(DevAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class LessonsController {
   constructor(private readonly lessonsService: LessonsService) {}
 

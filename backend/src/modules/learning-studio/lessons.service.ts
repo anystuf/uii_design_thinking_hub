@@ -19,8 +19,14 @@ export class LessonsService {
     const course = await this.findCourse(courseId);
     this.assertCanViewCourse(course, user);
 
+    const managesCourse = user.role === UserRole.ADMIN ||
+      (user.role === UserRole.LECTURER && course.createdById === user.id);
+    if (!managesCourse) await this.assertCanAccessLearning(course, user);
+
     return this.prisma.lesson.findMany({
-      where: { courseId },
+      where: managesCourse
+        ? { courseId }
+        : { courseId, publishedAt: { not: null } },
       orderBy: { orderIndex: 'asc' },
     });
   }
@@ -43,6 +49,7 @@ export class LessonsService {
         contentType: dto.contentType,
         videoUrl: dto.videoUrl,
         content: dto.content,
+        publishedAt: dto.isPublished ? new Date() : null,
       },
     });
   }
@@ -69,6 +76,7 @@ export class LessonsService {
         contentType: dto.contentType,
         videoUrl: dto.videoUrl,
         content: dto.content,
+        publishedAt: dto.isPublished === undefined ? undefined : (dto.isPublished ? new Date() : null),
       },
     });
   }
@@ -83,7 +91,8 @@ export class LessonsService {
       throw new NotFoundException('Lesson not found.');
     }
 
-    this.assertCanViewCourse(lesson.course, user);
+    await this.assertCanAccessLearning(lesson.course, user);
+    if (!lesson.publishedAt) throw new NotFoundException('Lesson not published.');
 
     return this.prisma.lessonProgress.findUnique({
       where: { userId_lessonId: { userId: user.id, lessonId: id } },
@@ -104,8 +113,8 @@ export class LessonsService {
       throw new NotFoundException('Lesson not found.');
     }
 
-    this.assertCanViewCourse(lesson.course, user);
-    await this.ensureDevUser(user);
+    await this.assertCanAccessLearning(lesson.course, user);
+    if (!lesson.publishedAt) throw new NotFoundException('Lesson not published.');
 
     const completedAt = dto.completed === undefined
       ? undefined
@@ -147,22 +156,19 @@ export class LessonsService {
     return { success: true };
   }
 
-  private async ensureDevUser(user: AuthenticatedUser) {
-    await this.prisma.user.upsert({
-      where: { id: user.id },
-      create: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-      },
-      update: {
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-      },
+  private async assertCanAccessLearning(course: Course, user: AuthenticatedUser) {
+    this.assertCanViewCourse(course, user);
+    if (user.role !== UserRole.STUDENT) {
+      throw new ForbiddenException('Only enrolled students can record lesson progress.');
+    }
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: course.id } },
     });
+    if (!enrolled || course.status !== CourseStatus.PUBLISHED) {
+      throw new ForbiddenException('Course enrollment required.');
+    }
   }
+
   private async findCourse(courseId: string) {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },

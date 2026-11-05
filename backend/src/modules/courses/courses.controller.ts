@@ -12,7 +12,7 @@ import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { DevAuthGuard } from '../../common/guards/dev-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { CoursesService } from './courses.service';
@@ -20,13 +20,25 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 
 @Controller('courses')
-@UseGuards(DevAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Get()
   findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.coursesService.findAll(user);
+  }
+
+  @Get('my-enrollments')
+  @Roles(UserRole.STUDENT)
+  myEnrollments(@CurrentUser() user: AuthenticatedUser) {
+    return this.coursesService.myEnrollments(user);
+  }
+
+  @Get(':id/my-progress')
+  @Roles(UserRole.STUDENT)
+  myProgress(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.coursesService.myProgress(id, user);
   }
 
   @Get(':id')

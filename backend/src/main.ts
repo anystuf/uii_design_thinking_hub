@@ -17,10 +17,11 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: true,
-    credentials: true,
-  });
+  const allowedOrigins = (configService.get<string>('FRONTEND_ORIGIN') ?? 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  app.enableCors({ origin: allowedOrigins, credentials: false });
 
   await app.listen(port);
 }
