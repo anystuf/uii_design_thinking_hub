@@ -122,6 +122,19 @@ export default function LearningFoundationPage() {
   const canEditCourse = !!course && canTeach && (user?.role === 'ADMIN' || course.createdById === user?.id);
   const completed = new Set(progress?.lessons.filter((item) => item.completed).map((item) => item.lessonId) ?? []);
 
+  async function refreshData() {
+    if (!session) return;
+    clearNotice(); setBusy(true);
+    try {
+      const list = await api<Course[]>('/courses', token);
+      setCourses(list);
+      if (user?.role === 'STUDENT') {
+        setEnrollments(await api<Enrollment[]>('/courses/my-enrollments', token));
+      }
+      if (course) await selectCourse(course.id);
+    } catch (err) { fail(err); } finally { setBusy(false); }
+  }
+
   async function signInOrUp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); clearNotice(); setBusy(true);
     try {
@@ -282,7 +295,7 @@ export default function LearningFoundationPage() {
                 <div className="rounded-2xl border bg-white p-5 shadow-sm">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="flex items-center gap-2 font-bold"><BookOpen size={18}/> Khóa học</h3>
-                    <button type="button" title="Tải lại" disabled={busy} onClick={() => { if (session) { setSession({ ...session }); } }}><RefreshCw size={17}/></button>
+                    <button type="button" title="Tải lại" disabled={busy} onClick={() => void refreshData()}><RefreshCw size={17}/></button>
                   </div>
                   <div className="space-y-2">
                     {courses.map((item) => (

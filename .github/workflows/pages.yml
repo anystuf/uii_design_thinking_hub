@@ -22,7 +22,8 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
+      # Temporary while the PR dependency lockfile is regenerated and reviewed.
+      - run: npm install --no-audit --no-fund
       - run: npm run build
         env:
           GITHUB_PAGES: 'true'

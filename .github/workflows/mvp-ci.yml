@@ -1,0 +1,45 @@
+name: MVP Release A checks
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # TODO: after regenerating the committed root lockfile, restore npm ci.
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-key
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run prisma:generate
+        env:
+          DATABASE_URL: postgresql://postgres:example@localhost:5432/postgres
+          DIRECT_URL: postgresql://postgres:example@localhost:5432/postgres
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:example@localhost:5432/postgres
+          DIRECT_URL: postgresql://postgres:example@localhost:5432/postgres
