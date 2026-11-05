@@ -117,6 +117,20 @@ enum UploadStatus {
   COMPLETED
 }
 
+enum RubricStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AssessmentStatus {
+  PUBLISHED
+}
+
+enum ReviewDecision {
+  APPROVED
+  REVISION_REQUESTED
+}
+
 enum SubmissionKind {
   PROJECT
   MILESTONE
@@ -150,6 +164,8 @@ model User {
   evidenceVersions EvidenceVersion[] @relation("EvidenceVersionAuthor")
   iterationNotes IterationNote[] @relation("IterationNoteAuthor")
   snapshotSubmissions SubmissionSnapshot[] @relation("SnapshotSubmitter")
+  createdRubrics Rubric[] @relation("RubricCreator")
+  assessmentsGiven Assessment[] @relation("AssessmentReviewer")
   createdCourses      Course[]         @relation("CourseCreator")
   enrollments         Enrollment[]
   ownedProjects       Project[]        @relation("ProjectOwner")
@@ -403,6 +419,7 @@ model Notification {
   entityId    String
   message     String
   readAt      DateTime?
+  dedupeKey   String?   @unique
   createdAt   DateTime  @default(now())
 
   @@index([recipientId, readAt, createdAt])
@@ -422,6 +439,7 @@ model DesignChallenge {
   milestones       ChallengeMilestone[]
   projects         Project[]
   members          ProjectMember[]
+  rubrics          Rubric[]
   activities       ChallengeActivity[]
 
   @@index([courseId, status])
@@ -440,6 +458,7 @@ model ChallengeMilestone {
   updatedAt    DateTime         @updatedAt
 
   submissionSnapshots SubmissionSnapshot[]
+  rubrics Rubric[]
   allowLate Boolean @default(true)
   @@index([challengeId, dueAt])
 }
@@ -612,6 +631,7 @@ model SubmissionSnapshot {
   submittedAt    DateTime         @default(now())
   reviewedAt     DateTime?
   items          SubmissionItem[]
+  assessments Assessment[]
 
   @@unique([projectId, scopeKey, version])
   @@index([projectId, submittedAt])
@@ -625,4 +645,79 @@ model SubmissionItem {
   evidenceVersion    EvidenceVersion    @relation(fields: [evidenceVersionId], references: [id], onDelete: Restrict)
 
   @@unique([submissionId, evidenceVersionId])
+}
+
+model Rubric {
+  id          String            @id @default(uuid())
+  challengeId String
+  challenge   DesignChallenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  milestoneId String?
+  milestone   ChallengeMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  title       String
+  createdById String
+  createdBy   User              @relation("RubricCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  versions    RubricVersion[]
+
+  @@index([challengeId])
+}
+
+model RubricVersion {
+  id          String          @id @default(uuid())
+  rubricId    String
+  rubric      Rubric          @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  version     Int
+  status      RubricStatus    @default(DRAFT)
+  createdAt   DateTime        @default(now())
+  publishedAt DateTime?
+  criteria    RubricCriterion[]
+  assessments Assessment[]
+
+  @@unique([rubricId, version])
+}
+
+model RubricCriterion {
+  id               String        @id @default(uuid())
+  rubricVersionId  String
+  rubricVersion    RubricVersion @relation(fields: [rubricVersionId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  weight           Int
+  maxScore         Int          @default(4)
+  orderIndex       Int          @default(0)
+  criterionScores  CriterionScore[]
+
+  @@index([rubricVersionId, orderIndex])
+}
+
+model Assessment {
+  id              String           @id @default(uuid())
+  submissionId    String           @unique
+  submission      SubmissionSnapshot @relation(fields: [submissionId], references: [id], onDelete: Restrict)
+  reviewerId      String
+  reviewer        User             @relation("AssessmentReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+  rubricVersionId String
+  rubricVersion   RubricVersion    @relation(fields: [rubricVersionId], references: [id], onDelete: Restrict)
+  status          AssessmentStatus @default(PUBLISHED)
+  decision        ReviewDecision
+  feedback        String?
+  totalScore      Float
+  publishedAt     DateTime         @default(now())
+  createdAt       DateTime         @default(now())
+  scores          CriterionScore[]
+
+  @@index([reviewerId, createdAt])
+}
+
+model CriterionScore {
+  id           String          @id @default(uuid())
+  assessmentId String
+  assessment   Assessment      @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  criterionId  String
+  criterion    RubricCriterion @relation(fields: [criterionId], references: [id], onDelete: Restrict)
+  score        Float
+  comment      String?
+
+  @@unique([assessmentId, criterionId])
 }
