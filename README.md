@@ -13,6 +13,8 @@ LMS and project studio.
   non-linear five-mode workspace and persisted activity drafts.
 - /evidence : **Release C Evidence Workspace** — private signed uploads,
   evidence version history, iteration logs and immutable submission snapshots.
+- /review : **Release D Lecturer Assessment Studio** — rubric versions, scoring, review queue.
+- /notifications : **Release D Notification Center** — private alerts and deadlines.
 
 Do not confuse mock metrics shown in the visual concept with backend data.
 
@@ -41,6 +43,7 @@ for reproducible frontend installation.
 - docs/RELEASE-A-UAT.md — release A checklist.
 - docs/RELEASE-B-UAT.md — release B checklist.
 - docs/RELEASE-C-UAT.md — release C checklist.
+- docs/RELEASE-D-UAT.md — release D checklist.
 - backend/README.md — backend setup, authentication and endpoints.
 
 ## Delivery state

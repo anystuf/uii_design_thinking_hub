@@ -1,8 +1,8 @@
-name: MVP Releases A–C checks
+name: MVP Releases A–D checks
 
 on:
   pull_request:
-    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105']
+    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105']
   workflow_dispatch:
 
 permissions:
