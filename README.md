@@ -9,6 +9,8 @@ LMS and project studio.
 - / : existing high-fidelity visual concept with sample data.
 - /learn : **Release A live API vertical slice**, using real authentication,
   courses, lessons, enrollment and progress.
+- /studio : **Release B Design Studio** — challenges, team invitations/tasks,
+  non-linear five-mode workspace and persisted activity drafts.
 
 Do not confuse mock metrics shown in the visual concept with backend data.
 
@@ -35,6 +37,7 @@ for reproducible frontend installation.
 - docs/MVP-IMPLEMENTATION.md — release scope, backlog and gates.
 - docs/TECHNICAL-DESIGN.md — architecture and API boundary.
 - docs/RELEASE-A-UAT.md — release A checklist.
+- docs/RELEASE-B-UAT.md — release B checklist.
 - backend/README.md — backend setup, authentication and endpoints.
 
 ## Delivery state
