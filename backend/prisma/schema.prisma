@@ -94,6 +94,29 @@ enum ReactionType {
   SUPPORT
 }
 
+enum ChallengeStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum ProjectTaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum ActivityStatus {
+  DRAFT
+  COMPLETED
+}
+
 enum StorageProvider {
   MOCK
   GOOGLE_DRIVE
@@ -106,6 +129,12 @@ model User {
   email               String           @unique
   fullName            String
   role                UserRole         @default(STUDENT)
+  sentProjectInvitations ProjectInvitation[] @relation("InvitationSender")
+  receivedProjectInvitations ProjectInvitation[] @relation("InvitationRecipient")
+  assignedTasks ProjectTask[] @relation("TaskAssignee")
+  createdTasks ProjectTask[] @relation("TaskCreator")
+  createdActivities ProjectActivity[] @relation("ActivityAuthor")
+  updatedActivities ProjectActivity[] @relation("ActivityUpdater")
   createdCourses      Course[]         @relation("CourseCreator")
   enrollments         Enrollment[]
   ownedProjects       Project[]        @relation("ProjectOwner")
@@ -137,6 +166,7 @@ model Course {
   lessons           Lesson[]
   enrollments       Enrollment[]
   projects          Project[]
+  challenges        DesignChallenge[]
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 }
@@ -186,6 +216,11 @@ model Project {
   evidence     Evidence[]
   feedback     Feedback[]
   members      ProjectMember[]
+  challengeId  String?
+  challenge    DesignChallenge? @relation(fields: [challengeId], references: [id], onDelete: SetNull)
+  invitations  ProjectInvitation[]
+  tasks        ProjectTask[]
+  activities   ProjectActivity[]
   submissions  Submission[]
   posts        Post[]
   createdAt    DateTime        @default(now())
@@ -267,9 +302,12 @@ model ProjectMember {
   userId    String
   user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   role      ProjectMemberRole @default(MEMBER)
+  challengeId String?
+  challenge   DesignChallenge? @relation(fields: [challengeId], references: [id], onDelete: SetNull)
   joinedAt  DateTime          @default(now())
 
   @@unique([projectId, userId])
+  @@unique([challengeId, userId])
 }
 
 model Submission {
@@ -347,4 +385,121 @@ model Notification {
   createdAt   DateTime  @default(now())
 
   @@index([recipientId, readAt, createdAt])
+}
+
+model DesignChallenge {
+  id               String             @id @default(uuid())
+  courseId         String
+  course           Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title            String
+  brief            String
+  learningOutcomes String?
+  status           ChallengeStatus    @default(DRAFT)
+  publishedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  milestones       ChallengeMilestone[]
+  projects         Project[]
+  members          ProjectMember[]
+  activities       ChallengeActivity[]
+
+  @@index([courseId, status])
+}
+
+model ChallengeMilestone {
+  id           String           @id @default(uuid())
+  challengeId  String
+  challenge    DesignChallenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  mode         SprintStageType?
+  dueAt        DateTime?
+  deliverables String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([challengeId, dueAt])
+}
+
+model ProjectInvitation {
+  id             String           @id @default(uuid())
+  projectId      String
+  project        Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  invitedUserId  String
+  invitedUser    User             @relation("InvitationRecipient", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  invitedById    String
+  invitedBy      User             @relation("InvitationSender", fields: [invitedById], references: [id], onDelete: Restrict)
+  status         InvitationStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+  respondedAt    DateTime?
+
+  @@unique([projectId, invitedUserId])
+  @@index([invitedUserId, status])
+}
+
+model ProjectTask {
+  id          String            @id @default(uuid())
+  projectId   String
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      ProjectTaskStatus @default(TODO)
+  assigneeId  String?
+  assignee    User?             @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById String
+  createdBy   User              @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  dueAt       DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([projectId, status])
+}
+
+model ActivityTemplate {
+  id                 String           @id @default(uuid())
+  slug               String           @unique
+  name               String
+  description        String?
+  mode               SprintStageType
+  instructions       String
+  fields             Json
+  isActive           Boolean          @default(true)
+  createdAt          DateTime         @default(now())
+  challengeActivities ChallengeActivity[]
+  projectActivities ProjectActivity[]
+}
+
+model ChallengeActivity {
+  id          String           @id @default(uuid())
+  challengeId String
+  challenge   DesignChallenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  templateId  String
+  template    ActivityTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  instructions String?
+  publishedAt DateTime?
+  createdAt   DateTime         @default(now())
+  projectActivities ProjectActivity[]
+
+  @@unique([challengeId, templateId])
+}
+
+model ProjectActivity {
+  id                  String             @id @default(uuid())
+  projectId           String
+  project             Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  challengeActivityId String?
+  challengeActivity   ChallengeActivity? @relation(fields: [challengeActivityId], references: [id], onDelete: SetNull)
+  templateId          String
+  template            ActivityTemplate   @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  mode                SprintStageType
+  content             Json
+  status              ActivityStatus     @default(DRAFT)
+  createdById         String
+  createdBy           User               @relation("ActivityAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedById         String?
+  updatedBy           User?              @relation("ActivityUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([projectId, mode])
 }

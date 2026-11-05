@@ -256,6 +256,7 @@ export default function LearningFoundationPage() {
               <h1 className="text-xl font-extrabold">Learning Foundation</h1></div>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/studio" className="text-sm font-bold text-[#153b77] hover:underline">Design Studio →</Link>
             <Link href="/" className="flex items-center gap-1 text-sm font-semibold text-[#526681] hover:text-[#153b77]"><ArrowLeft size={16}/> UI Concept</Link>
             {session && <button type="button" className="flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-semibold hover:bg-slate-50" onClick={() => void getSupabaseBrowserClient().auth.signOut()}><LogOut size={16}/> Logout</button>}
           </div>

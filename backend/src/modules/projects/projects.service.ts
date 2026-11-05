@@ -60,7 +60,7 @@ export class ProjectsService {
         ? {}
         : user.role === UserRole.LECTURER
           ? { course: { createdById: user.id } }
-          : { ownerId: user.id };
+          : { OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }] };
 
     return this.prisma.project.findMany({
       where,
@@ -97,7 +97,7 @@ export class ProjectsService {
       throw new NotFoundException('Project not found.');
     }
 
-    this.assertCanViewProject(project, user);
+    await this.assertCanAccessProject(project, user);
     return project;
   }
 
@@ -299,7 +299,7 @@ export class ProjectsService {
     const project = await this.findProjectEntity(id);
 
     if (user.role !== UserRole.ADMIN) {
-      this.assertOwnProject(project, user);
+      await this.assertTeamMember(project, user);
     }
 
     const sprintStage = await this.findSprintStageForProject(id, dto.sprintStageId);
@@ -339,7 +339,7 @@ export class ProjectsService {
       return this.persistEvidenceUpdate(id, dto);
     }
 
-    this.assertOwnProject(project, user);
+    await this.assertTeamMember(project, user);
 
     if (evidence.createdById !== user.id) {
       throw new ForbiddenException('Students can only edit their own evidence.');
@@ -358,7 +358,7 @@ export class ProjectsService {
       return { success: true };
     }
 
-    this.assertOwnProject(project, user);
+    await this.assertTeamMember(project, user);
 
     if (evidence.createdById !== user.id) {
       throw new ForbiddenException('Students can only delete their own evidence.');
@@ -507,26 +507,18 @@ export class ProjectsService {
       return;
     }
 
-    this.assertOwnProject(project, user);
+    await this.assertTeamMember(project, user);
   }
 
-  private assertCanViewProject(
-    project: Project & { course: { createdById: string } },
-    user: AuthenticatedUser,
-  ) {
-    if (user.role === UserRole.ADMIN) {
-      return;
+  private async assertTeamMember(project: Project, user: AuthenticatedUser) {
+    if (project.ownerId === user.id) return;
+    if (user.role !== UserRole.STUDENT) {
+      throw new ForbiddenException('Project team access denied.');
     }
-
-    if (user.role === UserRole.LECTURER && project.course.createdById === user.id) {
-      return;
-    }
-
-    if (user.role === UserRole.STUDENT && project.ownerId === user.id) {
-      return;
-    }
-
-    throw new ForbiddenException('Insufficient role for this project.');
+    const member = await this.prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId: project.id, userId: user.id } },
+    });
+    if (!member) throw new ForbiddenException('Project team membership required.');
   }
 
   private assertOwnProject(project: Project, user: AuthenticatedUser) {

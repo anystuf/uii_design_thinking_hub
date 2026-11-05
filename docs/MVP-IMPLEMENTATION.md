@@ -82,7 +82,7 @@ certificate, payments, video-conference and predictive analytics.
 - New in C: EvidenceVersion, IterationNote, SubmissionItem, FileAsset.
 - New in D: Rubric, RubricCriterion, RubricVersion, Assessment, CriterionScore, AuditLog.
 
-No Prisma migration for B–D is applied until the associated release is implemented.
+Release B Prisma schema and migration are checked in on its feature branch; deployment to a real database still requires review. Releases C–D remain planned.
 
 ## Pilot metrics / targets (to validate with UII)
 
@@ -102,6 +102,6 @@ No Prisma migration for B–D is applied until the associated release is impleme
 
 ## Current status
 
-Code delivered for an initial Release A foundation on a review branch.
+Code delivered for Release A on a review branch. Release B Challenge/Team/Activity implementation is on a stacked review branch; pending CI, integration and UAT.
 It is *not* certified as production-ready. Supabase credentials, backend DB,
 CI tests, pilot user testing and deployment verification are still required.

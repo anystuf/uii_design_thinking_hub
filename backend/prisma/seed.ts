@@ -34,6 +34,78 @@ async function main() {
     await prisma.sprintStage.upsert({ where: { projectId_stage: { projectId, stage } }, update: {}, create: { projectId, stage, completed: stage === SprintStageType.EMPATHIZE } });
   }
   await prisma.post.upsert({ where: { projectId }, update: {}, create: { projectId, authorId: studentId, caption: 'From interview evidence to a testable mobility concept.', visibility: PostVisibility.COMMUNITY } });
+  const templateData = [
+    {
+      id: '66666666-6666-4666-8666-666666666661',
+      slug: 'interview-notes',
+      name: 'Interview Notes',
+      mode: SprintStageType.EMPATHIZE,
+      instructions: 'Interview a real user. Record what they said, did, thought and felt; avoid leading questions.',
+      fields: [
+        { key: 'participant', label: 'Participant alias', type: 'text' },
+        { key: 'observations', label: 'Observed behavior and direct quotes', type: 'textarea' },
+        { key: 'needs', label: 'Unmet needs and evidence', type: 'textarea' },
+      ],
+    },
+    {
+      id: '66666666-6666-4666-8666-666666666662',
+      slug: 'pov-hmw',
+      name: 'Point of View & HMW',
+      mode: SprintStageType.DEFINE,
+      instructions: 'Synthesize evidence into a user-centered insight and frame a How Might We question.',
+      fields: [
+        { key: 'user', label: 'Who is the user?', type: 'text' },
+        { key: 'need', label: 'What do they need?', type: 'textarea' },
+        { key: 'insight', label: 'What surprising insight supports this?', type: 'textarea' },
+        { key: 'hmw', label: 'How Might We ...?', type: 'textarea' },
+      ],
+    },
+    {
+      id: '66666666-6666-4666-8666-666666666663',
+      slug: 'idea-cards',
+      name: 'Idea Cards',
+      mode: SprintStageType.IDEATE,
+      instructions: 'Generate multiple concepts and select one based on user value and feasibility.',
+      fields: [
+        { key: 'ideas', label: 'Idea pool', type: 'textarea' },
+        { key: 'selection', label: 'Chosen idea', type: 'text' },
+        { key: 'reason', label: 'Why was this concept chosen?', type: 'textarea' },
+      ],
+    },
+    {
+      id: '66666666-6666-4666-8666-666666666664',
+      slug: 'prototype-plan',
+      name: 'Prototype Plan',
+      mode: SprintStageType.PROTOTYPE,
+      instructions: 'Build only what is necessary to validate the riskiest assumption.',
+      fields: [
+        { key: 'assumption', label: 'Assumption to validate', type: 'textarea' },
+        { key: 'format', label: 'Prototype format', type: 'text' },
+        { key: 'steps', label: 'Build steps', type: 'textarea' },
+      ],
+    },
+    {
+      id: '66666666-6666-4666-8666-666666666665',
+      slug: 'user-test-report',
+      name: 'User Test Report',
+      mode: SprintStageType.TEST,
+      instructions: 'Record behavior, feedback and next iterations from a real prototype test.',
+      fields: [
+        { key: 'hypothesis', label: 'Test hypothesis', type: 'textarea' },
+        { key: 'observations', label: 'What happened?', type: 'textarea' },
+        { key: 'learning', label: 'What did the team learn?', type: 'textarea' },
+        { key: 'next', label: 'Next iteration decision', type: 'textarea' },
+      ],
+    },
+  ] as const;
+  for (const template of templateData) {
+    await prisma.activityTemplate.upsert({
+      where: { slug: template.slug },
+      update: { name: template.name, instructions: template.instructions, fields: [...template.fields] },
+      create: { ...template, fields: [...template.fields] },
+    });
+  }
+
 }
 
 main().finally(() => prisma.$disconnect());
