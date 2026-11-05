@@ -11,6 +11,8 @@ LMS and project studio.
   courses, lessons, enrollment and progress.
 - /studio : **Release B Design Studio** — challenges, team invitations/tasks,
   non-linear five-mode workspace and persisted activity drafts.
+- /evidence : **Release C Evidence Workspace** — private signed uploads,
+  evidence version history, iteration logs and immutable submission snapshots.
 
 Do not confuse mock metrics shown in the visual concept with backend data.
 
@@ -38,6 +40,7 @@ for reproducible frontend installation.
 - docs/TECHNICAL-DESIGN.md — architecture and API boundary.
 - docs/RELEASE-A-UAT.md — release A checklist.
 - docs/RELEASE-B-UAT.md — release B checklist.
+- docs/RELEASE-C-UAT.md — release C checklist.
 - backend/README.md — backend setup, authentication and endpoints.
 
 ## Delivery state
