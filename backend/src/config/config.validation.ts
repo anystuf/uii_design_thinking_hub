@@ -15,5 +15,8 @@ export const configValidationSchema = Joi.object({
   SHAREPOINT_DRIVE_ID: Joi.string().allow('').optional(),
   // Configure a Supabase project with asymmetric signing keys (RS256/ES256).
   SUPABASE_JWT_ISSUER: Joi.string().uri().required(),
+  SUPABASE_URL: Joi.string().uri().allow('').optional(),
+  SUPABASE_SECRET_KEY: Joi.string().allow('').optional(),
+  EVIDENCE_BUCKET: Joi.string().default('design-evidence'),
 });
 
