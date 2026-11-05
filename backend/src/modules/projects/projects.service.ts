@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  GoneException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -192,37 +193,8 @@ export class ProjectsService {
     return { success: true };
   }
 
-  async submit(id: string, user: AuthenticatedUser) {
-    const project = await this.findProjectEntity(id);
-    if (user.role !== UserRole.ADMIN) {
-      this.assertOwnProject(project, user);
-    }
-
-    if (project.status !== ProjectStatus.DRAFT && project.status !== ProjectStatus.REVISION_REQUESTED) {
-      throw new ConflictException('Only draft or revision-requested projects can be submitted.');
-    }
-
-    const sprintStage = await this.findSprintStage(id, project.currentStage);
-    const version = (await this.prisma.submission.count({
-      where: { projectId: id, sprintStageId: sprintStage.id },
-    })) + 1;
-
-    return this.prisma.$transaction(async (tx) => {
-      const submission = await tx.submission.create({
-        data: {
-          projectId: id,
-          sprintStageId: sprintStage.id,
-          authorId: user.id,
-          version,
-          status: SubmissionStatus.SUBMITTED,
-        },
-      });
-      const updatedProject = await tx.project.update({
-        where: { id },
-        data: { status: ProjectStatus.SUBMITTED },
-      });
-      return { project: updatedProject, submission };
-    });
+  async submit(_id: string, _user: AuthenticatedUser) {
+    throw new GoneException('Use POST /projects/:id/snapshot-submissions for immutable submissions.');
   }
 
   async findSubmissions(id: string, user: AuthenticatedUser) {
@@ -297,76 +269,40 @@ export class ProjectsService {
 
   async createEvidence(id: string, dto: CreateEvidenceDto, user: AuthenticatedUser) {
     const project = await this.findProjectEntity(id);
-
     if (user.role !== UserRole.ADMIN) {
       await this.assertTeamMember(project, user);
     }
-
+    if (dto.files?.length) {
+      throw new BadRequestException(
+        'Mock file uploads are disabled. Use /projects/:id/uploads/presign and the versioned evidence API.',
+      );
+    }
     const sprintStage = await this.findSprintStageForProject(id, dto.sprintStageId);
-    await this.ensureDevUser(user);
-
-    const uploadedFiles = dto.files?.length
-      ? await Promise.all(
-          dto.files.map((file) => this.sharePointService.uploadFile(file)),
-        )
-      : [];
-
-    return this.prisma.evidence.create({
-      data: {
-        projectId: id,
-        sprintStageId: sprintStage.id,
-        type: dto.type,
-        title: dto.title,
-        description: dto.description,
-        reflection: dto.reflection,
-        createdById: user.id,
-        files: {
-          create: uploadedFiles,
+    return this.prisma.$transaction(async (tx) => {
+      const evidence = await tx.evidence.create({
+        data: {
+          projectId: id, sprintStageId: sprintStage.id, createdById: user.id,
+          type: dto.type, title: dto.title, description: dto.description,
+          reflection: dto.reflection, activeVersion: 1,
         },
-      },
-      include: {
-        sprintStage: true,
-        files: true,
-      },
+      });
+      await tx.evidenceVersion.create({
+        data: {
+          evidenceId: evidence.id, version: 1, createdById: user.id,
+          type: dto.type, title: dto.title, description: dto.description,
+          reflection: dto.reflection,
+        },
+      });
+      return evidence;
     });
   }
 
-  async updateEvidence(id: string, dto: UpdateEvidenceDto, user: AuthenticatedUser) {
-    const evidence = await this.findEvidenceEntity(id);
-    const project = await this.findProjectEntity(evidence.projectId);
-
-    if (user.role === UserRole.ADMIN) {
-      return this.persistEvidenceUpdate(id, dto);
-    }
-
-    await this.assertTeamMember(project, user);
-
-    if (evidence.createdById !== user.id) {
-      throw new ForbiddenException('Students can only edit their own evidence.');
-    }
-
-    return this.persistEvidenceUpdate(id, dto);
+  async updateEvidence(_id: string, _dto: UpdateEvidenceDto, _user: AuthenticatedUser) {
+    throw new GoneException('Use PATCH /versioned-evidence/:id to preserve version history.');
   }
 
-  async deleteEvidence(id: string, user: AuthenticatedUser) {
-    const evidence = await this.findEvidenceEntity(id);
-    const project = await this.findProjectEntity(evidence.projectId);
-
-    if (user.role === UserRole.ADMIN) {
-      await this.deleteEvidenceFiles(evidence);
-      await this.prisma.evidence.delete({ where: { id } });
-      return { success: true };
-    }
-
-    await this.assertTeamMember(project, user);
-
-    if (evidence.createdById !== user.id) {
-      throw new ForbiddenException('Students can only delete their own evidence.');
-    }
-
-    await this.deleteEvidenceFiles(evidence);
-    await this.prisma.evidence.delete({ where: { id } });
-    return { success: true };
+  async deleteEvidence(_id: string, _user: AuthenticatedUser) {
+    throw new GoneException('Versioned evidence is retained for submission audit; deletion is unavailable.');
   }
 
   async findFeedback(id: string, user: AuthenticatedUser) {
