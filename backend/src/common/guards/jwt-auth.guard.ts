@@ -39,17 +39,22 @@ export class JwtAuthGuard implements CanActivate {
       throw new ServiceUnavailableException('Authentication is not configured.');
     }
 
+    let payload;
     try {
       const jwks = this.jwks ??= createRemoteJWKSet(
         new URL(issuer + '/.well-known/jwks.json'),
       );
-      const { payload } = await jwtVerify(authorization.slice(7), jwks, {
+      ({ payload } = await jwtVerify(authorization.slice(7), jwks, {
         issuer,
         audience: 'authenticated',
         algorithms: ['RS256', 'ES256'],
-      });
+      }));
 
-      const id = payload.sub;
+    } catch {
+      throw new UnauthorizedException('Invalid or expired access token.');
+    }
+
+    const id = payload.sub;
       const email = typeof payload.email === 'string'
         ? payload.email.trim().toLowerCase()
         : '';
@@ -73,10 +78,5 @@ export class JwtAuthGuard implements CanActivate {
 
       request.user = user;
       return true;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) throw error;
-      // Network/JWKS errors and invalid JWTs fail closed.
-      throw new UnauthorizedException('Invalid or expired access token.');
-    }
   }
 }

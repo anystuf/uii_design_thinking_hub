@@ -4,7 +4,7 @@ Status: proposed target architecture, **not an implementation claim**.
 
 ## Architecture
 
-\`\`\`mermaid
+```mermaid
 flowchart TD
   Browser["Next.js (Student / Lecturer / Admin)"] --> API["NestJS modular monolith / REST"]
   Browser --> Auth["Supabase Auth"]
@@ -14,7 +14,7 @@ flowchart TD
   Prisma --> DB["PostgreSQL"]
   API --> Storage["Private object storage (Release C)"]
   API --> Jobs["Notification scheduler (Release D)"]
-\`\`\`
+```
 
 ### Backend domains
 

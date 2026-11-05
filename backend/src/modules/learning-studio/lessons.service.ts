@@ -19,12 +19,14 @@ export class LessonsService {
     const course = await this.findCourse(courseId);
     this.assertCanViewCourse(course, user);
 
-    if (user.role === UserRole.STUDENT) await this.assertCanAccessLearning(course, user);
+    const managesCourse = user.role === UserRole.ADMIN ||
+      (user.role === UserRole.LECTURER && course.createdById === user.id);
+    if (!managesCourse) await this.assertCanAccessLearning(course, user);
 
     return this.prisma.lesson.findMany({
-      where: user.role === UserRole.STUDENT
-        ? { courseId, publishedAt: { not: null } }
-        : { courseId },
+      where: managesCourse
+        ? { courseId }
+        : { courseId, publishedAt: { not: null } },
       orderBy: { orderIndex: 'asc' },
     });
   }

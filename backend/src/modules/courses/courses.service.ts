@@ -91,13 +91,18 @@ export class CoursesService {
         }))
       : true;
 
+    const canManage = user.role === UserRole.ADMIN ||
+      (user.role === UserRole.LECTURER && course.createdById === user.id);
+
     return this.prisma.course.findUnique({
       where: { id },
       include: {
         lessons: {
-          where: enrolled
-            ? (user.role === UserRole.STUDENT ? { publishedAt: { not: null } } : {})
-            : { isPreview: true, publishedAt: { not: null } },
+          where: canManage
+            ? {}
+            : enrolled
+              ? { publishedAt: { not: null } }
+              : { isPreview: true, publishedAt: { not: null } },
           orderBy: { orderIndex: 'asc' },
         },
         createdBy: {
