@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { configValidationSchema } from './config/config.validation';
 import { PrismaModule } from './database/prisma/prisma.module';
@@ -16,6 +17,9 @@ import { ActivitiesModule } from './modules/activities/activities.module';
 import { EvidenceModule } from './modules/evidence/evidence.module';
 import { SnapshotSubmissionsModule } from './modules/snapshot-submissions/snapshot-submissions.module';
 import { UsersModule } from './modules/users/users.module';
+import { RubricsModule } from './modules/rubrics/rubrics.module';
+import { AssessmentsModule } from './modules/assessments/assessments.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +28,7 @@ import { UsersModule } from './modules/users/users.module';
       validationSchema: configValidationSchema,
     }),
     PrismaModule,
+    ScheduleModule.forRoot(),
     HealthModule,
     AuthModule,
     UsersModule,
@@ -37,6 +42,9 @@ import { UsersModule } from './modules/users/users.module';
     ActivitiesModule,
     EvidenceModule,
     SnapshotSubmissionsModule,
+    RubricsModule,
+    AssessmentsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
