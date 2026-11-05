@@ -26,9 +26,8 @@ Do not confuse mock metrics shown in the visual concept with backend data.
 7. New users are STUDENT. Provision lecturers using a trusted database admin
    after their first login; see backend/README.md.
 
-The existing root package-lock.json predates the new Supabase client dependency.
-Regenerate and commit it with npm install before switching CI back to npm ci.
-The PR workflow uses npm install temporarily.
+The root package-lock.json includes the Supabase client dependency; use npm ci
+for reproducible frontend installation.
 
 ## Documentation
 
