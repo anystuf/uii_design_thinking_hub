@@ -102,6 +102,6 @@ Release B Prisma schema and migration are checked in on its feature branch; depl
 
 ## Current status
 
-Code delivered for Release A on a review branch. Release B Challenge/Team/Activity implementation has passed CI build, migration and unit checks. Release C evidence/versioned submission implementation is on a new stacked review branch; live Storage integration/UAT pending.
+Code delivered for Release A on a review branch. Release B Challenge/Team/Activity implementation has passed CI build, migration and unit checks. Release C evidence/versioned submission implementation passed CI (live Storage UAT pending). Release D grading, rubric and deadline notifications are in an additional stacked review branch, awaiting CI and UAT.
 It is *not* certified as production-ready. Supabase credentials, backend DB,
 CI tests, pilot user testing and deployment verification are still required.

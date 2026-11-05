@@ -351,6 +351,8 @@ export default function DesignStudioPage() {
               <h1 className="text-xl font-extrabold">Design Studio</h1></div>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
+            <Link href="/review" className="text-[#153b77] hover:underline">Assessment</Link>
+            <Link href="/notifications" className="text-[#153b77] hover:underline">Notifications</Link>
             <Link href="/evidence" className="flex items-center gap-1 text-[#153b77] hover:underline"><FileText size={16}/> Evidence</Link>
             <Link href="/learn" className="flex items-center gap-1 text-[#153b77] hover:underline"><BookOpen size={16}/> Learning Studio</Link>
             <Link href="/" className="flex items-center gap-1 text-slate-500 hover:underline"><ArrowLeft size={16}/> Concept UI</Link>

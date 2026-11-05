@@ -107,6 +107,11 @@ export class SnapshotSubmissionsService {
             },
           },
         },
+        assessments: {
+          include: {
+            scores: { include: { criterion: { select: { title: true, maxScore: true } } } },
+          },
+        },
       },
       orderBy: { submittedAt: 'desc' },
     });
