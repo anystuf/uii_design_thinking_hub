@@ -82,6 +82,15 @@ export class RubricsService {
       throw new BadRequestException('Rubric cannot have more than 30 criteria.');
     }
     return this.prisma.$transaction(async (tx) => {
+      // Acquire a write lock on the DRAFT row before mutating its children.
+      // A concurrent publish either waits for these edits or blocks them.
+      const locked = await tx.rubricVersion.updateMany({
+        where: { id, status: RubricStatus.DRAFT },
+        data: { status: RubricStatus.DRAFT },
+      });
+      if (locked.count !== 1) {
+        throw new ConflictException('Rubric was published during editing.');
+      }
       await tx.rubricCriterion.deleteMany({ where: { rubricVersionId: id } });
       await tx.rubricCriterion.createMany({
         data: dto.criteria.map((criterion, orderIndex) => ({
@@ -98,26 +107,32 @@ export class RubricsService {
 
   async publish(id: string, user: AuthenticatedUser) {
     const version = await this.prisma.rubricVersion.findUnique({
-      where: { id },
-      include: { rubric: true, criteria: true },
+      where: { id }, include: { rubric: true },
     });
     if (!version) throw new NotFoundException('Rubric version not found.');
     const challenge = await this.access.challenge(version.rubric.challengeId, user);
     await this.access.lecturerCourse(challenge.courseId, user);
-    if (version.status !== RubricStatus.DRAFT) {
-      throw new ConflictException('Rubric already published.');
-    }
-    if (!version.criteria.length ||
-        version.criteria.reduce((sum, criterion) => sum + criterion.weight, 0) !== 100) {
-      throw new BadRequestException('Rubric weights must total exactly 100.');
-    }
-    const change = await this.prisma.rubricVersion.updateMany({
-      where: { id, status: RubricStatus.DRAFT },
-      data: { status: RubricStatus.PUBLISHED, publishedAt: new Date() },
-    });
-    if (change.count !== 1) throw new ConflictException('Rubric already published.');
-    return this.prisma.rubricVersion.findUnique({
-      where: { id }, include: { criteria: { orderBy: { orderIndex: 'asc' } } },
+
+    return this.prisma.$transaction(async (tx) => {
+      // Changing status first locks this row. Criteria edits also lock it
+      // before modifying children, guaranteeing a stable scoring definition.
+      const locked = await tx.rubricVersion.updateMany({
+        where: { id, status: RubricStatus.DRAFT },
+        data: { status: RubricStatus.PUBLISHED, publishedAt: new Date() },
+      });
+      if (locked.count !== 1) {
+        throw new ConflictException('Rubric already published.');
+      }
+      const criteria = await tx.rubricCriterion.findMany({
+        where: { rubricVersionId: id },
+      });
+      if (!criteria.length ||
+        criteria.reduce((sum, criterion) => sum + criterion.weight, 0) !== 100) {
+        throw new BadRequestException('Rubric weights must total exactly 100.');
+      }
+      return tx.rubricVersion.findUnique({
+        where: { id }, include: { criteria: { orderBy: { orderIndex: 'asc' } } },
+      });
     });
   }
 
