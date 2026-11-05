@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import { strict as assert } from 'node:assert';
+import { test } from 'node:test';
 
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { CourseStatus, UserRole } from '@prisma/client';
