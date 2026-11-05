@@ -13,6 +13,8 @@ import { UploadModule } from './modules/upload/upload.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { TeamsModule } from './modules/teams/teams.module';
 import { ActivitiesModule } from './modules/activities/activities.module';
+import { EvidenceModule } from './modules/evidence/evidence.module';
+import { SnapshotSubmissionsModule } from './modules/snapshot-submissions/snapshot-submissions.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -33,6 +35,8 @@ import { UsersModule } from './modules/users/users.module';
     ChallengesModule,
     TeamsModule,
     ActivitiesModule,
+    EvidenceModule,
+    SnapshotSubmissionsModule,
   ],
 })
 export class AppModule {}
