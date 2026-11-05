@@ -13,6 +13,7 @@ export const configValidationSchema = Joi.object({
   MICROSOFT_CLIENT_SECRET: Joi.string().allow('').optional(),
   SHAREPOINT_SITE_ID: Joi.string().allow('').optional(),
   SHAREPOINT_DRIVE_ID: Joi.string().allow('').optional(),
-  JWT_SECRET: Joi.string().allow('').optional(),
+  // Configure a Supabase project with asymmetric signing keys (RS256/ES256).
+  SUPABASE_JWT_ISSUER: Joi.string().uri().required(),
 });
 

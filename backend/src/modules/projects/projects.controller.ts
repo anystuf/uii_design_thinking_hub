@@ -13,7 +13,7 @@ import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { DevAuthGuard } from '../../common/guards/dev-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
@@ -25,7 +25,7 @@ import { UpdateSprintStageDto } from './dto/update-sprint-stage.dto';
 import { ProjectsService } from './projects.service';
 
 @Controller()
-@UseGuards(DevAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/c
 import { ReactionType } from '@prisma/client';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { DevAuthGuard } from '../../common/guards/dev-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { CommunityService } from './community.service';
@@ -11,7 +11,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { SetReactionDto } from './dto/set-reaction.dto';
 
 @Controller('community')
-@UseGuards(DevAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 
