@@ -90,8 +90,11 @@ test('F14: published rubric must have weight sum exactly 100', async () => {
   const service = new RubricsService({
     rubricVersion: { findUnique: async () => ({
       id: 'v1', status: RubricStatus.DRAFT, rubric: { challengeId: 'ch-1' },
-      criteria: [{ weight: 60 }, { weight: 30 }],
     }) },
+    $transaction: async (callback: (tx: any) => Promise<unknown>) => callback({
+      rubricVersion: { updateMany: async () => ({ count: 1 }) },
+      rubricCriterion: { findMany: async () => [{ weight: 60 }, { weight: 30 }] },
+    }),
   } as never, {
     challenge: async () => ({ courseId: 'course-a' }),
     lecturerCourse: async () => ({ id: 'course-a' }),
