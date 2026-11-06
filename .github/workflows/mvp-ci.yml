@@ -1,8 +1,10 @@
 name: MVP Releases A–D checks
 
 on:
+  push:
+    branches: ['chore/usi-staging-readiness-20261106']
   pull_request:
-    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105']
+    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,32 @@
+# STAGING ONLY. Creating this Blueprint in Render can create a billable Starter service.
+# Do not connect to main/production or insert secrets into Git.
+services:
+  - type: web
+    name: usi-design-thinking-hub-api-staging
+    runtime: node
+    plan: starter
+    region: singapore
+    branch: chore/usi-staging-readiness-20261106
+    rootDir: backend
+    autoDeployTrigger: off
+    buildCommand: npm install --no-audit --no-fund && npm run prisma:generate && npm run build
+    preDeployCommand: npx prisma migrate deploy
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        value: https://dpapvhvceuoegztxfuuu.supabase.co
+      - key: SUPABASE_JWT_ISSUER
+        value: https://dpapvhvceuoegztxfuuu.supabase.co/auth/v1
+      - key: EVIDENCE_BUCKET
+        value: design-evidence
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
