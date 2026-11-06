@@ -20,6 +20,7 @@ The root `render.yaml` Blueprint declares a **Free** service in **Singapore**, w
 
 1. Connect Render and choose the intended workspace explicitly. For manual setup, create **Web Service**, repository `anystuf/uii_design_thinking_hub`, branch `chore/mvp-staging-readiness-20261106`, root directory `backend`, runtime Node, Singapore, Free.
 2. Build command: `npm install --no-audit --no-fund && npm run prisma:generate && npm run build`.
+   Render uses `NODE_ENV=production` and therefore `NPM_CONFIG_INCLUDE=dev` must be set during builds to install the Nest CLI and TypeScript tooling from `devDependencies`.
 3. Start command: `npm run start:prod`. Health path: `/health/ready`.
 4. Add environment variables **inside Render**, never in Git or this chat:
 
