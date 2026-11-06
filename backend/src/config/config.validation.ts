@@ -11,6 +11,7 @@ const validateFrontendOrigins = (value: string, helpers: Joi.CustomHelpers) => {
       const url = new URL(origin);
       if (
         !['http:', 'https:'].includes(url.protocol) ||
+        url.hostname.includes('*') ||
         url.origin !== origin.replace(/\/$/, '') ||
         url.username || url.password || url.search || url.hash ||
         (url.pathname !== '/' && url.pathname !== '')
