@@ -72,3 +72,5 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - name: Verify NestJS production entrypoint
+        run: test -f dist/src/main.js
