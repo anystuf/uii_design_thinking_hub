@@ -241,7 +241,7 @@ export default function ReviewPage() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-[#153b77] p-3 text-white"><ClipboardCheck size={23}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">USI Design Thinking Hub</p>
+            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">UII Design Thinking Hub</p>
               <h1 className="text-xl font-extrabold">Assessment Studio</h1></div>
           </div>
           <nav className="flex flex-wrap gap-4 text-sm font-semibold">
