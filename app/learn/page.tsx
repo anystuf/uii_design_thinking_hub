@@ -252,12 +252,12 @@ export default function LearningFoundationPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-[#153b77] p-3 text-white"><GraduationCap size={22}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f37021]">USI Design Thinking Hub</p>
+            <div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f37021]">UII Design Thinking Hub</p>
               <h1 className="text-xl font-extrabold">Learning Foundation</h1></div>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/studio" className="text-sm font-bold text-[#153b77] hover:underline">Design Studio →</Link>
-            <Link href="/" className="flex items-center gap-1 text-sm font-semibold text-[#526681] hover:text-[#153b77]"><ArrowLeft size={16}/> UI Concept</Link>
+            <Link href="/dashboard" className="flex items-center gap-1 text-sm font-semibold text-[#526681] hover:text-[#153b77]"><ArrowLeft size={16}/> Dashboard</Link>
             {session && <button type="button" className="flex items-center gap-1 rounded-full border px-3 py-2 text-sm font-semibold hover:bg-slate-50" onClick={() => void getSupabaseBrowserClient().auth.signOut()}><LogOut size={16}/> Logout</button>}
           </div>
         </div>
