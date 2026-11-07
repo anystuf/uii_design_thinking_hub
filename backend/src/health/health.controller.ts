@@ -40,7 +40,7 @@ export class HealthController {
         error instanceof Error && typeof error.message === 'string'
           ? error.message
           : '';
-      const embeddedCode = message.match(/\\bP10\\d{2}\\b/)?.[0];
+      const embeddedCode = message.match(/\bP10\d{2}\b/)?.[0];
       const code =
         typeof details.code === 'string' ? details.code : embeddedCode ?? 'UNKNOWN';
       const name = typeof details.name === 'string' ? details.name : 'UnknownError';
