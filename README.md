@@ -1,53 +1,51 @@
-# USI Design Thinking Hub
+# UII Design Thinking Hub
 
-A Next.js + TypeScript visual Design Thinking learning prototype, plus a NestJS +
-Prisma/PostgreSQL backend. The platform is being evolved into an evidence-centered
-LMS and project studio.
+**From ideas to impact.** A four-pillar innovation ecosystem with a working evidence-centered Design Thinking learning MVP (Next.js + NestJS + Supabase PostgreSQL).
 
-## Two frontend experiences
+## Four strategic pillars
 
-- / : existing high-fidelity visual concept with sample data.
-- /learn : **Release A live API vertical slice**, using real authentication,
-  courses, lessons, enrollment and progress.
-- /studio : **Release B Design Studio** — challenges, team invitations/tasks,
-  non-linear five-mode workspace and persisted activity drafts.
-- /evidence : **Release C Evidence Workspace** — private signed uploads,
-  evidence version history, iteration logs and immutable submission snapshots.
-- /review : **Release D Lecturer Assessment Studio** — rubric versions, scoring, review queue.
-- /notifications : **Release D Notification Center** — private alerts and deadlines.
+| Pillar | Scope | Current phase |
+| --- | --- | --- |
+| Training & Education | Courses, lessons, enrollment and progress | Staging MVP / UAT |
+| Innovation Lab | Challenge, teams, non-linear five modes, evidence and review | Staging MVP / UAT |
+| Incubation Program | Ideation, Problem–Solution Fit, Product–Customer Fit, Go-to-Market & Growth | Future roadmap |
+| Work with UII | Academic, industry and ecosystem partnerships | Future roadmap |
 
-Do not confuse mock metrics shown in the visual concept with backend data.
+Planned pillars are strategic direction, **not a claim that those services are live**.
 
-## Local setup (Release A)
+## Routes and navigation
 
-1. Create a Supabase project. Enable asymmetric JWT signing (RS256/ES256).
-2. Copy .env.example to .env.local and fill in NEXT_PUBLIC_SUPABASE_URL,
-   NEXT_PUBLIC_SUPABASE_ANON_KEY and NEXT_PUBLIC_API_URL.
-3. Copy backend/.env.example to backend/.env and configure database and
-   SUPABASE_JWT_ISSUER.
-4. In backend: npm install; npm run prisma:generate;
-   npx prisma migrate deploy; npm run start:dev.
-5. In repo root: npm install; npm run dev.
-6. Open http://localhost:3000/learn, sign up or sign in.
-7. New users are STUDENT. Provision lecturers using a trusted database admin
-   after their first login; see backend/README.md.
+- `/` — **UII public homepage** showing all four pillars and the roadmap. No fake Admin selector.
+- `/dashboard` — **authenticated, role-aware learning dashboard** with live course, project, progress and notification summaries. User roles are server-derived from `GET /auth/me`.
+- `/learn` — Learning Foundation (F01–F04): register/login, courses, lessons, enrollment, persisted progress.
+- `/studio` — Design Studio (F05–F08): challenges, teams, taskboard, five modes and activities.
+- `/evidence` — Evidence & Iteration (F09/F11/F12): private files, versioned evidence, immutable snapshots.
+- `/review` — Assessment Studio (F13/F14), restricted to Lecturer and Admin.
+- `/notifications` — Notification Center (F16): personal notices and reminders.
 
-The root package-lock.json includes the Supabase client dependency; use npm ci
-for reproducible frontend installation.
+The earlier static concept remains in source as a design reference, but is **no longer mounted** as the live homepage. The browser does not set application roles; the backend checks authorization.
 
-## Documentation
+## Local development
 
-- docs/PRD-SUMMARY.md — 14 selected MVP features and requirements.
-- docs/MVP-IMPLEMENTATION.md — release scope, backlog and gates.
-- docs/TECHNICAL-DESIGN.md — architecture and API boundary.
-- docs/RELEASE-A-UAT.md — release A checklist.
-- docs/RELEASE-B-UAT.md — release B checklist.
-- docs/RELEASE-C-UAT.md — release C checklist.
-- docs/RELEASE-D-UAT.md — release D checklist.
-- backend/README.md — backend setup, authentication and endpoints.
+1. Create a Supabase project; enable asymmetric RS256/ES256 JWT signing.
+2. Copy `.env.example` to `.env.local`, setting `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`.
+3. Copy `backend/.env.example` to `backend/.env` and set database configuration and `SUPABASE_JWT_ISSUER`.
+4. In `backend`, run `npm ci`, `npm run prisma:generate`, `npx prisma migrate deploy`, `npm run start:dev`.
+5. In the repository root, run `npm ci` and `npm run dev`.
+6. Open `http://localhost:3000` for the public homepage or `/learn` to sign in. The personal workspace is at `/dashboard`.
+7. New registrations receive the Student role. Lecturer/Admin provisioning must be done by a trusted operator, not browser UI.
 
-## Delivery state
+## Design and delivery
 
-Release A code is a review candidate, not a certified production deployment.
-Requires CI pass, full backend integration testing, live Supabase configuration,
-and lecturer/student UAT. Releases B-D have not been implemented.
+The five Stanford d.school modes are **non-linear**. Private evidence and immutable submission and rubric versions must never be replaced by demo state. The Build → Measure → Learn → Improve loop governs product improvement through pilot UAT and evidence.
+
+- `docs/PRD-SUMMARY.md`: 14 selected MVP features.
+- `docs/MVP-IMPLEMENTATION.md`: release scope and acceptance gates.
+- `docs/TECHNICAL-DESIGN.md`: architecture and security model.
+- `docs/FRONTEND-BUILD-MEASURE-LEARN.md`: public/private IA, pilot hypotheses and UX metrics.
+- `docs/RELEASE-A-UAT.md` through `docs/RELEASE-D-UAT.md`: scripted acceptance tests.
+- `docs/STAGING-DEPLOYMENT.md`: staging-specific infrastructure runbook.
+
+## Release status
+
+Releases A–D code is deployed in the dedicated staging environment, but **full security, storage and end-to-end UAT remains pending**. Staging readiness and production approval are not synonymous. Do not merge the staging branch to main until UII acceptance gates and pilot sign-off are complete.
