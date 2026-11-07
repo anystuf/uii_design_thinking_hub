@@ -62,7 +62,7 @@ const modes = [
   { title: 'Test', subtitle: 'Kiểm chứng', icon: Activity, tint: 'bg-rose-50 text-rose-700' },
 ] as const;
 const hubLinks = [
-  { label: 'Tổng quan', href: '/', icon: Compass, desc: 'Hành trình của bạn' },
+  { label: 'Tổng quan', href: '/dashboard', icon: Compass, desc: 'Hành trình của bạn' },
   { label: 'Learning Foundation', href: '/learn', icon: BookOpen, desc: 'Khóa học và tiến độ' },
   { label: 'Design Studio', href: '/studio', icon: Layers3, desc: 'Challenge và team' },
   { label: 'Evidence & Iteration', href: '/evidence', icon: FileCheck2, desc: 'Minh chứng và bài nộp' },
@@ -71,7 +71,7 @@ const hubLinks = [
 
 function MiniLogo() {
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f37021] text-sm font-black tracking-tighter text-white shadow-lg shadow-orange-500/20">USI</span>
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f37021] text-sm font-black tracking-tighter text-white shadow-lg shadow-orange-500/20">UII</span>
   );
 }
 function NavItem({ href, label, icon: Icon, active = false }: { href: string; label: string; icon: typeof BookOpen; active?: boolean }) {
@@ -228,9 +228,9 @@ export function LiveHubDashboard() {
     <div className="min-h-screen bg-[#f5f7fb] text-[#10284a]">
       <div className="mx-auto flex min-h-screen max-w-[1800px]">
         <aside className="sticky top-0 hidden h-screen w-[266px] shrink-0 flex-col bg-[#071d43] px-5 py-6 text-white lg:flex">
-          <Link href="/" className="flex items-center gap-3 px-1" aria-label="USI Design Thinking Hub — Home">
+          <Link href="/dashboard" className="flex items-center gap-3 px-1" aria-label="UII Design Thinking Hub — Home">
             <MiniLogo/>
-            <span className="leading-tight"><span className="block text-sm font-extrabold tracking-tight">Design Thinking</span><span className="block text-sm font-extrabold tracking-tight text-white/85">Hub</span><span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.17em] text-slate-400">USI · Learning Experience</span></span>
+            <span className="leading-tight"><span className="block text-sm font-extrabold tracking-tight">Design Thinking</span><span className="block text-sm font-extrabold tracking-tight text-white/85">Hub</span><span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.17em] text-slate-400">UII · Learning Experience</span></span>
           </Link>
           <div className="mt-9 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
             <div className="flex items-center gap-2 text-xs font-bold text-[#ffd2b3]"><span className="h-2 w-2 rounded-full bg-emerald-400"/> MVP STAGING</div>
@@ -238,7 +238,7 @@ export function LiveHubDashboard() {
           </div>
           <p className="mb-3 mt-9 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Không gian làm việc</p>
           <nav aria-label="Điều hướng chính" className="flex flex-col gap-1">
-            {navItems.map((item) => <NavItem key={item.href} href={item.href} label={item.label} icon={item.icon} active={item.href === '/'}/>)}
+            {navItems.map((item) => <NavItem key={item.href} href={item.href} label={item.label} icon={item.icon} active={item.href === '/dashboard'}/>)}
           </nav>
           <div className="mt-auto space-y-3">
             <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
@@ -256,7 +256,7 @@ export function LiveHubDashboard() {
               <button type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'} aria-expanded={menuOpen} className="rounded-xl border border-slate-200 p-2 lg:hidden">{menuOpen ? <X size={20}/> : <Menu size={20}/>}</button>
               <div className="lg:hidden"><MiniLogo/></div>
               <div className="hidden sm:block">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400">USI / WORKSPACE</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400">UII / WORKSPACE</p>
                 <p className="text-sm font-extrabold text-[#0a2044]">Tổng quan học tập</p>
               </div>
             </div>
@@ -270,7 +270,7 @@ export function LiveHubDashboard() {
           </header>
 
           {menuOpen && <nav aria-label="Điều hướng trên thiết bị di động" className="fixed inset-x-0 top-[78px] z-30 flex max-h-[75vh] flex-col gap-1 overflow-y-auto border-b border-slate-200 bg-[#071d43] p-4 shadow-xl lg:hidden">
-            {navItems.map((item) => <span key={item.href} onClick={() => setMenuOpen(false)}><NavItem href={item.href} label={item.label} icon={item.icon} active={item.href === '/'}/></span>)}
+            {navItems.map((item) => <span key={item.href} onClick={() => setMenuOpen(false)}><NavItem href={item.href} label={item.label} icon={item.icon} active={item.href === '/dashboard'}/></span>)}
             {account && <button onClick={() => { setMenuOpen(false); void signOut(); }} className="flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-white"><LogOut size={18}/> Đăng xuất</button>}
           </nav>}
 
@@ -280,29 +280,16 @@ export function LiveHubDashboard() {
             {partialError && <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><span>{partialError}</span><button disabled={loading} onClick={() => setReload((n) => n + 1)} className="inline-flex items-center gap-2 font-bold underline"><RefreshCw size={15}/> Tải lại</button></div>}
 
             {authReady && !session && (
-              <>
-                <section className="relative overflow-hidden rounded-[30px] bg-[#071d43] px-7 py-11 text-white shadow-[0_20px_70px_rgba(7,29,67,0.16)] sm:px-11 sm:py-14">
-                  <div className="pointer-events-none absolute -right-28 -top-36 h-[460px] w-[460px] rounded-full border-[65px] border-[#f37021]/15" aria-hidden="true"/>
-                  <div className="pointer-events-none absolute bottom-[-110px] right-20 h-64 w-64 rounded-full bg-[#f37021]/10 blur-3xl" aria-hidden="true"/>
-                  <div className="relative max-w-2xl">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.13em] text-[#ffd5b6]"><Zap size={13}/> From learning to real-world impact</span>
-                    <h1 className="mt-6 font-[family-name:var(--font-sans-ui)] text-4xl font-extrabold leading-[1.13] tracking-tight sm:text-5xl">Học để hiểu.<br/><span className="text-[#ff9b59]">Thiết kế để tạo thay đổi.</span></h1>
-                    <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">Một không gian kết nối học tập, thử nghiệm Design Thinking, cộng tác nhóm và đánh giá bằng minh chứng thực tế.</p>
-                    <Link href="/learn" className="mt-7 inline-flex items-center gap-3 rounded-xl bg-[#f37021] px-6 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-orange-500/20 transition hover:bg-[#ff843a]">Bắt đầu học tập <ArrowRight size={18}/></Link>
-                    <p className="mt-3 text-xs text-slate-400"><LockKeyhole size={13} className="mr-1 inline"/> Đăng nhập qua Supabase để truy cập dữ liệu cá nhân.</p>
-                  </div>
-                </section>
-                <section>
-                  <p className="mb-3 text-xs font-black uppercase tracking-[0.17em] text-[#e4661d]">Hành trình học tập</p>
-                  <h2 className="text-2xl font-extrabold tracking-tight text-[#0a2044]">Một nền tảng. Trọn vẹn vòng đời dự án.</h2>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    <ModuleCard href="/learn" title="Learning Foundation" eyebrow="01 · Learn" text="Khóa học, bài học và tiến độ học tập." icon={BookOpen} color="bg-blue-50 text-blue-700" index="1"/>
-                    <ModuleCard href="/studio" title="Design Studio" eyebrow="02 · Explore" text="Challenge, team và năm chế độ tư duy thiết kế." icon={Layers3} color="bg-violet-50 text-violet-700" index="2"/>
-                    <ModuleCard href="/evidence" title="Evidence & Iteration" eyebrow="03 · Build" text="Minh chứng riêng tư, lịch sử phiên bản và bài nộp." icon={FileCheck2} color="bg-orange-50 text-orange-700" index="3"/>
-                    <ModuleCard href="/learn" title="Feedback & Growth" eyebrow="04 · Improve" text="Đánh giá, phản hồi và tiếp tục cải tiến." icon={RotateCcw} color="bg-emerald-50 text-emerald-700" index="4"/>
-                  </div>
-                </section>
-              </>
+              <section className="rounded-[28px] border border-slate-200 bg-white px-7 py-16 text-center shadow-[0_8px_40px_rgba(20,42,78,0.06)]">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-[#ef7229]"><LockKeyhole size={28}/></div>
+                <p className="mt-6 text-xs font-black uppercase tracking-widest text-[#e4661d]">Learning Workspace</p>
+                <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#0a2044]">Đăng nhập để tiếp tục hành trình</h1>
+                <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-600">Dashboard sử dụng tài khoản thực, dữ liệu tiến độ và phân quyền từ máy chủ. Hãy đăng nhập hoặc tạo tài khoản để xem không gian học tập của bạn.</p>
+                <div className="mt-7 flex flex-wrap justify-center gap-3">
+                  <Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#ff843a]">Đăng nhập / Đăng ký <ArrowRight size={17}/></Link>
+                  <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-extrabold text-[#102f61] transition hover:bg-slate-50">Về trang chủ</Link>
+                </div>
+              </section>
             )}
 
             {session && !account && !error && (
@@ -383,7 +370,7 @@ export function LiveHubDashboard() {
               </>
             )}
 
-            {authReady && <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500"><span className="font-semibold">USI Design Thinking Hub · MVP Staging</span><span className="inline-flex items-center gap-2"><span className="font-extrabold text-[#0a2044]">Build</span> → Measure → Learn → <span className="font-extrabold text-[#e4661d]">Improve</span></span></footer>}
+            {authReady && <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500"><span className="font-semibold">UII Design Thinking Hub · MVP Staging</span><span className="inline-flex items-center gap-2"><span className="font-extrabold text-[#0a2044]">Build</span> → Measure → Learn → <span className="font-extrabold text-[#e4661d]">Improve</span></span></footer>}
           </main>
         </div>
       </div>
