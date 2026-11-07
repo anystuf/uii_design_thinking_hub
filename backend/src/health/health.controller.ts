@@ -34,7 +34,15 @@ export class HealthController {
         error !== null && typeof error === 'object'
           ? (error as { code?: unknown; name?: unknown })
           : {};
-      const code = typeof details.code === 'string' ? details.code : 'UNKNOWN';
+      // Initialization errors may carry the actionable Prisma code only in
+      // their message. Inspect it in memory but never print it.
+      const message =
+        error instanceof Error && typeof error.message === 'string'
+          ? error.message
+          : '';
+      const embeddedCode = message.match(/\\bP10\\d{2}\\b/)?.[0];
+      const code =
+        typeof details.code === 'string' ? details.code : embeddedCode ?? 'UNKNOWN';
       const name = typeof details.name === 'string' ? details.name : 'UnknownError';
       const category =
         code === 'P1000'
@@ -47,7 +55,19 @@ export class HealthController {
                 ? 'invalid_connection_string'
                 : code === 'P1017'
                   ? 'connection_closed'
-                  : 'unclassified_database_error';
+                  : /authentication failed|password authentication failed|invalid credentials/i.test(message)
+                    ? 'authentication_failed'
+                    : /can't reach database server|could not connect|connection refused|name or service not known|dns/i.test(message)
+                      ? 'database_unreachable'
+                      : /timed out|timeout/i.test(message)
+                        ? 'database_timeout'
+                        : /invalid.*(connection string|database url|port)|invalid url|url must start/i.test(message)
+                          ? 'invalid_connection_string'
+                          : /tenant or user not found/i.test(message)
+                            ? 'pooler_user_or_tenant_not_found'
+                            : /certificate|tls|ssl/i.test(message)
+                              ? 'tls_connection_error'
+                              : 'unclassified_database_error';
 
       this.logger.error(
         `Database readiness check failed: code=${code} type=${name} category=${category}`,
