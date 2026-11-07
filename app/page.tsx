@@ -1,5 +1,5 @@
-import { LiveHubDashboard } from '@/components/live-hub-dashboard';
+import { UIIPublicLanding } from '@/components/uii-public-landing';
 
 export default function HomePage() {
-  return <LiveHubDashboard />;
+  return <UIIPublicLanding />;
 }
