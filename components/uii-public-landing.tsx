@@ -38,11 +38,11 @@ const pillars = [
 ];
 
 const stages = [
-  { label: 'Discover', vi: 'Khám phá vấn đề', icon: Compass },
-  { label: 'Design', vi: 'Tư duy & hình thành ý tưởng', icon: Lightbulb },
-  { label: 'Build', vi: 'Tạo mẫu & thu thập evidence', icon: Layers3 },
-  { label: 'Test', vi: 'Đo lường & nhận phản hồi', icon: Target },
-  { label: 'Improve', vi: 'Lặp lại & hoàn thiện', icon: RefreshCcw },
+  { label: 'Empathize', vi: 'Thấu hiểu con người và bối cảnh', icon: Users },
+  { label: 'Define', vi: 'Xác định vấn đề trọng tâm', icon: Target },
+  { label: 'Ideate', vi: 'Phát triển các ý tưởng', icon: Lightbulb },
+  { label: 'Prototype', vi: 'Hiện thực hóa giải pháp', icon: Layers3 },
+  { label: 'Test', vi: 'Kiểm chứng với người dùng', icon: FlaskConical },
 ];
 
 const releases = [
