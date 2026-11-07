@@ -67,6 +67,7 @@ const hubLinks = [
   { label: 'Design Studio', href: '/studio', icon: Layers3, desc: 'Challenge và team' },
   { label: 'Evidence & Iteration', href: '/evidence', icon: FileCheck2, desc: 'Minh chứng và bài nộp' },
   { label: 'Thông báo', href: '/notifications', icon: Bell, desc: 'Phản hồi và hạn nộp' },
+  { label: 'UII Hub · Giới thiệu', href: '/', icon: Sparkles, desc: 'Bốn trụ cột' },
 ] as const;
 
 function MiniLogo() {
