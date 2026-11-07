@@ -2,7 +2,7 @@ name: MVP Releases A–D checks
 
 on:
   pull_request:
-    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105']
+    branches: [main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
   workflow_dispatch:
 
 permissions:
@@ -72,3 +72,5 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
           DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - name: Verify NestJS production entrypoint
+        run: test -f dist/src/main.js
