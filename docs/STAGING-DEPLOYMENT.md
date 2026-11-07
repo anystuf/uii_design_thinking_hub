@@ -1,4 +1,4 @@
-# USI Hub — Staging deployment runbook
+# UII Hub — Staging deployment runbook
 
 **Target:** Singapore Supabase project `dpapvhvceuoegztxfuuu`; Draft PRs #1 → #5 → #6 → #7 → this staging PR.
 **Scope:** Staging only. Do not merge into `main` or assign a production domain before UAT.
