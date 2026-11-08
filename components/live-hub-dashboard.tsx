@@ -35,15 +35,28 @@ const emptyData: DashboardData = {
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 async function api<T>(path: string, token: string): Promise<T> {
-  const response = await fetch(API_URL + path, {
-    headers: { Authorization: 'Bearer ' + token },
-    cache: 'no-store',
-  });
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error('HTTP ' + response.status + ' — ' + body.slice(0, 160));
+  // Render free instances may cold-start. Never leave users on an infinite spinner.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+  try {
+    const response = await fetch(API_URL + path, {
+      headers: { Authorization: 'Bearer ' + token },
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error('HTTP ' + response.status + ' — ' + body.slice(0, 160));
+    }
+    return await response.json() as T;
+  } catch (err) {
+    if (controller.signal.aborted) {
+      throw new Error('API phản hồi quá chậm (25 giây). Máy chủ có thể đang khởi động. Hãy thử tải lại.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
-  return response.json() as Promise<T>;
 }
 function valueOf<T>(item: PromiseSettledResult<T>): T | null {
   return item.status === 'fulfilled' ? item.value : null;
@@ -266,7 +279,7 @@ export function LiveHubDashboard() {
               {account ? <div className="flex items-center gap-3 rounded-xl bg-slate-50 py-1.5 pl-2 pr-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a2856] text-xs font-extrabold text-white">{account.fullName.trim().slice(0, 1).toUpperCase() || 'U'}</span>
                 <span className="hidden text-left sm:block"><span className="block max-w-36 truncate text-xs font-extrabold">{account.fullName}</span><span className="block text-[10px] text-slate-500">{roleName(account.role)}</span></span>
-              </div> : <Link href="/learn" className="rounded-xl bg-[#0a2856] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#143c76]">Đăng nhập <ArrowRight size={14} className="ml-1 inline"/></Link>}
+              </div> : session ? <span className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 text-xs font-extrabold text-blue-800"><RefreshCw size={14} className={loading ? 'animate-spin' : ''}/> {error ? 'Phiên đăng nhập đã nhận · Cần tải lại' : 'Đã đăng nhập · Đang tải hồ sơ'}</span> : !authReady ? <span className="text-xs font-semibold text-slate-500">Đang kiểm tra phiên...</span> : <Link href="/learn" className="rounded-xl bg-[#0a2856] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#143c76]">Đăng nhập <ArrowRight size={14} className="ml-1 inline"/></Link>}
             </div>
           </header>
 
@@ -294,7 +307,18 @@ export function LiveHubDashboard() {
             )}
 
             {session && !account && !error && (
-              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang tải dữ liệu học tập từ máy chủ…</div>
+              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang xác thực hồ sơ với máy chủ UII…<p className="mt-3 text-xs text-slate-400">Máy chủ staging đôi khi cần vài giây để khởi động. Nếu chờ quá 25 giây, hệ thống sẽ hiển thị lỗi và cho phép thử lại.</p></div>
+            )}
+            {session && !account && error && (
+              <section className="rounded-[26px] border border-amber-200 bg-white p-8 text-center">
+                <ShieldCheck size={28} className="mx-auto text-amber-600"/>
+                <h2 className="mt-3 text-xl font-extrabold text-[#0a2044]">Phiên đăng nhập đã được nhận</h2>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">Không thể xác minh hồ sơ và quyền truy cập từ API. Dữ liệu riêng tư vẫn được bảo vệ; đây chưa phải là lỗi đăng nhập.</p>
+                <div className="mt-5 flex flex-wrap justify-center gap-3">
+                  <button type="button" onClick={() => setReload((n) => n + 1)} disabled={loading} className="rounded-xl bg-[#0a2856] px-5 py-3 text-sm font-extrabold text-white disabled:opacity-50">Thử tải lại hồ sơ</button>
+                  <Link href="/learn" className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700">Kiểm tra đăng nhập</Link>
+                </div>
+              </section>
             )}
 
             {session && account && (
