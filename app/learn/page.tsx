@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi as api } from '@/lib/authenticated-api';
+import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
+import { getResourceLinks, getSafeHttpUrl, getYouTubeEmbedUrl } from '@/lib/learning-media';
 
 type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = {
@@ -18,6 +21,8 @@ type Course = {
 type Lesson = {
   id: string; courseId: string; title: string; description?: string | null;
   content?: string | null; orderIndex: number; publishedAt?: string | null;
+  contentType?: 'VIDEO' | 'ARTICLE' | 'WORKSHOP' | 'TEMPLATE' | 'ASSIGNMENT';
+  videoUrl?: string | null; durationMinutes?: number;
 };
 type Enrollment = { id: string; courseId: string; course: Course };
 type Progress = {
@@ -25,20 +30,6 @@ type Progress = {
   lessons: { lessonId: string; completed: boolean }[];
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-
-async function api<T>(path: string, token: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  if (init?.body) headers.set('Content-Type', 'application/json');
-
-  const response = await fetch(API_URL + path, { ...init, headers });
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error('HTTP ' + response.status + ': ' + body.slice(0, 250));
-  }
-  return response.json() as Promise<T>;
-}
 
 export default function LearningFoundationPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -50,6 +41,8 @@ export default function LearningFoundationPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [busy, setBusy] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authTimedOut, setAuthTimedOut] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [authEmail, setAuthEmail] = useState('');
@@ -59,17 +52,22 @@ export default function LearningFoundationPage() {
   const [courseDescription, setCourseDescription] = useState('');
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonContent, setLessonContent] = useState('');
+  const [lessonVideoUrl, setLessonVideoUrl] = useState('');
+  const [lessonType, setLessonType] = useState<NonNullable<Lesson['contentType']>>('ARTICLE');
   const [lessonPublished, setLessonPublished] = useState(true);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let active = true;
     try {
       const client = getSupabaseBrowserClient();
-      void client.auth.getSession().then(({ data, error: authError }) => {
+      void withAuthDeadline(() => client.auth.getSession()).then(({ data, error: authError }) => {
         if (!active) return;
         if (authError) setError(authError.message);
         setSession(data.session);
         setAuthReady(true);
+      }).catch((err: unknown) => {
+        if (active) { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); }
       });
       const { data: { subscription } } = client.auth.onAuthStateChange((_event, nextSession) => {
         if (active) setSession(nextSession);
@@ -92,12 +90,11 @@ export default function LearningFoundationPage() {
       setBusy(true);
       try {
         const token = session!.access_token;
-        const [me, list] = await Promise.all([
-          api<AppUser>('/auth/me', token),
-          api<Course[]>('/courses', token),
-        ]);
+        const me = await api<AppUser>('/auth/me', token);
         if (!active) return;
         setUser(me);
+        const list = await api<Course[]>('/courses', token);
+        if (!active) return;
         setCourses(list);
         if (me.role === 'STUDENT') {
           const enrolled = await api<Enrollment[]>('/courses/my-enrollments', token);
@@ -112,7 +109,7 @@ export default function LearningFoundationPage() {
     }
     void load();
     return () => { active = false; };
-  }, [session?.access_token]);
+  }, [session?.access_token, reload]);
 
   function clearNotice() { setError(''); setMessage(''); }
   function fail(err: unknown) { setError(err instanceof Error ? err.message : 'Request failed.'); }
@@ -124,6 +121,7 @@ export default function LearningFoundationPage() {
 
   async function refreshData() {
     if (!session) return;
+    if (!user) { setReload((value) => value + 1); return; }
     clearNotice(); setBusy(true);
     try {
       const list = await api<Course[]>('/courses', token);
@@ -136,18 +134,25 @@ export default function LearningFoundationPage() {
   }
 
   async function signInOrUp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); clearNotice(); setBusy(true);
+    event.preventDefault();
+    if (authBusy || authTimedOut) return;
+    clearNotice(); setAuthBusy(true);
     try {
       const auth = getSupabaseBrowserClient().auth;
       if (signUp) {
-        const result = await auth.signUp({ email: authEmail, password: authPassword });
+        const result = await withAuthDeadline(() => auth.signUp({ email: authEmail, password: authPassword }));
         if (result.error) throw result.error;
         setMessage('Account registered. Check your email for a confirmation link if required.');
       } else {
-        const result = await auth.signInWithPassword({ email: authEmail, password: authPassword });
+        const result = await withAuthDeadline(() => auth.signInWithPassword({ email: authEmail, password: authPassword }));
         if (result.error) throw result.error;
       }
-    } catch (err) { fail(err); } finally { setBusy(false); }
+    } catch (err) {
+      if (err instanceof AuthTimeoutError || (err instanceof Error && err.message.includes('Đăng nhập chưa được xác nhận'))) {
+        setAuthTimedOut(true);
+        setError('Chưa xác nhận được đăng nhập hoặc đăng ký trong thời gian cho phép. Hãy tải lại trang để kiểm tra phiên hiện tại trước khi thử lại. Nếu vừa đăng ký, hãy kiểm tra email xác nhận.');
+      } else { fail(err); }
+    } finally { setAuthBusy(false); }
   }
 
   async function selectCourse(id: string, userOverride?: AppUser, enrollmentOverride?: Enrollment[]) {
@@ -213,11 +218,12 @@ export default function LearningFoundationPage() {
       await api('/courses/' + course.id + '/lessons', token, {
         method: 'POST',
         body: JSON.stringify({
-          title: lessonTitle, content: lessonContent, contentType: 'ARTICLE',
+          title: lessonTitle, content: lessonContent, contentType: lessonType,
+          videoUrl: lessonVideoUrl.trim() || undefined,
           orderIndex: lessons.length, isPublished: lessonPublished,
         }),
       });
-      setLessonTitle(''); setLessonContent('');
+      setLessonTitle(''); setLessonContent(''); setLessonVideoUrl(''); setLessonType('ARTICLE');
       setMessage('Đã tạo bài học.');
       await selectCourse(course.id);
     } catch (err) { fail(err); } finally { setBusy(false); }
@@ -277,7 +283,8 @@ export default function LearningFoundationPage() {
               <label className="block text-sm font-semibold">Mật khẩu
                 <input required minLength={6} type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-2 w-full rounded-xl border px-3 py-3"/>
               </label>
-              <button disabled={busy} className="w-full rounded-xl bg-[#153b77] px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? 'Đang xử lý…' : (signUp ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
+              <button disabled={authBusy || authTimedOut} className="w-full rounded-xl bg-[#153b77] px-4 py-3 font-semibold text-white disabled:opacity-50">{authBusy ? 'Đang xác thực tài khoản…' : (signUp ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
+              {authTimedOut && <button type="button" onClick={() => window.location.reload()} className="w-full rounded-xl border px-4 py-3 font-semibold">Tải lại trang để thử lại</button>}
             </form>
             <button type="button" className="mt-4 text-sm font-semibold text-[#153b77] underline" onClick={() => setSignUp((value) => !value)}>{signUp ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}</button>
           </div>
@@ -343,7 +350,11 @@ export default function LearningFoundationPage() {
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-semibold text-[#f37021]">LESSON {index+1}</p>
                                 <h4 className="mt-1 font-bold">{lesson.title}</h4>
+                                {lesson.description && <p className="mt-2 text-sm text-slate-600">{lesson.description}</p>}
+                                {getYouTubeEmbedUrl(lesson.videoUrl) && <div className="mt-4 aspect-video overflow-hidden rounded-xl bg-slate-900"><iframe className="h-full w-full" src={getYouTubeEmbedUrl(lesson.videoUrl)!} title={lesson.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>}
+                                {lesson.videoUrl && !getYouTubeEmbedUrl(lesson.videoUrl) && getSafeHttpUrl(lesson.videoUrl) && <a className="mt-3 inline-flex text-sm font-semibold text-[#153b77] underline" href={getSafeHttpUrl(lesson.videoUrl)!} target="_blank" rel="noreferrer">Mở video trong tab mới ↗</a>}
                                 {lesson.content && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{lesson.content}</p>}
+                                {getResourceLinks(lesson.content).length > 0 && <div className="mt-3 flex flex-wrap gap-3">{getResourceLinks(lesson.content).map((resource) => <a key={resource} className="text-sm font-semibold text-[#153b77] underline" href={resource} target="_blank" rel="noreferrer">Tài liệu tham khảo ↗</a>)}</div>}
                                 {!lesson.publishedAt && <p className="mt-2 text-xs text-amber-700">Bản nháp, chưa công bố</p>}
                               </div>
                               {user?.role === 'STUDENT' && <button disabled={busy} type="button" onClick={() => void toggleProgress(lesson)} className={'self-start rounded-lg px-3 py-2 text-xs font-bold ' + (completed.has(lesson.id) ? 'bg-green-100 text-green-800' : 'bg-[#e7eef9] text-[#153b77]')}>{completed.has(lesson.id) ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button>}
@@ -357,6 +368,8 @@ export default function LearningFoundationPage() {
                     {canEditCourse && <form onSubmit={(event) => void createLesson(event)} className="space-y-3 rounded-2xl border bg-white p-6 shadow-sm">
                       <h3 className="flex items-center gap-2 text-xl font-bold"><Plus size={20}/> Tạo bài học mới</h3>
                       <input required maxLength={160} value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Tiêu đề bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
+                      <select value={lessonType} onChange={(e) => setLessonType(e.target.value as NonNullable<Lesson['contentType']>)} className="w-full rounded-xl border px-3 py-3 text-sm" aria-label="Loại bài học"><option value="ARTICLE">Bài đọc</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Template</option><option value="ASSIGNMENT">Bài tập</option></select>
+                      {(lessonType === 'VIDEO' || lessonVideoUrl) && <input type="url" value={lessonVideoUrl} onChange={(e) => setLessonVideoUrl(e.target.value)} placeholder="Link video YouTube (https://...)" className="w-full rounded-xl border px-3 py-3 text-sm" />}
                       <textarea required value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} maxLength={10000} rows={5} placeholder="Nội dung bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={lessonPublished} onChange={(e) => setLessonPublished(e.target.checked)}/> Công bố bài học khi tạo</label>
                       <button disabled={busy} className="rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">Lưu bài học</button>

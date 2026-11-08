@@ -10,6 +10,8 @@ import {
   Sparkles, Target, Users, X, Zap,
 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi as api } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR';
 type Account = { id: string; fullName: string; email: string; role: Role };
@@ -32,32 +34,6 @@ type DashboardData = {
 const emptyData: DashboardData = {
   courses: null, projects: null, notifications: null, enrollments: null, queue: null, progress: null,
 };
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-
-async function api<T>(path: string, token: string): Promise<T> {
-  // Render free instances may cold-start. Never leave users on an infinite spinner.
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-  try {
-    const response = await fetch(API_URL + path, {
-      headers: { Authorization: 'Bearer ' + token },
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error('HTTP ' + response.status + ' — ' + body.slice(0, 160));
-    }
-    return await response.json() as T;
-  } catch (err) {
-    if (controller.signal.aborted) {
-      throw new Error('API phản hồi quá chậm (25 giây). Máy chủ có thể đang khởi động. Hãy thử tải lại.');
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
 function valueOf<T>(item: PromiseSettledResult<T>): T | null {
   return item.status === 'fulfilled' ? item.value : null;
 }
@@ -147,7 +123,7 @@ export function LiveHubDashboard() {
     let alive = true;
     try {
       const client = getSupabaseBrowserClient();
-      void client.auth.getSession().then(({ data: result, error: authError }) => {
+      void withAuthDeadline(() => client.auth.getSession()).then(({ data: result, error: authError }) => {
         if (!alive) return;
         if (authError) setError(authError.message);
         setSession(result.session);
@@ -307,7 +283,7 @@ export function LiveHubDashboard() {
             )}
 
             {session && !account && !error && (
-              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang xác thực hồ sơ với máy chủ UII…<p className="mt-3 text-xs text-slate-400">Máy chủ staging đôi khi cần vài giây để khởi động. Nếu chờ quá 25 giây, hệ thống sẽ hiển thị lỗi và cho phép thử lại.</p></div>
+              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang xác thực hồ sơ với máy chủ UII…<p className="mt-3 text-xs text-slate-400">Máy chủ staging miễn phí có thể cần khoảng một phút để khởi động sau thời gian không hoạt động. Hồ sơ và quyền truy cập vẫn được xác minh trước khi hiển thị dữ liệu.</p></div>
             )}
             {session && !account && error && (
               <section className="rounded-[26px] border border-amber-200 bg-white p-8 text-center">

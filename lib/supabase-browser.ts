@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createBoundedAuthFetch } from './auth-timeout';
 
 let cached: SupabaseClient | null = null;
 
@@ -12,6 +13,7 @@ export function getSupabaseBrowserClient(): SupabaseClient {
   }
 
   cached = createClient(url, key, {
+    global: { fetch: createBoundedAuthFetch(url) },
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   });
   return cached;
