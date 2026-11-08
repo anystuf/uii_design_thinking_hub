@@ -11,6 +11,7 @@ import {
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi as api } from '@/lib/authenticated-api';
 import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
+import { getResourceLinks, getSafeHttpUrl, getYouTubeEmbedUrl } from '@/lib/learning-media';
 
 type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = {
@@ -20,6 +21,8 @@ type Course = {
 type Lesson = {
   id: string; courseId: string; title: string; description?: string | null;
   content?: string | null; orderIndex: number; publishedAt?: string | null;
+  contentType?: 'VIDEO' | 'ARTICLE' | 'WORKSHOP' | 'TEMPLATE' | 'ASSIGNMENT';
+  videoUrl?: string | null; durationMinutes?: number;
 };
 type Enrollment = { id: string; courseId: string; course: Course };
 type Progress = {
@@ -49,6 +52,8 @@ export default function LearningFoundationPage() {
   const [courseDescription, setCourseDescription] = useState('');
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonContent, setLessonContent] = useState('');
+  const [lessonVideoUrl, setLessonVideoUrl] = useState('');
+  const [lessonType, setLessonType] = useState<NonNullable<Lesson['contentType']>>('ARTICLE');
   const [lessonPublished, setLessonPublished] = useState(true);
   const [reload, setReload] = useState(0);
 
@@ -213,11 +218,12 @@ export default function LearningFoundationPage() {
       await api('/courses/' + course.id + '/lessons', token, {
         method: 'POST',
         body: JSON.stringify({
-          title: lessonTitle, content: lessonContent, contentType: 'ARTICLE',
+          title: lessonTitle, content: lessonContent, contentType: lessonType,
+          videoUrl: lessonVideoUrl.trim() || undefined,
           orderIndex: lessons.length, isPublished: lessonPublished,
         }),
       });
-      setLessonTitle(''); setLessonContent('');
+      setLessonTitle(''); setLessonContent(''); setLessonVideoUrl(''); setLessonType('ARTICLE');
       setMessage('Đã tạo bài học.');
       await selectCourse(course.id);
     } catch (err) { fail(err); } finally { setBusy(false); }
@@ -344,7 +350,11 @@ export default function LearningFoundationPage() {
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-semibold text-[#f37021]">LESSON {index+1}</p>
                                 <h4 className="mt-1 font-bold">{lesson.title}</h4>
+                                {lesson.description && <p className="mt-2 text-sm text-slate-600">{lesson.description}</p>}
+                                {getYouTubeEmbedUrl(lesson.videoUrl) && <div className="mt-4 aspect-video overflow-hidden rounded-xl bg-slate-900"><iframe className="h-full w-full" src={getYouTubeEmbedUrl(lesson.videoUrl)!} title={lesson.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>}
+                                {lesson.videoUrl && !getYouTubeEmbedUrl(lesson.videoUrl) && getSafeHttpUrl(lesson.videoUrl) && <a className="mt-3 inline-flex text-sm font-semibold text-[#153b77] underline" href={getSafeHttpUrl(lesson.videoUrl)!} target="_blank" rel="noreferrer">Mở video trong tab mới ↗</a>}
                                 {lesson.content && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{lesson.content}</p>}
+                                {getResourceLinks(lesson.content).length > 0 && <div className="mt-3 flex flex-wrap gap-3">{getResourceLinks(lesson.content).map((resource) => <a key={resource} className="text-sm font-semibold text-[#153b77] underline" href={resource} target="_blank" rel="noreferrer">Tài liệu tham khảo ↗</a>)}</div>}
                                 {!lesson.publishedAt && <p className="mt-2 text-xs text-amber-700">Bản nháp, chưa công bố</p>}
                               </div>
                               {user?.role === 'STUDENT' && <button disabled={busy} type="button" onClick={() => void toggleProgress(lesson)} className={'self-start rounded-lg px-3 py-2 text-xs font-bold ' + (completed.has(lesson.id) ? 'bg-green-100 text-green-800' : 'bg-[#e7eef9] text-[#153b77]')}>{completed.has(lesson.id) ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button>}
@@ -358,6 +368,8 @@ export default function LearningFoundationPage() {
                     {canEditCourse && <form onSubmit={(event) => void createLesson(event)} className="space-y-3 rounded-2xl border bg-white p-6 shadow-sm">
                       <h3 className="flex items-center gap-2 text-xl font-bold"><Plus size={20}/> Tạo bài học mới</h3>
                       <input required maxLength={160} value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Tiêu đề bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
+                      <select value={lessonType} onChange={(e) => setLessonType(e.target.value as NonNullable<Lesson['contentType']>)} className="w-full rounded-xl border px-3 py-3 text-sm" aria-label="Loại bài học"><option value="ARTICLE">Bài đọc</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Template</option><option value="ASSIGNMENT">Bài tập</option></select>
+                      {(lessonType === 'VIDEO' || lessonVideoUrl) && <input type="url" value={lessonVideoUrl} onChange={(e) => setLessonVideoUrl(e.target.value)} placeholder="Link video YouTube (https://...)" className="w-full rounded-xl border px-3 py-3 text-sm" />}
                       <textarea required value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} maxLength={10000} rows={5} placeholder="Nội dung bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={lessonPublished} onChange={(e) => setLessonPublished(e.target.checked)}/> Công bố bài học khi tạo</label>
                       <button disabled={busy} className="rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">Lưu bài học</button>
