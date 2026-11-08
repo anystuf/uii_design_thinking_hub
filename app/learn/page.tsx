@@ -10,6 +10,7 @@ import {
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi as api } from '@/lib/authenticated-api';
+import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
 
 type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = {
@@ -37,6 +38,8 @@ export default function LearningFoundationPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [busy, setBusy] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authTimedOut, setAuthTimedOut] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [authEmail, setAuthEmail] = useState('');
@@ -53,7 +56,7 @@ export default function LearningFoundationPage() {
     let active = true;
     try {
       const client = getSupabaseBrowserClient();
-      void client.auth.getSession().then(({ data, error: authError }) => {
+      void withAuthDeadline(() => client.auth.getSession()).then(({ data, error: authError }) => {
         if (!active) return;
         if (authError) setError(authError.message);
         setSession(data.session);
@@ -126,18 +129,25 @@ export default function LearningFoundationPage() {
   }
 
   async function signInOrUp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); clearNotice(); setBusy(true);
+    event.preventDefault();
+    if (authBusy || authTimedOut) return;
+    clearNotice(); setAuthBusy(true);
     try {
       const auth = getSupabaseBrowserClient().auth;
       if (signUp) {
-        const result = await auth.signUp({ email: authEmail, password: authPassword });
+        const result = await withAuthDeadline(() => auth.signUp({ email: authEmail, password: authPassword }));
         if (result.error) throw result.error;
         setMessage('Account registered. Check your email for a confirmation link if required.');
       } else {
-        const result = await auth.signInWithPassword({ email: authEmail, password: authPassword });
+        const result = await withAuthDeadline(() => auth.signInWithPassword({ email: authEmail, password: authPassword }));
         if (result.error) throw result.error;
       }
-    } catch (err) { fail(err); } finally { setBusy(false); }
+    } catch (err) {
+      if (err instanceof AuthTimeoutError || (err instanceof Error && err.message.includes('Đăng nhập chưa được xác nhận'))) {
+        setAuthTimedOut(true);
+        setError('Chưa xác nhận được đăng nhập hoặc đăng ký trong thời gian cho phép. Hãy tải lại trang để kiểm tra phiên hiện tại trước khi thử lại. Nếu vừa đăng ký, hãy kiểm tra email xác nhận.');
+      } else { fail(err); }
+    } finally { setAuthBusy(false); }
   }
 
   async function selectCourse(id: string, userOverride?: AppUser, enrollmentOverride?: Enrollment[]) {
@@ -267,7 +277,8 @@ export default function LearningFoundationPage() {
               <label className="block text-sm font-semibold">Mật khẩu
                 <input required minLength={6} type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-2 w-full rounded-xl border px-3 py-3"/>
               </label>
-              <button disabled={busy} className="w-full rounded-xl bg-[#153b77] px-4 py-3 font-semibold text-white disabled:opacity-50">{busy ? 'Đang xử lý…' : (signUp ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
+              <button disabled={authBusy || authTimedOut} className="w-full rounded-xl bg-[#153b77] px-4 py-3 font-semibold text-white disabled:opacity-50">{authBusy ? 'Đang xác thực tài khoản…' : (signUp ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
+              {authTimedOut && <button type="button" onClick={() => window.location.reload()} className="w-full rounded-xl border px-4 py-3 font-semibold">Tải lại trang để thử lại</button>}
             </form>
             <button type="button" className="mt-4 text-sm font-semibold text-[#153b77] underline" onClick={() => setSignUp((value) => !value)}>{signUp ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}</button>
           </div>

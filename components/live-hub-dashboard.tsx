@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi as api } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR';
 type Account = { id: string; fullName: string; email: string; role: Role };
@@ -122,7 +123,7 @@ export function LiveHubDashboard() {
     let alive = true;
     try {
       const client = getSupabaseBrowserClient();
-      void client.auth.getSession().then(({ data: result, error: authError }) => {
+      void withAuthDeadline(() => client.auth.getSession()).then(({ data: result, error: authError }) => {
         if (!alive) return;
         if (authError) setError(authError.message);
         setSession(result.session);

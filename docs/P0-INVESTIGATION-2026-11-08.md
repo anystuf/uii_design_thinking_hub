@@ -45,6 +45,14 @@ The failure currently reproduces on unauthenticated process liveness, outside JW
 
 ## Next gate
 
+### Follow-up: login button remains processing for two minutes
+
+The user's new screenshot shows the login form still processing, rather than the session-detected profile screen. This is an additional pre-profile stall, not proof that Render caused the password sign-in stall. Public deployed bundles reference the intended Supabase and Render origins. A credential-free Auth settings probe using the deployed public publishable key returned 200 in 354 ms; unauthenticated Auth health returned 401 in 534 ms (no API key supplied). Render liveness again timed out at 12,009 ms. These are runner measurements, not a capture of the user's browser password request.
+
+The current login handler awaited Supabase indefinitely, and shared one busy flag with later API work. Added separate auth busy state, a 15-second Auth-only fetch/body deadline that aborts the network operation, and a 20-second SDK-operation deadline covering non-network stalls. Session initialization on learn/dashboard is also bounded. Timeout does not imply bad credentials or clear an existing session; users reload to reconcile session state before retrying. Sign-up is never automatically repeated, and private evidence uploads are not subject to this Auth deadline. No locks are bypassed and no identity/role is fabricated.
+
+Five additional regressions cover stalled transport, stalled response body, error/header preservation, storage isolation and stalled SDK operations. Full suite: 49 passed. Authenticated browser success and underlying live root cause remain unverified.
+
 Obtain an authorized non-sensitive staging test session through interactive login (never paste JWT/password). Inspect browser requests alongside new diagnostics after an explicitly staging-only deployment of a reviewed commit. Recheck Render readiness/wakeup and health-check configuration. Measure at least 3–5 warm authenticated requests and a cold request if feasible, then require both dashboard and learn to populate DB-backed identity/data. P1–P5 remain gated on this result.
 
 Rollback for these code changes: use the prior application commit; no schema rollback is needed. Do not alter production or paid plans.
