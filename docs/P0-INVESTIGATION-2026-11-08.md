@@ -57,6 +57,8 @@ CORS preflight from the canonical staging web origin returned 204, matching allo
 
 Notification UI now shares the bounded authenticated client and session deadline, offers retry, clears busy state on sign-out and avoids an empty-success message after failed loading. Frontend build passed. No sensitive data, account provisioning or mutation was needed for the recovery checks.
 
+Notification follow-up commit `d3b3dd0edb645c436ad362c67cff9ad25cfdb915` deployed to the dedicated staging frontend as `dpl_8g36PkTcGx2KWQCrSWB1WxX2KArD` (READY). Canonical `/notifications` returns 200 and its route bundle includes AbortController and request correlation handling. Readiness remained 200 after frontend rollout. This is HTTP/bundle verification; no authenticated notification list was inspected. Invalid Bearer check returned 401 in 439 ms with the correct staging CORS origin.
+
 ### Follow-up: login button remains processing for two minutes
 
 The user's new screenshot shows the login form still processing, rather than the session-detected profile screen. This is an additional pre-profile stall, not proof that Render caused the password sign-in stall. Public deployed bundles reference the intended Supabase and Render origins. A credential-free Auth settings probe using the deployed public publishable key returned 200 in 354 ms; unauthenticated Auth health returned 401 in 534 ms (no API key supplied). Render liveness again timed out at 12,009 ms. These are runner measurements, not a capture of the user's browser password request.
