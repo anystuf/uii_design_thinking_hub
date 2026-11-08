@@ -1,10 +1,18 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "UII Design Thinking Learning Hub & InnoGallery",
-  description:
-    "A premium academic LMS and peer critique gallery for design sprint learning.",
+  title: {
+    default: 'UII Design Thinking Hub | From Ideas to Impact',
+    template: '%s | UII Design Thinking Hub',
+  },
+  description: 'UII Design Thinking Hub kết nối đào tạo, Design Thinking, đổi mới sáng tạo, ươm tạo và hợp tác. Bắt đầu với Learning Hub và các dự án thực tế.',
+  openGraph: {
+    title: 'UII Design Thinking Hub — From Ideas to Impact',
+    description: 'Learning · Innovation · Impact. Học qua thử thách và cải tiến dựa trên minh chứng.',
+    type: 'website',
+    locale: 'vi_VN',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,4 +22,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-

@@ -67,7 +67,7 @@ export default function NotificationsPage() {
       <header className="border-b bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-5">
           <div className="flex items-center gap-3"><div className="rounded-xl bg-[#153b77] p-3 text-white"><Bell size={23}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">USI Design Thinking Hub</p>
+            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">UII Design Thinking Hub</p>
               <h1 className="text-xl font-extrabold">Notification Center</h1></div></div>
           <Link href="/studio" className="flex items-center gap-1 text-sm font-semibold text-[#153b77]"><ArrowLeft size={16}/> Studio</Link>
         </div>

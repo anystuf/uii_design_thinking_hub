@@ -1,6 +1,6 @@
-# USI Design Thinking Hub — MVP PRD Summary
+# UII Design Thinking Hub — MVP PRD Summary
 
-Version: 1.0. Source: USI PRD and 46 user stories, 2026-11-05.
+Version: 1.0. Source: approved MVP PRD and 46 user stories, 2026-11-05.
 
 ## Audience / roles
 

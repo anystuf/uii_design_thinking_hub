@@ -1,6 +1,6 @@
-# USI Design Thinking Hub — MVP Delivery Plan
+# UII Design Thinking Hub — MVP Delivery Plan
 
-Date: 2026-11-05 | Status: implementation in progress | Source: USI PRD v1.0
+Date: 2026-11-05 | Status: implementation in progress | Source: approved Design Thinking MVP PRD v1.0
 
 ## Vision
 

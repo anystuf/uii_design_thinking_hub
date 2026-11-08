@@ -1,0 +1,35 @@
+# USI Design Thinking Hub staging backend
+# A Blueprint is optional: connect Render and explicitly sync this file.
+# Automatic deployments are OFF; supply all required secrets in Render first.
+services:
+  - type: web
+    name: usi-design-thinking-api-staging
+    runtime: node
+    repo: https://github.com/anystuf/uii_design_thinking_hub
+    branch: chore/mvp-staging-readiness-20261106
+    rootDir: backend
+    region: singapore
+    plan: free
+    autoDeployTrigger: off
+    buildCommand: npm install --no-audit --no-fund && npm run prisma:generate && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NPM_CONFIG_INCLUDE
+        value: dev
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        value: https://dpapvhvceuoegztxfuuu.supabase.co/auth/v1
+      - key: SUPABASE_URL
+        value: https://dpapvhvceuoegztxfuuu.supabase.co
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: EVIDENCE_BUCKET
+        value: design-evidence

@@ -1,4 +1,4 @@
-# USI Design Thinking Hub — Technical Design v0.1
+# UII Design Thinking Hub — Technical Design v0.1
 
 Status: proposed target architecture, **not an implementation claim**.
 
