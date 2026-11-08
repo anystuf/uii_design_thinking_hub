@@ -37,6 +37,7 @@ The failure currently reproduces on unauthenticated process liveness, outside JW
 - Root `npm ci --no-audit --no-fund`: passed.
 - Root `npm run build`: passed, includes TypeScript/build lint stage, all 8 application routes generated.
 - Backend initial `npm ci`: failed with documented lockfile mismatch. `npm install --no-audit --no-fund` repaired lockfile.
+- Repeated backend `npm ci --no-audit --no-fund` after repair: passed (555 packages); Prisma generation and Nest build passed again on this clean install.
 - Backend Prisma generate and Nest build: passed.
 - Backend test suite: 44 passed (39 existing + 5 regressions). These do not certify live DB, Storage or browser UAT.
 - Targeted ESLint for changed backend code and tests: passed without autofix.
