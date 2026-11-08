@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi as api } from '@/lib/authenticated-api';
 
 type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = {
@@ -25,20 +26,6 @@ type Progress = {
   lessons: { lessonId: string; completed: boolean }[];
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-
-async function api<T>(path: string, token: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  if (init?.body) headers.set('Content-Type', 'application/json');
-
-  const response = await fetch(API_URL + path, { ...init, headers });
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error('HTTP ' + response.status + ': ' + body.slice(0, 250));
-  }
-  return response.json() as Promise<T>;
-}
 
 export default function LearningFoundationPage() {
   const [session, setSession] = useState<Session | null>(null);
@@ -60,6 +47,7 @@ export default function LearningFoundationPage() {
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonContent, setLessonContent] = useState('');
   const [lessonPublished, setLessonPublished] = useState(true);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -70,6 +58,8 @@ export default function LearningFoundationPage() {
         if (authError) setError(authError.message);
         setSession(data.session);
         setAuthReady(true);
+      }).catch((err: unknown) => {
+        if (active) { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); }
       });
       const { data: { subscription } } = client.auth.onAuthStateChange((_event, nextSession) => {
         if (active) setSession(nextSession);
@@ -92,12 +82,11 @@ export default function LearningFoundationPage() {
       setBusy(true);
       try {
         const token = session!.access_token;
-        const [me, list] = await Promise.all([
-          api<AppUser>('/auth/me', token),
-          api<Course[]>('/courses', token),
-        ]);
+        const me = await api<AppUser>('/auth/me', token);
         if (!active) return;
         setUser(me);
+        const list = await api<Course[]>('/courses', token);
+        if (!active) return;
         setCourses(list);
         if (me.role === 'STUDENT') {
           const enrolled = await api<Enrollment[]>('/courses/my-enrollments', token);
@@ -112,7 +101,7 @@ export default function LearningFoundationPage() {
     }
     void load();
     return () => { active = false; };
-  }, [session?.access_token]);
+  }, [session?.access_token, reload]);
 
   function clearNotice() { setError(''); setMessage(''); }
   function fail(err: unknown) { setError(err instanceof Error ? err.message : 'Request failed.'); }
@@ -124,6 +113,7 @@ export default function LearningFoundationPage() {
 
   async function refreshData() {
     if (!session) return;
+    if (!user) { setReload((value) => value + 1); return; }
     clearNotice(); setBusy(true);
     try {
       const list = await api<Course[]>('/courses', token);

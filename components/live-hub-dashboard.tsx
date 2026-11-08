@@ -10,6 +10,7 @@ import {
   Sparkles, Target, Users, X, Zap,
 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi as api } from '@/lib/authenticated-api';
 
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR';
 type Account = { id: string; fullName: string; email: string; role: Role };
@@ -32,32 +33,6 @@ type DashboardData = {
 const emptyData: DashboardData = {
   courses: null, projects: null, notifications: null, enrollments: null, queue: null, progress: null,
 };
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-
-async function api<T>(path: string, token: string): Promise<T> {
-  // Render free instances may cold-start. Never leave users on an infinite spinner.
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
-  try {
-    const response = await fetch(API_URL + path, {
-      headers: { Authorization: 'Bearer ' + token },
-      cache: 'no-store',
-      signal: controller.signal,
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error('HTTP ' + response.status + ' — ' + body.slice(0, 160));
-    }
-    return await response.json() as T;
-  } catch (err) {
-    if (controller.signal.aborted) {
-      throw new Error('API phản hồi quá chậm (25 giây). Máy chủ có thể đang khởi động. Hãy thử tải lại.');
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
 function valueOf<T>(item: PromiseSettledResult<T>): T | null {
   return item.status === 'fulfilled' ? item.value : null;
 }
