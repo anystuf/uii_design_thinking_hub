@@ -45,6 +45,18 @@ The failure currently reproduces on unauthenticated process liveness, outside JW
 
 ## Next gate
 
+### Backend availability recovered — 2026-11-08 15:00 UTC
+
+User screenshots after successful sign-in confirmed dashboard profile timeout and an unbounded notification loader. Before recovery, `/health` again completed DNS/TLS but returned no bytes by 15,016 ms; runtime logs/events contained no new request entries. No raw token or pilot identity was obtained.
+
+Manually redeployed the existing dedicated Render staging service (auto-deploy already OFF), without changing branch, environment, plan, schema or data. Deploy `dep-dbo8sp3rjlhs73ao0t4g` built integration commit `adcceae21d8f5b2356d5093d45c6f80b2fed08b2` and became live at 15:00:52 UTC. Backend content of main/guard/package matched the prior deployed commit; this was a runtime recovery, not a new JWT/Prisma fix. The precise platform/process trigger for the previous stall remains unknown.
+
+After recovery: `/health` 200 in 476 ms; `/health/ready` 200 with database connected in 691 ms; anonymous `/auth/me` 401 in 278 ms; anonymous `/notifications` 401 in 293 ms. Five warm readiness requests all returned 200 in [248,315,239,247,225] ms (median 247 ms; nearest-rank p95 315 ms for this small sample). These are readiness measurements, NOT authenticated profile latency.
+
+CORS preflight from the canonical staging web origin returned 204, matching allowed origin and authorization header. An unapproved origin got no Access-Control-Allow-Origin. Forged role headers without a bearer token returned 401. Authentication still requires the user's valid session; the full authenticated P0 gate remains pending browser confirmation.
+
+Notification UI now shares the bounded authenticated client and session deadline, offers retry, clears busy state on sign-out and avoids an empty-success message after failed loading. Frontend build passed. No sensitive data, account provisioning or mutation was needed for the recovery checks.
+
 ### Follow-up: login button remains processing for two minutes
 
 The user's new screenshot shows the login form still processing, rather than the session-detected profile screen. This is an additional pre-profile stall, not proof that Render caused the password sign-in stall. Public deployed bundles reference the intended Supabase and Render origins. A credential-free Auth settings probe using the deployed public publishable key returned 200 in 354 ms; unauthenticated Auth health returned 401 in 534 ms (no API key supplied). Render liveness again timed out at 12,009 ms. These are runner measurements, not a capture of the user's browser password request.

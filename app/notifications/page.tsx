@@ -5,20 +5,17 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { ArrowLeft, Bell, CheckCircle2, LoaderCircle } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Notice = {
   id: string; type: string; entityType: string; entityId: string;
   message: string; readAt?: string | null; createdAt: string;
 };
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const button = 'rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-[#153b77] disabled:opacity-50';
 
 async function api<T>(token: string, path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  const result = await fetch(API_URL + path, { ...init, headers });
-  if (!result.ok) throw new Error('HTTP ' + result.status + ': ' + (await result.text()).slice(0, 150));
-  return result.json() as Promise<T>;
+  return authenticatedApi<T>(path, token, init);
 }
 
 export default function NotificationsPage() {
@@ -27,13 +24,18 @@ export default function NotificationsPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [reload, setReload] = useState(0);
   const token = session?.access_token ?? '';
 
   useEffect(() => {
     let active = true;
     try {
       const auth = getSupabaseBrowserClient().auth;
-      void auth.getSession().then(({ data }) => { if (active) { setSession(data.session); setReady(true); } });
+      void withAuthDeadline(() => auth.getSession())
+        .then(({ data, error: authError }) => {
+          if (active) { setSession(data.session); setReady(true); if (authError) setError(authError.message); }
+        })
+        .catch((err: unknown) => { if (active) { setReady(true); setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); } });
       const { data: { subscription } } = auth.onAuthStateChange((_event, next) => { if (active) setSession(next); });
       return () => { active = false; subscription.unsubscribe(); };
     } catch (err) {
@@ -42,7 +44,7 @@ export default function NotificationsPage() {
   }, []);
 
   useEffect(() => {
-    if (!token) { setNotices([]); return; }
+    if (!token) { setNotices([]); setBusy(false); return; }
     let active = true;
     setBusy(true);
     void api<Notice[]>(token, '/notifications')
@@ -50,7 +52,7 @@ export default function NotificationsPage() {
       .catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : 'Request failed.'); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
-  }, [token]);
+  }, [token, reload]);
 
   async function markRead(id: string) {
     setBusy(true); setError('');
@@ -74,7 +76,7 @@ export default function NotificationsPage() {
       </header>
       <main className="mx-auto max-w-5xl space-y-5 px-5 py-8">
         <p className="text-sm text-slate-500">Release D · In-app thông báo deadline và feedback. Mỗi người chỉ xem được thông báo của mình.</p>
-        {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+        {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
         {busy && <p className="flex items-center gap-2 text-sm text-slate-500"><LoaderCircle className="animate-spin" size={15}/> Đang xử lý…</p>}
         {ready && !session && <div className="rounded-xl bg-white p-5">Bạn cần <Link className="font-bold underline" href="/learn">đăng nhập</Link>.</div>}
         {session && (
@@ -95,7 +97,7 @@ export default function NotificationsPage() {
                   : <span className="text-xs text-green-700">Đã đọc</span>}
               </div>
             ))}
-            {!notices.length && !busy && <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">Chưa có thông báo mới.</div>}
+            {!notices.length && !busy && !error && <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">Chưa có thông báo mới.</div>}
           </section>
         )}
       </main>
