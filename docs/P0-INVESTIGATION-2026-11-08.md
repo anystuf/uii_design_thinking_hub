@@ -4,7 +4,7 @@ Status: **P0 not resolved; authenticated staging acceptance gate remains blocked
 
 ## Scope and source
 
-Worktree: `staging-auth-fix`; branch `fix/codex-staging-auth-timeout`, based on integration commit `adcceae`. No merge to main, remote data migration, environment edit or deployment performed.
+Worktree: `staging-auth-fix`; branch `fix/codex-staging-auth-timeout`, based on integration commit `adcceae`. Initial investigation made no deployment. The follow-up below deployed only the dedicated staging frontend. No merge to main, remote data migration or environment edit performed.
 
 Read the complete handover/start instructions, README, PRD, implementation plan, technical design, staging runbook, frontend measurement plan, and all Release A–D UAT checklists before editing.
 
@@ -52,6 +52,8 @@ The user's new screenshot shows the login form still processing, rather than the
 The current login handler awaited Supabase indefinitely, and shared one busy flag with later API work. Added separate auth busy state, a 15-second Auth-only fetch/body deadline that aborts the network operation, and a 20-second SDK-operation deadline covering non-network stalls. Session initialization on learn/dashboard is also bounded. Timeout does not imply bad credentials or clear an existing session; users reload to reconcile session state before retrying. Sign-up is never automatically repeated, and private evidence uploads are not subject to this Auth deadline. No locks are bypassed and no identity/role is fabricated.
 
 Five additional regressions cover stalled transport, stalled response body, error/header preservation, storage isolation and stalled SDK operations. Full suite: 49 passed. Authenticated browser success and underlying live root cause remain unverified.
+
+Follow-up verification: frontend build and subsequent TypeScript check passed; targeted ESLint passed with the formatting-only rule disabled for the new Auth test file. Staging frontend commit `fd7b90af86d1a1b64f8e4c09d1b1201ade58e2cc` deployed as `dpl_DmUYKv41Jsa5upEC4uiZBbdd1cJv`, READY. This uses Vercel target `production` **inside the dedicated staging-only project** `usi-design-thinking-web-staging`, as described in the handover, and assigns the existing staging alias. Canonical staging `/learn` returned 200 and its loaded JavaScript contained the new Auth deadline and retry UI. This verifies serving the change, not successful password authentication. Backend diagnostics are still review-only and were not deployed. No real production application was changed.
 
 Obtain an authorized non-sensitive staging test session through interactive login (never paste JWT/password). Inspect browser requests alongside new diagnostics after an explicitly staging-only deployment of a reviewed commit. Recheck Render readiness/wakeup and health-check configuration. Measure at least 3–5 warm authenticated requests and a cold request if feasible, then require both dashboard and learn to populate DB-backed identity/data. P1–P5 remain gated on this result.
 
