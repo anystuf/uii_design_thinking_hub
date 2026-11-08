@@ -283,7 +283,7 @@ export function LiveHubDashboard() {
             )}
 
             {session && !account && !error && (
-              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang xác thực hồ sơ với máy chủ UII…<p className="mt-3 text-xs text-slate-400">Máy chủ staging đôi khi cần vài giây để khởi động. Nếu chờ quá 25 giây, hệ thống sẽ hiển thị lỗi và cho phép thử lại.</p></div>
+              <div role="status" className="rounded-[26px] border border-slate-200 bg-white p-10 text-center text-slate-600"><RefreshCw className="mx-auto mb-3 animate-spin text-[#f37021]" size={25}/>Đang xác thực hồ sơ với máy chủ UII…<p className="mt-3 text-xs text-slate-400">Máy chủ staging miễn phí có thể cần khoảng một phút để khởi động sau thời gian không hoạt động. Hồ sơ và quyền truy cập vẫn được xác minh trước khi hiển thị dữ liệu.</p></div>
             )}
             {session && !account && error && (
               <section className="rounded-[26px] border border-amber-200 bg-white p-8 text-center">
