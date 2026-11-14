@@ -198,7 +198,7 @@ export function UIIPublicLanding() {
 
         <section id="roadmap" className="scroll-mt-28 mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:py-24 xl:px-12">
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ad4007]">WHAT'S AVAILABLE TODAY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">MVP thực tế. Từng bước kiểm chứng.</h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Bốn nhóm chức năng Learning Hub đã được triển khai trên staging. Chúng tôi đang kiểm thử hành trình người dùng và chất lượng dữ liệu trước khi đưa vào vận hành chính thức.</p></div>
+            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ad4007]">WHAT’S AVAILABLE TODAY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">MVP thực tế. Từng bước kiểm chứng.</h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Bốn nhóm chức năng Learning Hub đã được triển khai trên staging. Chúng tôi đang kiểm thử hành trình người dùng và chất lượng dữ liệu trước khi đưa vào vận hành chính thức.</p></div>
             <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-[#102f61] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4884]">Trải nghiệm MVP <ArrowRight size={17}/></Link>
           </div>
           <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -229,7 +229,7 @@ export function UIIPublicLanding() {
           <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[#e9f0fc] via-white to-[#fff0e6] px-7 py-11 sm:px-12 sm:py-14">
             <div className="pointer-events-none absolute -right-14 -top-36 h-96 w-96 rounded-full border-[48px] border-[#f37021]/10" aria-hidden="true"/>
             <div className="relative flex flex-wrap items-end justify-between gap-8">
-              <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#e1661d]">LET'S SHAPE WHAT'S NEXT</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Cùng biến ý tưởng thành tác động.</h2><p className="mt-4 text-sm leading-7 text-slate-600">Bạn là sinh viên, giảng viên hay người quan tâm đến đổi mới sáng tạo? Hãy bắt đầu với Learning Hub. Các kênh hợp tác và ươm tạo sẽ được phát triển trong các giai đoạn tiếp theo.</p></div>
+              <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#e1661d]">LET’S SHAPE WHAT’S NEXT</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Cùng biến ý tưởng thành tác động.</h2><p className="mt-4 text-sm leading-7 text-slate-600">Bạn là sinh viên, giảng viên hay người quan tâm đến đổi mới sáng tạo? Hãy bắt đầu với Learning Hub. Các kênh hợp tác và ươm tạo sẽ được phát triển trong các giai đoạn tiếp theo.</p></div>
               <div className="flex flex-wrap gap-3"><Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#963b08]">Tham gia Learning Hub <ArrowRight size={17}/></Link><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-extrabold text-[#102f61] transition hover:bg-slate-50">Đi tới Dashboard <MoveUpRight size={16}/></Link></div>
             </div>
           </div>
