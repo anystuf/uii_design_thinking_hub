@@ -5,7 +5,7 @@ const PROFILE_WAKE_TIMEOUT_MS = 75000;
 
 /** A bounded request; successful Supabase sign-in alone does not verify an app role. */
 export async function authenticatedApi<T>(path: string, token: string, init?: RequestInit): Promise<T> {
-  const isProfileLookup = path === '/auth/me';
+  const isProfileLookup = path === '/auth/me' && (init?.method ?? 'GET').toUpperCase() === 'GET';
   const deadline = Date.now() + (isProfileLookup ? PROFILE_WAKE_TIMEOUT_MS : REQUEST_TIMEOUT_MS);
   const controller = new AbortController();
   const cancel = () => controller.abort();

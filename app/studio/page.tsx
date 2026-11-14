@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -9,6 +10,8 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR';
 type User = { id: string; email: string; fullName: string; role: Role };
@@ -44,18 +47,9 @@ const MODES: { id: Mode; label: string; hint: string }[] = [
   { id: 'TEST', label: 'Test', hint: 'Learn from experiments' },
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 async function request<T>(token: string, path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  if (init?.body) headers.set('Content-Type', 'application/json');
-  const response = await fetch(API_URL + path, { ...init, headers });
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error('HTTP ' + response.status + ': ' + body.slice(0, 200));
-  }
-  return response.json() as Promise<T>;
+  return authenticatedApi<T>(path, token, init);
 }
 
 const card = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
@@ -108,9 +102,9 @@ export default function DesignStudioPage() {
     let mounted = true;
     try {
       const auth = getSupabaseBrowserClient().auth;
-      void auth.getSession().then(({ data }) => {
+      void withAuthDeadline(() => auth.getSession()).then(({ data }) => {
         if (mounted) { setSession(data.session); setAuthReady(true); }
-      });
+      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, nextSession) => {
         if (mounted) setSession(nextSession);
       });
@@ -343,30 +337,15 @@ export default function DesignStudioPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#153b77] p-3 text-white"><Workflow size={22}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f37021]">UII Design Thinking Hub</p>
-              <h1 className="text-xl font-extrabold">Design Studio</h1></div>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
-            {isTeacher && <Link href="/review" className="text-[#153b77] hover:underline">Assessment</Link>}
-            <Link href="/notifications" className="text-[#153b77] hover:underline">Notifications</Link>
-            <Link href="/evidence" className="flex items-center gap-1 text-[#153b77] hover:underline"><FileText size={16}/> Evidence</Link>
-            <Link href="/learn" className="flex items-center gap-1 text-[#153b77] hover:underline"><BookOpen size={16}/> Learning Studio</Link>
-            <Link href="/dashboard" className="flex items-center gap-1 text-slate-500 hover:underline"><ArrowLeft size={16}/> Dashboard</Link>
-          </div>
-        </div>
-      </header>
+      <WorkspaceNav title="Không gian dự án" role={user?.role} />
 
-      <main className="mx-auto max-w-7xl space-y-6 px-5 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-6 px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#f37021]">Release B · F05–F08</p>
+          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Thực hành cùng nhóm</p>
             <h2 className="text-3xl font-extrabold">Challenge-Based Learning</h2>
-            <p className="mt-1 text-sm text-slate-500">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để bắt đầu'}</p>
+            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để bắt đầu'}</p>
           </div>
-          {busy && <span className="flex items-center gap-2 text-sm text-slate-500"><LoaderCircle className="animate-spin" size={17}/> Đang xử lý…</span>}
+          {busy && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Đang xử lý…</span>}
         </div>
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</p>}
@@ -401,7 +380,7 @@ export default function DesignStudioPage() {
                     {!courses.length && <option value="">Chưa ghi danh khóa học</option>}
                     {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                   </select>
-                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-500">Hãy <Link href="/learn" className="underline">ghi danh khóa học</Link> trước khi tham gia challenge.</p>}
+                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-600">Hãy <Link href="/learn" className="underline">ghi danh khóa học</Link> trước khi tham gia challenge.</p>}
                 </section>
                 <section className={card}>
                   <h3 className="mb-3 flex items-center gap-2 font-bold"><Lightbulb size={18}/> Design Challenges</h3>
@@ -410,10 +389,10 @@ export default function DesignStudioPage() {
                       <button key={item.id} onClick={() => void run(async () => { await loadChallenge(item.id); })}
                         className={'w-full rounded-xl border p-3 text-left text-sm hover:border-[#153b77] ' + (challenge?.id === item.id ? 'border-[#153b77] bg-[#eff4fb]' : 'bg-white')}>
                         <span className="block font-bold">{item.title}</span>
-                        <span className="mt-1 block text-xs text-slate-500">{item.status}</span>
+                        <span className="mt-1 block text-xs text-slate-600">{item.status}</span>
                       </button>
                     ))}
-                    {!challenges.length && <p className="text-sm text-slate-500">Chưa có challenge được hiển thị.</p>}
+                    {!challenges.length && <p className="text-sm text-slate-600">Chưa có challenge được hiển thị.</p>}
                   </div>
                 </section>
                 {isTeacher && courseId && (
@@ -428,9 +407,9 @@ export default function DesignStudioPage() {
 
               <div className="min-w-0 space-y-5">
                 {!challenge ? <section className={card + ' py-16 text-center'}>
-                  <Lightbulb className="mx-auto mb-3 text-[#f37021]" size={35}/>
+                  <Lightbulb className="mx-auto mb-3 text-[#ad4007]" size={35}/>
                   <h3 className="text-xl font-bold">Chọn một Design Challenge</h3>
-                  <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">Giảng viên tạo bài toán thực tế. Sinh viên thành lập nhóm, sử dụng các activity templates và lưu tiến trình qua API.</p>
+                  <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
                 </section> : (
                   <>
                     <section className={card}>
@@ -472,7 +451,7 @@ export default function DesignStudioPage() {
                     <section className={card}>
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                         <h3 className="flex items-center gap-2 text-lg font-bold"><Users size={20}/> Nhóm thực hiện</h3>
-                        {challenge && <span className="text-xs text-slate-500">{teams.length} nhóm có thể truy cập</span>}
+                        {challenge && <span className="text-xs text-slate-600">{teams.length} nhóm có thể truy cập</span>}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {teams.map((item) => <button key={item.id} className={team?.id === item.id ? action : minor}
@@ -480,7 +459,7 @@ export default function DesignStudioPage() {
                       </div>
                       {isStudent && challenge.status === 'PUBLISHED' && teams.length === 0 && (
                         <form onSubmit={(event) => void createTeam(event)} className="mt-4 flex flex-wrap gap-2">
-                          <input required maxLength={160} className={input + ' min-w-48 flex-1'} placeholder="Tên nhóm / dự án" value={teamName} onChange={(e) => setTeamName(e.target.value)}/>
+                          <input required maxLength={160} className={input + ' min-w-0 flex-1'} placeholder="Tên nhóm / dự án" value={teamName} onChange={(e) => setTeamName(e.target.value)}/>
                           <button disabled={busy} className={action}><Plus size={16} className="mr-1 inline"/> Tạo nhóm</button>
                         </form>
                       )}
@@ -496,7 +475,7 @@ export default function DesignStudioPage() {
                             </span>)}
                           </div>
                           {isOwner && <form onSubmit={(event) => void invite(event)} className="mb-4 flex flex-wrap gap-2">
-                            <input required type="email" className={input + ' min-w-52 flex-1'} placeholder="Email thành viên đã ghi danh" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}/>
+                            <input required type="email" className={input + ' min-w-0 flex-1'} placeholder="Email thành viên đã ghi danh" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}/>
                             <button disabled={busy} className={minor}><Send size={15} className="mr-1 inline"/> Mời</button>
                           </form>}
                           <h4 className="mb-2 flex items-center gap-2 text-sm font-bold"><ClipboardList size={17}/> Taskboard</h4>
@@ -509,7 +488,7 @@ export default function DesignStudioPage() {
                                 <button type="button" className={minor} disabled={!canEditTeam || busy} onClick={() => void updateTask(task)}>{task.status.replace('_', ' ')}</button>
                               </div>
                             ))}
-                            {!team.tasks.length && <p className="text-sm text-slate-500">Chưa có công việc nào.</p>}
+                            {!team.tasks.length && <p className="text-sm text-slate-600">Chưa có công việc nào.</p>}
                           </div>
                           {canEditTeam && <form onSubmit={(event) => void createTask(event)} className="mt-3 grid gap-2 sm:grid-cols-[1fr_160px_auto]">
                             <input required maxLength={160} className={input} placeholder="Task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)}/>
@@ -532,13 +511,13 @@ export default function DesignStudioPage() {
                             ))}
                           </div>
                           <h3 className="text-xl font-extrabold">{MODES.find((m) => m.id === mode)?.label} Workspace</h3>
-                          <p className="mb-4 text-sm text-slate-500">{MODES.find((m) => m.id === mode)?.hint} · Có thể quay lại bất kỳ mode nào.</p>
+                          <p className="mb-4 text-sm text-slate-600">{MODES.find((m) => m.id === mode)?.hint} · Có thể quay lại bất kỳ mode nào.</p>
 
                           <div className="mb-5 grid gap-3 sm:grid-cols-2">
                             {templates.filter((t) => t.mode === mode).map((template) => (
                               <div key={template.id} className="rounded-xl border border-[#e6eaf2] bg-[#fbfcfe] p-4">
                                 <p className="font-bold">{template.name}</p>
-                                <p className="my-2 text-xs leading-5 text-slate-500">{template.instructions}</p>
+                                <p className="my-2 text-xs leading-5 text-slate-600">{template.instructions}</p>
                                 {canEditTeam && <button disabled={busy} className={minor} onClick={() => void startActivity(template)}><Plus size={14} className="mr-1 inline"/> Bắt đầu</button>}
                                 {assigned.some((a) => a.templateId === template.id) && <p className="mt-2 text-xs font-semibold text-emerald-700">Được giao bởi giảng viên</p>}
                               </div>
@@ -558,7 +537,7 @@ export default function DesignStudioPage() {
                             <div className="space-y-4 rounded-xl border border-[#dfe6f1] bg-[#f8fafd] p-4 sm:p-5">
                               <div>
                                 <h4 className="text-lg font-bold">{activeActivity.template.name}</h4>
-                                <p className="mt-1 text-xs text-slate-500">{activeActivity.template.instructions}</p>
+                                <p className="mt-1 text-xs text-slate-600">{activeActivity.template.instructions}</p>
                               </div>
                               {activeActivity.template.fields.map((field) => (
                                 <label key={field.key} className="block text-sm font-semibold">{field.label}

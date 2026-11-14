@@ -61,7 +61,7 @@ const hubLinks = [
 
 function MiniLogo() {
   return (
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#f37021] text-sm font-black tracking-tighter text-white shadow-lg shadow-orange-500/20">UII</span>
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#b94708] text-sm font-black tracking-tighter text-white shadow-lg shadow-orange-500/20">UII</span>
   );
 }
 function NavItem({ href, label, icon: Icon, active = false }: { href: string; label: string; icon: typeof BookOpen; active?: boolean }) {
@@ -71,7 +71,7 @@ function NavItem({ href, label, icon: Icon, active = false }: { href: string; la
         (active ? 'bg-white/15 text-white shadow-sm' : 'text-slate-300 hover:bg-white/10 hover:text-white')}>
       <Icon size={18} className={active ? 'text-[#ffae74]' : 'text-slate-400 group-hover:text-[#ffae74]'} aria-hidden="true" />
       <span>{label}</span>
-      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#f37021]" />}
+      {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#b94708]" />}
     </Link>
   );
 }
@@ -81,11 +81,11 @@ function Metric({ label, value, detail, icon: Icon, tone }: {
   return (
     <div className="rounded-[22px] border border-slate-200/75 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.035)]">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs font-bold uppercase tracking-[0.09em] text-slate-500">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.09em] text-slate-600">{label}</p>
         <span className={'inline-flex h-9 w-9 items-center justify-center rounded-xl ' + tone}><Icon size={17}/></span>
       </div>
       <p className="mt-3 font-[family-name:var(--font-sans-ui)] text-3xl font-extrabold tracking-tight text-[#0a2044]">{value ?? '—'}</p>
-      <p className="mt-1 text-xs text-slate-500">{detail}</p>
+      <p className="mt-1 text-xs text-slate-600">{detail}</p>
     </div>
   );
 }
@@ -100,9 +100,9 @@ function ModuleCard({ href, title, eyebrow, text, icon: Icon, color, index }: {
         <ArrowUpRight className="text-slate-400 transition group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-[#f37021]" size={19}/>
       </div>
       <div className="relative mt-5">
-        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#e4661d]">{eyebrow}</p>
+        <p className="mb-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#ad4007]">{eyebrow}</p>
         <h3 className="text-base font-extrabold text-[#0a2044]">{title}</h3>
-        <p className="mt-1.5 text-sm leading-6 text-slate-500">{text}</p>
+        <p className="mt-1.5 text-sm leading-6 text-slate-600">{text}</p>
       </div>
     </Link>
   );
@@ -226,7 +226,7 @@ export function LiveHubDashboard() {
             <div className="flex items-center gap-2 text-xs font-bold text-[#ffd2b3]"><span className="h-2 w-2 rounded-full bg-emerald-400"/> MVP STAGING</div>
             <p className="mt-1 text-[11px] leading-5 text-slate-400">Dữ liệu thực · Kết nối an toàn</p>
           </div>
-          <p className="mb-3 mt-9 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Không gian làm việc</p>
+          <p className="mb-3 mt-9 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Không gian làm việc</p>
           <nav aria-label="Điều hướng chính" className="flex flex-col gap-1">
             {navItems.map((item) => <NavItem key={item.href} href={item.href} label={item.label} icon={item.icon} active={item.href === '/dashboard'}/>)}
           </nav>
@@ -246,16 +246,16 @@ export function LiveHubDashboard() {
               <button type="button" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'} aria-expanded={menuOpen} className="rounded-xl border border-slate-200 p-2 lg:hidden">{menuOpen ? <X size={20}/> : <Menu size={20}/>}</button>
               <div className="lg:hidden"><MiniLogo/></div>
               <div className="hidden sm:block">
-                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400">UII / WORKSPACE</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-600">UII / WORKSPACE</p>
                 <p className="text-sm font-extrabold text-[#0a2044]">Tổng quan học tập</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              {account && <Link href="/notifications" aria-label="Thông báo" className="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 hover:border-[#f37021]"><Bell size={18}/>{unread !== null && unread > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#f37021] px-1 text-[9px] font-extrabold text-white">{unread > 9 ? '9+' : unread}</span>}</Link>}
+              {account && <Link href="/notifications" aria-label="Thông báo" className="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-600 hover:border-[#f37021]"><Bell size={18}/>{unread !== null && unread > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#b94708] px-1 text-[9px] font-extrabold text-white">{unread > 9 ? '9+' : unread}</span>}</Link>}
               {account ? <div className="flex items-center gap-3 rounded-xl bg-slate-50 py-1.5 pl-2 pr-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a2856] text-xs font-extrabold text-white">{account.fullName.trim().slice(0, 1).toUpperCase() || 'U'}</span>
-                <span className="hidden text-left sm:block"><span className="block max-w-36 truncate text-xs font-extrabold">{account.fullName}</span><span className="block text-[10px] text-slate-500">{roleName(account.role)}</span></span>
-              </div> : session ? <span className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 text-xs font-extrabold text-blue-800"><RefreshCw size={14} className={loading ? 'animate-spin' : ''}/> {error ? 'Phiên đăng nhập đã nhận · Cần tải lại' : 'Đã đăng nhập · Đang tải hồ sơ'}</span> : !authReady ? <span className="text-xs font-semibold text-slate-500">Đang kiểm tra phiên...</span> : <Link href="/learn" className="rounded-xl bg-[#0a2856] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#143c76]">Đăng nhập <ArrowRight size={14} className="ml-1 inline"/></Link>}
+                <span className="hidden text-left sm:block"><span className="block max-w-36 truncate text-xs font-extrabold">{account.fullName}</span><span className="block text-[10px] text-slate-600">{roleName(account.role)}</span></span>
+              </div> : session ? <span className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2.5 text-xs font-extrabold text-blue-800"><RefreshCw size={14} className={loading ? 'animate-spin' : ''}/> {error ? 'Phiên đăng nhập đã nhận · Cần tải lại' : 'Đã đăng nhập · Đang tải hồ sơ'}</span> : !authReady ? <span className="text-xs font-semibold text-slate-600">Đang kiểm tra phiên...</span> : <Link href="/learn" className="rounded-xl bg-[#0a2856] px-4 py-2.5 text-xs font-extrabold text-white transition hover:bg-[#143c76]">Đăng nhập <ArrowRight size={14} className="ml-1 inline"/></Link>}
             </div>
           </header>
 
@@ -272,11 +272,11 @@ export function LiveHubDashboard() {
             {authReady && !session && (
               <section className="rounded-[28px] border border-slate-200 bg-white px-7 py-16 text-center shadow-[0_8px_40px_rgba(20,42,78,0.06)]">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-[#ef7229]"><LockKeyhole size={28}/></div>
-                <p className="mt-6 text-xs font-black uppercase tracking-widest text-[#e4661d]">Learning Workspace</p>
+                <p className="mt-6 text-xs font-black uppercase tracking-widest text-[#ad4007]">Learning Workspace</p>
                 <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-[#0a2044]">Đăng nhập để tiếp tục hành trình</h1>
                 <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-slate-600">Dashboard sử dụng tài khoản thực, dữ liệu tiến độ và phân quyền từ máy chủ. Hãy đăng nhập hoặc tạo tài khoản để xem không gian học tập của bạn.</p>
                 <div className="mt-7 flex flex-wrap justify-center gap-3">
-                  <Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#ff843a]">Đăng nhập / Đăng ký <ArrowRight size={17}/></Link>
+                  <Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#b94708] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#963b08]">Đăng nhập / Đăng ký <ArrowRight size={17}/></Link>
                   <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-extrabold text-[#102f61] transition hover:bg-slate-50">Về trang chủ</Link>
                 </div>
               </section>
@@ -301,14 +301,14 @@ export function LiveHubDashboard() {
               <>
                 <section className="relative overflow-hidden rounded-[30px] bg-[#071d43] p-7 text-white shadow-[0_20px_70px_rgba(7,29,67,0.14)] sm:p-9">
                   <div className="pointer-events-none absolute -right-14 -top-24 h-96 w-96 rounded-full border-[50px] border-[#f37021]/20" aria-hidden="true"/>
-                  <div className="pointer-events-none absolute right-20 top-10 h-44 w-44 rounded-full bg-[#f37021]/10 blur-3xl" aria-hidden="true"/>
+                  <div className="pointer-events-none absolute right-20 top-10 h-44 w-44 rounded-full bg-[#b94708]/10 blur-3xl" aria-hidden="true"/>
                   <div className="relative flex flex-wrap items-end justify-between gap-6">
                     <div className="max-w-2xl">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-[#f37021]/15 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ffbe90]"><Sparkles size={14}/> {roleName(account.role)} · Live workspace</span>
+                      <span className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-[#b94708]/15 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#ffbe90]"><Sparkles size={14}/> {roleName(account.role)} · Live workspace</span>
                       <h1 className="mt-5 font-[family-name:var(--font-sans-ui)] text-3xl font-extrabold leading-tight tracking-tight sm:text-[40px]">Chào {firstName}, <span className="text-[#ff9b59]">tiếp tục tạo khác biệt.</span></h1>
                       <p className="mt-3 max-w-xl text-sm leading-7 text-slate-300">{reviewer ? 'Quản lý hoạt động học tập, đồng hành cùng các nhóm và đưa ra phản hồi có giá trị.' : student ? 'Mỗi thử nghiệm và minh chứng đều đưa bạn đến gần hơn với một giải pháp hữu ích.' : 'Khám phá kiến thức và đóng góp vào những dự án đổi mới sáng tạo.'}</p>
                       <div className="mt-7 flex flex-wrap gap-3">
-                        <Link href={reviewer ? '/review' : '/studio'} className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-5 py-3 text-sm font-extrabold transition hover:bg-[#ff843a]">{reviewer ? 'Mở Assessment Studio' : 'Tiếp tục Design Studio'} <ArrowRight size={17}/></Link>
+                        <Link href={reviewer ? '/review' : '/studio'} className="inline-flex items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-extrabold transition hover:bg-[#963b08]">{reviewer ? 'Mở Assessment Studio' : 'Tiếp tục Design Studio'} <ArrowRight size={17}/></Link>
                         <Link href="/learn" className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold transition hover:bg-white/20"><BookOpen size={17}/> Learning Foundation</Link>
                       </div>
                     </div>
@@ -321,7 +321,7 @@ export function LiveHubDashboard() {
 
                 <section aria-labelledby="overview-title">
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <div><p className="text-[11px] font-black uppercase tracking-[0.17em] text-[#e4661d]">YOUR WORKSPACE</p><h2 id="overview-title" className="mt-1 text-2xl font-extrabold tracking-tight text-[#0a2044]">Tổng quan hôm nay</h2></div>
+                    <div><p className="text-[11px] font-black uppercase tracking-[0.17em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="overview-title" className="mt-1 text-2xl font-extrabold tracking-tight text-[#0a2044]">Tổng quan hôm nay</h2></div>
                     <button onClick={() => setReload((n) => n + 1)} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-extrabold text-slate-600 transition hover:border-orange-300 disabled:opacity-50"><RefreshCw size={15} className={loading ? 'animate-spin' : ''}/> Làm mới</button>
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -333,7 +333,7 @@ export function LiveHubDashboard() {
                 </section>
 
                 <section aria-labelledby="modules-title">
-                  <div className="mb-4"><p className="text-[11px] font-black uppercase tracking-[0.17em] text-[#e4661d]">LEARN · CREATE · ITERATE</p><h2 id="modules-title" className="mt-1 text-2xl font-extrabold tracking-tight text-[#0a2044]">Khám phá không gian học tập</h2><p className="mt-1 text-sm text-slate-500">Mọi hoạt động đều kết nối với dữ liệu thực và quyền truy cập của bạn.</p></div>
+                  <div className="mb-4"><p className="text-[11px] font-black uppercase tracking-[0.17em] text-[#ad4007]">LEARN · CREATE · ITERATE</p><h2 id="modules-title" className="mt-1 text-2xl font-extrabold tracking-tight text-[#0a2044]">Khám phá không gian học tập</h2><p className="mt-1 text-sm text-slate-600">Mọi hoạt động đều kết nối với dữ liệu thực và quyền truy cập của bạn.</p></div>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <ModuleCard href="/learn" title="Learning Foundation" eyebrow="01 · Learn" text="Học theo dự án, ghi danh và lưu tiến độ." icon={GraduationCap} color="bg-blue-50 text-blue-700" index="1"/>
                     <ModuleCard href="/studio" title="Design Studio" eyebrow="02 · Create" text="Giải quyết thử thách cùng đội nhóm." icon={Layers3} color="bg-violet-50 text-violet-700" index="2"/>
@@ -344,34 +344,34 @@ export function LiveHubDashboard() {
 
                 <div className="grid gap-5 xl:grid-cols-[1.3fr_1fr]">
                   <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.035)] sm:p-6" aria-labelledby="next-title">
-                    <div className="mb-5 flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#e4661d]">YOUR NEXT STEP</p><h2 id="next-title" className="mt-1 text-lg font-extrabold">Tiếp tục từ nơi bạn bắt đầu</h2></div><Link href={reviewer ? '/review' : '/learn'} className="inline-flex items-center gap-1 text-xs font-bold text-[#e4661d] hover:underline">Mở <ArrowUpRight size={14}/></Link></div>
+                    <div className="mb-5 flex items-center justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ad4007]">YOUR NEXT STEP</p><h2 id="next-title" className="mt-1 text-lg font-extrabold">Tiếp tục từ nơi bạn bắt đầu</h2></div><Link href={reviewer ? '/review' : '/learn'} className="inline-flex items-center gap-1 text-xs font-bold text-[#ad4007] hover:underline">Mở <ArrowUpRight size={14}/></Link></div>
                     {reviewer ? (
                       <div className="space-y-3">
-                        {data.queue && data.queue.length > 0 ? data.queue.slice(0, 3).map((item) => <Link key={item.id} href="/review" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200 hover:bg-orange-50/40"><span><span className="block text-sm font-extrabold">{item.project.title}</span><span className="mt-1 block text-xs text-slate-500">Bài nộp đang chờ đánh giá</span></span><ChevronRight className="text-slate-400 group-hover:text-orange-600" size={18}/></Link>) : <div className="rounded-2xl bg-slate-50 p-5"><CheckCircle2 size={25} className="text-emerald-600"/><p className="mt-2 text-sm font-bold">{data.queue ? 'Chưa có bài chờ đánh giá' : 'Chưa tải được danh sách bài đánh giá'}</p><p className="mt-1 text-xs text-slate-500">Bạn có thể tiếp tục quản lý khóa học và challenge.</p></div>}
+                        {data.queue && data.queue.length > 0 ? data.queue.slice(0, 3).map((item) => <Link key={item.id} href="/review" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200 hover:bg-orange-50/40"><span><span className="block text-sm font-extrabold">{item.project.title}</span><span className="mt-1 block text-xs text-slate-600">Bài nộp đang chờ đánh giá</span></span><ChevronRight className="text-slate-400 group-hover:text-orange-600" size={18}/></Link>) : <div className="rounded-2xl bg-slate-50 p-5"><CheckCircle2 size={25} className="text-emerald-600"/><p className="mt-2 text-sm font-bold">{data.queue ? 'Chưa có bài chờ đánh giá' : 'Chưa tải được danh sách bài đánh giá'}</p><p className="mt-1 text-xs text-slate-600">Bạn có thể tiếp tục quản lý khóa học và challenge.</p></div>}
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        {nextCourse && <Link href="/learn" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200"><span className="min-w-0"><span className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#e4661d]">Khóa đang tham gia</span><span className="mt-1 block truncate text-sm font-extrabold">{nextCourse.title}</span>{data.progress && <span className="mt-2 block h-1.5 w-full max-w-[240px] overflow-hidden rounded-full bg-slate-200"><span className="block h-full rounded-full bg-[#f37021]" style={{ width: data.progress.percent + '%' }}/></span>}</span><ChevronRight className="shrink-0 text-slate-400 group-hover:text-orange-600" size={18}/></Link>}
-                        {topProject && <Link href="/studio" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200"><span><span className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#e4661d]">Dự án gần đây</span><span className="mt-1 block text-sm font-extrabold">{topProject.title}</span><span className="mt-1 block text-xs text-slate-500">{stageName(topProject.currentStage)} · {topProject.status}</span></span><ChevronRight className="shrink-0 text-slate-400 group-hover:text-orange-600" size={18}/></Link>}
-                        {!nextCourse && !topProject && <div className="rounded-2xl bg-slate-50 p-5"><BookOpen size={25} className="text-[#f37021]"/><p className="mt-2 text-sm font-bold">Khởi động hành trình của bạn</p><p className="mt-1 text-xs leading-5 text-slate-500">Chọn một khóa học đã xuất bản, ghi danh và bắt đầu giải quyết thử thách.</p><Link href="/learn" className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-[#e4661d]">Khám phá khóa học <ArrowRight size={16}/></Link></div>}
+                        {nextCourse && <Link href="/learn" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200"><span className="min-w-0"><span className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#ad4007]">Khóa đang tham gia</span><span className="mt-1 block truncate text-sm font-extrabold">{nextCourse.title}</span>{data.progress && <span className="mt-2 block h-1.5 w-full max-w-[240px] overflow-hidden rounded-full bg-slate-200"><span className="block h-full rounded-full bg-[#b94708]" style={{ width: data.progress.percent + '%' }}/></span>}</span><ChevronRight className="shrink-0 text-slate-400 group-hover:text-orange-600" size={18}/></Link>}
+                        {topProject && <Link href="/studio" className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-orange-200"><span><span className="block text-[10px] font-black uppercase tracking-[0.14em] text-[#ad4007]">Dự án gần đây</span><span className="mt-1 block text-sm font-extrabold">{topProject.title}</span><span className="mt-1 block text-xs text-slate-600">{stageName(topProject.currentStage)} · {topProject.status}</span></span><ChevronRight className="shrink-0 text-slate-400 group-hover:text-orange-600" size={18}/></Link>}
+                        {!nextCourse && !topProject && <div className="rounded-2xl bg-slate-50 p-5"><BookOpen size={25} className="text-[#f37021]"/><p className="mt-2 text-sm font-bold">Khởi động hành trình của bạn</p><p className="mt-1 text-xs leading-5 text-slate-600">Chọn một khóa học đã xuất bản, ghi danh và bắt đầu giải quyết thử thách.</p><Link href="/learn" className="mt-3 inline-flex items-center gap-2 text-sm font-extrabold text-[#ad4007]">Khám phá khóa học <ArrowRight size={16}/></Link></div>}
                       </div>
                     )}
                   </section>
                   <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.035)] sm:p-6" aria-labelledby="updates-title">
-                    <div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#e4661d]">STAY INFORMED</p><h2 id="updates-title" className="mt-1 text-lg font-extrabold">Thông báo mới</h2></div><Link href="/notifications" aria-label="Xem tất cả thông báo" className="rounded-xl bg-slate-50 p-2 text-slate-500 hover:text-[#f37021]"><ArrowUpRight size={18}/></Link></div>
-                    {data.notifications?.length ? <div className="space-y-3">{data.notifications.slice(0, 3).map((note) => <div key={note.id} className="flex items-start gap-3 rounded-xl border border-slate-100 p-3"><span className={'mt-1 h-2 w-2 shrink-0 rounded-full ' + (note.readAt ? 'bg-slate-200' : 'bg-[#f37021]')}/><div className="min-w-0"><p className="line-clamp-2 text-xs font-semibold leading-5">{note.message}</p><p className="mt-1 text-[11px] text-slate-400">{new Date(note.createdAt).toLocaleDateString('vi-VN')}</p></div></div>)}</div> : <div className="rounded-2xl bg-slate-50 p-5 text-center"><Bell size={23} className="mx-auto text-slate-400"/><p className="mt-2 text-sm font-bold">{data.notifications ? 'Chưa có thông báo' : 'Chưa tải được thông báo'}</p><p className="mt-1 text-xs text-slate-500">Những phản hồi và hạn nộp sẽ xuất hiện tại đây.</p></div>}
+                    <div className="mb-5 flex items-center justify-between"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ad4007]">STAY INFORMED</p><h2 id="updates-title" className="mt-1 text-lg font-extrabold">Thông báo mới</h2></div><Link href="/notifications" aria-label="Xem tất cả thông báo" className="rounded-xl bg-slate-50 p-2 text-slate-600 hover:text-[#f37021]"><ArrowUpRight size={18}/></Link></div>
+                    {data.notifications?.length ? <div className="space-y-3">{data.notifications.slice(0, 3).map((note) => <div key={note.id} className="flex items-start gap-3 rounded-xl border border-slate-100 p-3"><span className={'mt-1 h-2 w-2 shrink-0 rounded-full ' + (note.readAt ? 'bg-slate-200' : 'bg-[#b94708]')}/><div className="min-w-0"><p className="line-clamp-2 text-xs font-semibold leading-5">{note.message}</p><p className="mt-1 text-[11px] text-slate-400">{new Date(note.createdAt).toLocaleDateString('vi-VN')}</p></div></div>)}</div> : <div className="rounded-2xl bg-slate-50 p-5 text-center"><Bell size={23} className="mx-auto text-slate-400"/><p className="mt-2 text-sm font-bold">{data.notifications ? 'Chưa có thông báo' : 'Chưa tải được thông báo'}</p><p className="mt-1 text-xs text-slate-600">Những phản hồi và hạn nộp sẽ xuất hiện tại đây.</p></div>}
                   </section>
                 </div>
 
                 <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 sm:p-7" aria-labelledby="modes-title">
-                  <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#e4661d]">DESIGN THINKING IN ACTION</p><h2 id="modes-title" className="mt-1 text-xl font-extrabold">Năm chế độ. Vô hạn vòng lặp.</h2><p className="mt-1 text-sm text-slate-500">Bạn có thể quay lại bất kỳ chế độ nào khi học được điều mới.</p></div><Link href="/studio" className="inline-flex items-center gap-2 text-xs font-extrabold text-[#e4661d] hover:underline">Vào Design Studio <ArrowRight size={15}/></Link></div>
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{modes.map(({title,subtitle,icon:Icon,tint})=><Link key={title} href="/studio" className="group rounded-2xl border border-slate-100 bg-slate-50/80 p-4 transition hover:border-orange-200 hover:bg-orange-50/30"><span className={'inline-flex h-10 w-10 items-center justify-center rounded-xl ' + tint}><Icon size={19}/></span><p className="mt-3 text-sm font-extrabold">{title}</p><p className="mt-1 text-xs text-slate-500">{subtitle}</p></Link>)}</div>
-                  <p className="mt-4 flex items-center gap-2 text-xs text-slate-500"><RotateCcw size={14} className="text-[#f37021]"/> Không có thứ tự bắt buộc — thử nghiệm, phản tư và lặp lại.</p>
+                  <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#ad4007]">DESIGN THINKING IN ACTION</p><h2 id="modes-title" className="mt-1 text-xl font-extrabold">Năm chế độ. Vô hạn vòng lặp.</h2><p className="mt-1 text-sm text-slate-600">Bạn có thể quay lại bất kỳ chế độ nào khi học được điều mới.</p></div><Link href="/studio" className="inline-flex items-center gap-2 text-xs font-extrabold text-[#ad4007] hover:underline">Vào Design Studio <ArrowRight size={15}/></Link></div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{modes.map(({title,subtitle,icon:Icon,tint})=><Link key={title} href="/studio" className="group rounded-2xl border border-slate-100 bg-slate-50/80 p-4 transition hover:border-orange-200 hover:bg-orange-50/30"><span className={'inline-flex h-10 w-10 items-center justify-center rounded-xl ' + tint}><Icon size={19}/></span><p className="mt-3 text-sm font-extrabold">{title}</p><p className="mt-1 text-xs text-slate-600">{subtitle}</p></Link>)}</div>
+                  <p className="mt-4 flex items-center gap-2 text-xs text-slate-600"><RotateCcw size={14} className="text-[#f37021]"/> Không có thứ tự bắt buộc — thử nghiệm, phản tư và lặp lại.</p>
                 </section>
               </>
             )}
 
-            {authReady && <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-500"><span className="font-semibold">UII Design Thinking Hub · MVP Staging</span><span className="inline-flex items-center gap-2"><span className="font-extrabold text-[#0a2044]">Build</span> → Measure → Learn → <span className="font-extrabold text-[#e4661d]">Improve</span></span></footer>}
+            {authReady && <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-6 text-xs text-slate-600"><span className="font-semibold">UII Design Thinking Hub · MVP Staging</span><span className="inline-flex items-center gap-2"><span className="font-extrabold text-[#0a2044]">Build</span> → Measure → Learn → <span className="font-extrabold text-[#ad4007]">Improve</span></span></footer>}
           </main>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { ArrowLeft, Bell, CheckCircle2, LoaderCircle } from 'lucide-react';
@@ -66,27 +67,20 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-5">
-          <div className="flex items-center gap-3"><div className="rounded-xl bg-[#153b77] p-3 text-white"><Bell size={23}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">UII Design Thinking Hub</p>
-              <h1 className="text-xl font-extrabold">Notification Center</h1></div></div>
-          <Link href="/studio" className="flex items-center gap-1 text-sm font-semibold text-[#153b77]"><ArrowLeft size={16}/> Studio</Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl space-y-5 px-5 py-8">
-        <p className="text-sm text-slate-500">Release D · In-app thông báo deadline và feedback. Mỗi người chỉ xem được thông báo của mình.</p>
+      <WorkspaceNav title="Thông báo" />
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-5 py-8">
+        <p className="text-sm text-slate-600">Theo dõi hạn nộp và phản hồi dành cho bạn.</p>
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
-        {busy && <p className="flex items-center gap-2 text-sm text-slate-500"><LoaderCircle className="animate-spin" size={15}/> Đang xử lý…</p>}
+        {busy && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={15}/> Đang xử lý…</p>}
         {ready && !session && <div className="rounded-xl bg-white p-5">Bạn cần <Link className="font-bold underline" href="/learn">đăng nhập</Link>.</div>}
         {session && (
           <section className="space-y-3">
             {notices.map((notice) => (
               <div key={notice.id} className={'flex flex-wrap items-start justify-between gap-4 rounded-2xl border bg-white p-5 shadow-sm ' + (!notice.readAt ? 'border-[#e5af78]' : 'border-slate-200')}>
                 <div className="min-w-0 flex-1">
-                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#f37021]">{notice.type.replaceAll('_',' ')}</p>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#ad4007]">{notice.type.replaceAll('_',' ')}</p>
                   <p className="text-sm font-semibold">{notice.message}</p>
-                  <p className="mt-2 text-xs text-slate-500">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
+                  <p className="mt-2 text-xs text-slate-600">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
                   <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : '/studio'}
                     className="mt-3 inline-block text-sm font-bold text-[#153b77] underline">
                     {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp / feedback' : 'Xem challenge'}
@@ -97,7 +91,7 @@ export default function NotificationsPage() {
                   : <span className="text-xs text-green-700">Đã đọc</span>}
               </div>
             ))}
-            {!notices.length && !busy && !error && <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">Chưa có thông báo mới.</div>}
+            {!notices.length && !busy && !error && <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-600">Chưa có thông báo mới.</div>}
           </section>
         )}
       </main>

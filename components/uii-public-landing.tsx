@@ -54,7 +54,7 @@ const releases = [
 
 function Brand({ light = false }: { light?: boolean }) {
   return <span className="inline-flex items-center gap-3">
-    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[#f37021] text-[13px] font-black tracking-tight text-white shadow-[0_8px_20px_rgba(243,112,33,0.2)]">UII</span>
+    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] bg-[#b94708] text-[13px] font-black tracking-tight text-white shadow-[0_8px_20px_rgba(243,112,33,0.2)]">UII</span>
     <span className={'text-left text-sm font-extrabold leading-[1.2] tracking-tight ' + (light ? 'text-white' : 'text-[#09234c]')}>
       UII Design Thinking <span className="block">Hub</span>
     </span>
@@ -98,7 +98,7 @@ export function UIIPublicLanding() {
               <p className="mt-7 max-w-xl text-lg font-semibold leading-relaxed text-white/90 sm:text-[21px]">Nơi tri thức gặp thử nghiệm. Nơi ý tưởng được kiểm chứng bằng hành động.</p>
               <p className="mt-4 max-w-xl text-sm leading-7 text-[#b8c9e2] sm:text-base">UII Design Thinking Hub kết nối học tập theo dự án, thực hành tư duy thiết kế và hành trình đổi mới sáng tạo — từ hiểu đúng vấn đề đến tạo giá trị cho cộng đồng.</p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Link href="/dashboard" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-[#f37021] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(243,112,33,0.23)] transition hover:-translate-y-0.5 hover:bg-[#ff8136]">Khám phá Learning Hub <ArrowRight size={18}/></Link>
+                <Link href="/dashboard" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-[#b94708] px-6 py-3.5 text-sm font-extrabold text-white shadow-[0_12px_30px_rgba(243,112,33,0.23)] transition hover:-translate-y-0.5 hover:bg-[#963b08]">Khám phá Learning Hub <ArrowRight size={18}/></Link>
                 <a href="#pillars" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-white/20">Tìm hiểu hệ sinh thái <ArrowDownRight size={17}/></a>
               </div>
               <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-slate-300">
@@ -115,29 +115,29 @@ export function UIIPublicLanding() {
                 </div>
                 <div className="relative grid grid-cols-2 gap-3">
                   <div className="rounded-[22px] border border-white/10 bg-white/[0.09] p-5">
-                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f37021]/25 text-[#ffb783]"><Compass size={22}/></div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">01 · Discover</p>
+                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#b94708]/25 text-[#ffb783]"><Compass size={22}/></div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">01 · Discover</p>
                     <p className="mt-1 text-[16px] font-extrabold">Hiểu vấn đề</p>
                   </div>
                   <div className="rounded-[22px] border border-white/10 bg-white/[0.09] p-5">
                     <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#7b91e9]/25 text-[#c5d0ff]"><Lightbulb size={22}/></div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">02 · Imagine</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">02 · Imagine</p>
                     <p className="mt-1 text-[16px] font-extrabold">Tạo ý tưởng</p>
                   </div>
                   <div className="rounded-[22px] border border-white/10 bg-white/[0.09] p-5">
                     <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#5cc1a1]/20 text-[#a5ead5]"><Layers3 size={22}/></div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">03 · Prototype</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-300">03 · Prototype</p>
                     <p className="mt-1 text-[16px] font-extrabold">Tạo giải pháp</p>
                   </div>
-                  <div className="rounded-[22px] border border-[#f37021]/45 bg-[#f37021]/15 p-5">
-                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#f37021] text-white"><Target size={22}/></div>
+                  <div className="rounded-[22px] border border-[#f37021]/45 bg-[#b94708]/15 p-5">
+                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#b94708] text-white"><Target size={22}/></div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#ffc299]">04 · Validate</p>
                     <p className="mt-1 text-[16px] font-extrabold">Đo & cải tiến</p>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 px-4 py-3 text-center text-xs font-bold text-slate-300"><RefreshCcw size={16} className="text-[#ff9854]"/> Every iteration creates new learning.</div>
               </div>
-              <div className="pointer-events-none absolute -left-4 -top-4 h-20 w-20 rounded-full bg-[#f37021]/20 blur-2xl" aria-hidden="true"/>
+              <div className="pointer-events-none absolute -left-4 -top-4 h-20 w-20 rounded-full bg-[#b94708]/20 blur-2xl" aria-hidden="true"/>
             </div>
           </div>
         </section>
@@ -145,7 +145,7 @@ export function UIIPublicLanding() {
         <section className="border-b border-slate-200 bg-white">
           <div className="mx-auto grid max-w-[1440px] gap-5 px-5 py-7 sm:grid-cols-3 sm:px-8 xl:px-12">
             <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#174784]"><BookOpen size={22}/></span><div><p className="text-sm font-extrabold">Learn by doing</p><p className="text-xs text-slate-500">Học qua thử thách thực tế</p></div></div>
-            <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#e66c25]"><Workflow size={22}/></span><div><p className="text-sm font-extrabold">Evidence-driven</p><p className="text-xs text-slate-500">Quyết định dựa trên minh chứng</p></div></div>
+            <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#ad4007]"><Workflow size={22}/></span><div><p className="text-sm font-extrabold">Evidence-driven</p><p className="text-xs text-slate-500">Quyết định dựa trên minh chứng</p></div></div>
             <div className="flex items-center gap-4"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Network size={22}/></span><div><p className="text-sm font-extrabold">Connected impact</p><p className="text-xs text-slate-500">Kết nối con người và cơ hội</p></div></div>
           </div>
         </section>
@@ -153,11 +153,11 @@ export function UIIPublicLanding() {
         <section id="pillars" className="scroll-mt-28 mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:py-24 xl:px-12">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-5">
             <div className="max-w-2xl">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ea6b23]">THE UII ECOSYSTEM</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ad4007]">THE UII ECOSYSTEM</p>
               <h2 className="mt-3 font-[family-name:var(--font-sans-ui)] text-3xl font-extrabold tracking-tight sm:text-4xl">Bốn trụ cột. Một hành trình đổi mới.</h2>
               <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Từ nền tảng học tập đang thử nghiệm đến hệ sinh thái hỗ trợ dự án và kết nối nguồn lực. Mỗi trụ cột có một vai trò rõ ràng.</p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600"><span className="h-2 w-2 rounded-full bg-[#f37021]"/> Roadmap minh bạch</span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600"><span className="h-2 w-2 rounded-full bg-[#b94708]"/> Roadmap minh bạch</span>
           </div>
           <div className="grid gap-5 md:grid-cols-2">
             {pillars.map(({id, name, vi, description, points, href, link, icon:Icon, tint, status, ready}) => (
@@ -168,10 +168,10 @@ export function UIIPublicLanding() {
                   <span className={'rounded-full px-3 py-1.5 text-[10px] font-extrabold '+(ready?'bg-emerald-50 text-emerald-700':'bg-slate-100 text-slate-600')}>{status}</span>
                 </div>
                 <div className="relative mt-7">
-                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#e66c25]">{id} / {name}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#ad4007]">{id} / {name}</p>
                   <h3 className="mt-2 text-xl font-extrabold tracking-tight sm:text-2xl">{vi}</h3>
                   <p className="mt-3 max-w-lg text-sm leading-7 text-slate-600">{description}</p>
-                  <div className="mt-5 grid gap-2">{points.map(point=><p key={point} className="flex items-start gap-2 text-[13px] font-semibold text-slate-600"><CheckCircle2 size={16} className={'mt-0.5 shrink-0 '+(ready?'text-emerald-600':'text-slate-400')}/>{point}</p>)}</div>
+                  <div className="mt-5 grid gap-2">{points.map(point=><p key={point} className="flex items-start gap-2 text-[13px] font-semibold text-slate-600"><CheckCircle2 size={16} className={'mt-0.5 shrink-0 '+(ready?'text-emerald-600':'text-slate-600')}/>{point}</p>)}</div>
                   <Link href={href} className="mt-7 inline-flex items-center gap-2 text-sm font-extrabold text-[#123d77] transition group-hover:text-[#eb6a24]">{link} <ArrowUpRight size={17}/></Link>
                 </div>
               </article>
@@ -181,30 +181,30 @@ export function UIIPublicLanding() {
 
         <section id="how-it-works" className="scroll-mt-28 bg-white py-20 sm:py-24">
           <div className="mx-auto max-w-[1440px] px-5 sm:px-8 xl:px-12">
-            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ea6b23]">THE LEARNING JOURNEY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Không chỉ học lý thuyết. <span className="text-[#e76b24]">Học bằng trải nghiệm.</span></h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Design Thinking là một quá trình linh hoạt. Người học có thể quay lại bất kỳ chế độ nào khi xuất hiện minh chứng mới — không phải một chuỗi cổng bắt buộc.</p></div>
+            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ad4007]">THE LEARNING JOURNEY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Không chỉ học lý thuyết. <span className="text-[#e76b24]">Học bằng trải nghiệm.</span></h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Design Thinking là một quá trình linh hoạt. Người học có thể quay lại bất kỳ chế độ nào khi xuất hiện minh chứng mới — không phải một chuỗi cổng bắt buộc.</p></div>
             <div className="mt-10 grid gap-3 md:grid-cols-5">
               {stages.map(({label,vi,icon:Icon},i)=>(
                 <div key={label} className="relative rounded-2xl border border-slate-200 bg-[#f8fafd] px-5 py-6">
-                  <span className="text-[10px] font-black tracking-[0.16em] text-slate-400">{String(i+1).padStart(2,'0')}</span>
+                  <span className="text-[10px] font-black tracking-[0.16em] text-slate-600">{String(i+1).padStart(2,'0')}</span>
                   <div className="mt-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8eef9] text-[#1b518d]"><Icon size={22}/></div>
                   <p className="mt-5 text-base font-extrabold">{label}</p><p className="mt-1 text-xs leading-5 text-slate-500">{vi}</p>
                   {i<4 && <ArrowRight aria-hidden="true" className="absolute -right-3 top-1/2 z-10 hidden text-[#e76b24] md:block" size={20}/>}
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-[#f8fafd] p-4 text-center text-sm font-semibold text-slate-600"><RefreshCcw size={18} className="shrink-0 text-[#e66c25]"/> Quay lại, thử nghiệm và cải tiến khi có thêm dữ liệu.</div>
+            <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-[#f8fafd] p-4 text-center text-sm font-semibold text-slate-600"><RefreshCcw size={18} className="shrink-0 text-[#ad4007]"/> Quay lại, thử nghiệm và cải tiến khi có thêm dữ liệu.</div>
           </div>
         </section>
 
         <section id="roadmap" className="scroll-mt-28 mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:py-24 xl:px-12">
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ea6b23]">WHAT'S AVAILABLE TODAY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">MVP thực tế. Từng bước kiểm chứng.</h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Bốn nhóm chức năng Learning Hub đã được triển khai trên staging. Chúng tôi đang kiểm thử hành trình người dùng và chất lượng dữ liệu trước khi đưa vào vận hành chính thức.</p></div>
+            <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#ad4007]">WHAT'S AVAILABLE TODAY</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">MVP thực tế. Từng bước kiểm chứng.</h2><p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">Bốn nhóm chức năng Learning Hub đã được triển khai trên staging. Chúng tôi đang kiểm thử hành trình người dùng và chất lượng dữ liệu trước khi đưa vào vận hành chính thức.</p></div>
             <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-[#102f61] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#1c4884]">Trải nghiệm MVP <ArrowRight size={17}/></Link>
           </div>
           <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {releases.map(({code,title,subtitle,items})=><div key={code} className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_6px_28px_rgba(7,29,67,0.035)]">
               <div className="flex items-center justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0e315e] text-lg font-black text-white">{code}</span><span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold text-amber-800">UAT đang thực hiện</span></div>
-              <p className="mt-6 text-[10px] font-extrabold uppercase tracking-widest text-[#e46b27]">{items}</p>
+              <p className="mt-6 text-[10px] font-extrabold uppercase tracking-widest text-[#ad4007]">{items}</p>
               <h3 className="mt-1 text-lg font-extrabold">{title}</h3><p className="mt-3 text-xs leading-6 text-slate-600">{subtitle}</p>
             </div>)}
           </div>
@@ -230,7 +230,7 @@ export function UIIPublicLanding() {
             <div className="pointer-events-none absolute -right-14 -top-36 h-96 w-96 rounded-full border-[48px] border-[#f37021]/10" aria-hidden="true"/>
             <div className="relative flex flex-wrap items-end justify-between gap-8">
               <div className="max-w-2xl"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#e1661d]">LET'S SHAPE WHAT'S NEXT</p><h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Cùng biến ý tưởng thành tác động.</h2><p className="mt-4 text-sm leading-7 text-slate-600">Bạn là sinh viên, giảng viên hay người quan tâm đến đổi mới sáng tạo? Hãy bắt đầu với Learning Hub. Các kênh hợp tác và ươm tạo sẽ được phát triển trong các giai đoạn tiếp theo.</p></div>
-              <div className="flex flex-wrap gap-3"><Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#f37021] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#ff843a]">Tham gia Learning Hub <ArrowRight size={17}/></Link><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-extrabold text-[#102f61] transition hover:bg-slate-50">Đi tới Dashboard <MoveUpRight size={16}/></Link></div>
+              <div className="flex flex-wrap gap-3"><Link href="/learn" className="inline-flex items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-extrabold text-white transition hover:bg-[#963b08]">Tham gia Learning Hub <ArrowRight size={17}/></Link><Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-extrabold text-[#102f61] transition hover:bg-slate-50">Đi tới Dashboard <MoveUpRight size={16}/></Link></div>
             </div>
           </div>
         </section>
@@ -239,8 +239,8 @@ export function UIIPublicLanding() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-6 px-5 py-9 sm:px-8 xl:px-12">
           <div><Brand/><p className="mt-3 text-xs text-slate-500">Evidence-centered learning · Project-based innovation · Continuous improvement.</p></div>
-          <div className="flex flex-wrap items-center gap-5 text-xs font-bold text-slate-500"><a href="#pillars" className="hover:text-[#e66c25]">Hệ sinh thái</a><a href="#roadmap" className="hover:text-[#e66c25]">MVP Roadmap</a><Link href="/dashboard" className="hover:text-[#e66c25]">Learning Dashboard <ArrowUpRight size={13} className="inline"/></Link></div>
-          <p className="w-full text-[11px] text-slate-400">UII Design Thinking Hub · Staging Preview — Không phải môi trường vận hành chính thức.</p>
+          <div className="flex flex-wrap items-center gap-5 text-xs font-bold text-slate-500"><a href="#pillars" className="hover:text-[#ad4007]">Hệ sinh thái</a><a href="#roadmap" className="hover:text-[#ad4007]">MVP Roadmap</a><Link href="/dashboard" className="hover:text-[#ad4007]">Learning Dashboard <ArrowUpRight size={13} className="inline"/></Link></div>
+          <p className="w-full text-[11px] text-slate-600">UII Design Thinking Hub · Staging Preview — Không phải môi trường vận hành chính thức.</p>
         </div>
       </footer>
     </div>
