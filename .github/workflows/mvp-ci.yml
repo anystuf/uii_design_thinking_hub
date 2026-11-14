@@ -2,7 +2,7 @@ name: MVP Releases A–D checks
 
 on:
   pull_request:
-    branches: ['feat/production-learning-experience-20261114', 'chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
+    branches: ['fix/lms-security-and-authenticated-uat-20261114', 'feat/production-learning-experience-20261114', 'chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
   workflow_dispatch:
 
 permissions:
