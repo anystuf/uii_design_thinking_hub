@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -8,6 +9,8 @@ import {
   LoaderCircle, Plus, Send, ShieldCheck,
 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = { id: string; title: string; createdById: string };
@@ -31,19 +34,13 @@ type SubmissionDetail = {
 };
 type CriterionDraft = { title: string; description: string; weight: number; maxScore: number };
 type Rating = { criterionId: string; score: number; comment?: string };
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
 const field = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-[#f37021]';
 const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50';
 const minor = 'rounded-xl border px-3 py-2 text-sm font-semibold text-[#153b77] disabled:opacity-50';
 
 async function api<T>(token: string, path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  if (init?.body) headers.set('Content-Type', 'application/json');
-  const result = await fetch(API_URL + path, { ...init, headers });
-  if (!result.ok) throw new Error('HTTP ' + result.status + ': ' + (await result.text()).slice(0, 220));
-  return result.json() as Promise<T>;
+  return authenticatedApi<T>(path, token, init);
 }
 
 const initialCriteria: CriterionDraft[] = [
@@ -86,7 +83,7 @@ export default function ReviewPage() {
     let active = true;
     try {
       const auth = getSupabaseBrowserClient().auth;
-      void auth.getSession().then(({ data }) => { if (active) { setSession(data.session); setAuthReady(true); } });
+      void withAuthDeadline(() => auth.getSession()).then(({ data }) => { if (active) { setSession(data.session); setAuthReady(true); } }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, s) => { if (active) setSession(s); });
       return () => { active = false; subscription.unsubscribe(); };
     } catch (err) {
@@ -237,27 +234,14 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#153b77] p-3 text-white"><ClipboardCheck size={23}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">UII Design Thinking Hub</p>
-              <h1 className="text-xl font-extrabold">Assessment Studio</h1></div>
-          </div>
-          <nav className="flex flex-wrap gap-4 text-sm font-semibold">
-            <Link href="/studio" className="text-[#153b77] hover:underline"><ArrowLeft className="mr-1 inline" size={15}/> Studio</Link>
-            <Link href="/notifications" className="text-[#153b77] hover:underline">Notifications</Link>
-            <Link href="/learn" className="text-slate-500 hover:underline">Learning</Link>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} />
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#f37021]">Release D · F13 F14</p>
+          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Phản hồi giúp nhóm tiến bộ</p>
           <h2 className="text-3xl font-extrabold">Review & Rubric Assessment</h2>
-          <p className="mt-1 text-sm text-slate-500">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
+          <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
         </div>
-        {busy && <p className="flex items-center gap-2 text-sm text-slate-500"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</p>}
+        {busy && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</p>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</p>}
         {authReady && !session && <section className={panel}>Bạn cần <Link href="/learn" className="font-bold underline">đăng nhập</Link> trước.</section>}
@@ -306,10 +290,10 @@ export default function ReviewPage() {
                     <button key={item.id} onClick={() => void selectSubmission(item)}
                       className={'w-full rounded-xl border p-3 text-left hover:border-[#153b77] ' + (submission?.id === item.id ? 'border-[#153b77] bg-[#eef3fb]' : 'bg-white')}>
                       <span className="block font-semibold">{item.project.title} · v{item.version}</span>
-                      <span className="mt-1 block text-xs text-slate-500">{item.submittedBy.fullName} · {new Date(item.submittedAt).toLocaleString('vi-VN')}</span>
+                      <span className="mt-1 block text-xs text-slate-600">{item.submittedBy.fullName} · {new Date(item.submittedAt).toLocaleString('vi-VN')}</span>
                     </button>
                   ))}
-                  {!queue.length && <p className="text-sm text-slate-500">Không có submission nào đang chờ đánh giá.</p>}
+                  {!queue.length && <p className="text-sm text-slate-600">Không có submission nào đang chờ đánh giá.</p>}
                 </div>
               </section>
             </aside>
@@ -317,7 +301,7 @@ export default function ReviewPage() {
               {selectedDraft && (
                 <section className={panel + ' space-y-4'}>
                   <h3 className="text-xl font-bold">Rubric draft editor</h3>
-                  <p className="text-sm text-slate-500">Tổng trọng số phải bằng 100%. Published rubric không thể sửa trực tiếp.</p>
+                  <p className="text-sm text-slate-600">Tổng trọng số phải bằng 100%. Published rubric không thể sửa trực tiếp.</p>
                   {draftCriteria.map((c, i) => (
                     <div key={i} className="rounded-xl border bg-[#f9fbfe] p-4">
                       <div className="mb-3 flex items-center justify-between">
@@ -362,7 +346,7 @@ export default function ReviewPage() {
                     {details.items.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f6f8fc] p-3">
                         <div><p className="text-sm font-bold">{item.evidenceVersion.title} · v{item.evidenceVersion.version}</p>
-                          <p className="text-xs text-slate-500">{item.evidenceVersion.reflection || item.evidenceVersion.description || 'Không có ghi chú'}</p>
+                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || item.evidenceVersion.description || 'Không có ghi chú'}</p>
                         </div>
                         {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
                       </div>
@@ -380,7 +364,7 @@ export default function ReviewPage() {
                       <div key={c.id} className="rounded-xl bg-[#f6f8fc] p-4">
                         <div className="mb-2 flex flex-wrap justify-between gap-3">
                           <div><p className="font-bold">{c.title}</p>
-                            <p className="text-xs text-slate-500">{c.description || ''}</p></div>
+                            <p className="text-xs text-slate-600">{c.description || ''}</p></div>
                           <span className="text-xs font-bold">{c.weight}%</span>
                         </div>
                         <label className="text-sm">Điểm (0–{c.maxScore})
@@ -415,7 +399,7 @@ export default function ReviewPage() {
                 <section className={panel + ' py-16 text-center'}>
                   <ShieldCheck className="mx-auto mb-4 text-[#153b77]" size={32}/>
                   <h3 className="text-xl font-bold">Chọn submission cần đánh giá</h3>
-                  <p className="mt-2 text-sm text-slate-500">Rubric công bố sẽ được gắn với đúng phiên bản bài nộp, không ảnh hưởng lịch sử.</p>
+                  <p className="mt-2 text-sm text-slate-600">Rubric công bố sẽ được gắn với đúng phiên bản bài nộp, không ảnh hưởng lịch sử.</p>
                 </section>
               )}
             </div>

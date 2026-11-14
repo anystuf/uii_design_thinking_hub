@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -9,6 +10,8 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
+import { authenticatedApi } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Mode = 'EMPATHIZE' | 'DEFINE' | 'IDEATE' | 'PROTOTYPE' | 'TEST';
@@ -36,7 +39,6 @@ type Submission = {
 type Iteration = { id: string; reason: string; nextDecision: string; mode?: Mode | null; createdAt: string };
 type UploadToken = { intentId: string; token: string; bucket: string; storageKey: string };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const modes: Mode[] = ['EMPATHIZE', 'DEFINE', 'IDEATE', 'PROTOTYPE', 'TEST'];
 const types = ['INTERVIEW','OBSERVATION','PERSONA','JOURNEY_MAP','AFFINITY_MAP','NEED_STATEMENT','IDEA','PROTOTYPE','TEST_RESULT','PHOTO','VIDEO','DOCUMENT','REFLECTION'];
 const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
@@ -45,12 +47,7 @@ const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-bold text-whit
 const secondary = 'rounded-xl border px-4 py-2.5 text-sm font-semibold text-[#153b77] disabled:opacity-50';
 
 async function api<T>(token: string, path: string, init?: RequestInit): Promise<T> {
-  const headers = new Headers(init?.headers);
-  headers.set('Authorization', 'Bearer ' + token);
-  if (init?.body) headers.set('Content-Type', 'application/json');
-  const response = await fetch(API_URL + path, { ...init, headers });
-  if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + (await response.text()).slice(0, 240));
-  return response.json() as Promise<T>;
+  return authenticatedApi<T>(path, token, init);
 }
 
 export default function EvidenceStudioPage() {
@@ -85,9 +82,9 @@ export default function EvidenceStudioPage() {
     let active = true;
     try {
       const auth = getSupabaseBrowserClient().auth;
-      void auth.getSession().then(({ data }) => {
+      void withAuthDeadline(() => auth.getSession()).then(({ data }) => {
         if (active) { setSession(data.session); setAuthReady(true); }
-      });
+      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, next) => {
         if (active) setSession(next);
       });
@@ -243,27 +240,14 @@ export default function EvidenceStudioPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <header className="border-b bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-[#153b77] p-3 text-white"><FolderLock size={24}/></div>
-            <div><p className="text-xs font-bold uppercase tracking-widest text-[#f37021]">UII Design Thinking Hub</p>
-              <h1 className="text-xl font-extrabold">Evidence & Submissions</h1></div>
-          </div>
-          <nav className="flex gap-4 text-sm font-semibold">
-            <Link href="/studio" className="text-[#153b77] hover:underline"><ArrowLeft size={15} className="mr-1 inline"/> Design Studio</Link>
-            <Link href="/notifications" className="text-[#153b77] hover:underline">Notifications</Link>
-            <Link href="/learn" className="text-slate-500 hover:underline">Learning</Link>
-          </nav>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} />
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#f37021]">Release C · F09 F11 F12</p>
+          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Lưu lại hành trình thiết kế</p>
             <h2 className="text-3xl font-extrabold">Evidence-Centered Design</h2>
-            <p className="mt-1 text-sm text-slate-500">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
+            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
           </div>
-          {busy && <span className="flex items-center gap-2 text-sm text-slate-500"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</span>}
+          {busy && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</span>}
         </div>
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{notice}</p>}
@@ -277,7 +261,7 @@ export default function EvidenceStudioPage() {
                 {!projects.length && <option value="">Chưa có project</option>}
                 {projects.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
               </select>
-              {!projects.length && <p className="mt-3 text-sm text-slate-500">Tạo hoặc tham gia nhóm trong <Link className="underline" href="/studio">Design Studio</Link> trước.</p>}
+              {!projects.length && <p className="mt-3 text-sm text-slate-600">Tạo hoặc tham gia nhóm trong <Link className="underline" href="/studio">Design Studio</Link> trước.</p>}
             </section>
             {project && (
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_1fr]">
@@ -315,10 +299,10 @@ export default function EvidenceStudioPage() {
                       <div className="rounded-xl border border-dashed p-4">
                         <label className="mb-2 block text-sm font-bold">File đính kèm riêng tư (tùy chọn)</label>
                         <input type="file" onChange={attachFile} className="w-full text-sm" accept=".pdf,.png,.jpg,.jpeg,.mp3,.mp4,.txt"/>
-                        {chosenFile && <p className="mt-2 text-xs text-slate-500">{chosenFile.name} · {Math.round(chosenFile.size/1024)} KB</p>}
+                        {chosenFile && <p className="mt-2 text-xs text-slate-600">{chosenFile.name} · {Math.round(chosenFile.size/1024)} KB</p>}
                         {chosenFile && <button type="button" className={secondary + ' mt-3'} disabled={busy} onClick={() => void upload()}><Upload size={15} className="mr-1 inline"/> Upload & verify</button>}
                         {fileAsset && <p className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15}/>{fileAsset.fileName} — đã xác minh</p>}
-                        {newVersionOf && !fileAsset && <p className="mt-2 text-xs text-slate-500">Nếu không tải file mới, phiên bản tiếp theo giữ tham chiếu file trước đó.</p>}
+                        {newVersionOf && !fileAsset && <p className="mt-2 text-xs text-slate-600">Nếu không tải file mới, phiên bản tiếp theo giữ tham chiếu file trước đó.</p>}
                       </div>
                       <button className={primary} disabled={busy}><CheckCircle2 size={15} className="mr-1 inline"/> {newVersionOf ? 'Lưu phiên bản mới' : 'Lưu evidence v1'}</button>
                     </form>
@@ -335,15 +319,15 @@ export default function EvidenceStudioPage() {
                         <div className="space-y-2 pt-3">
                           {item.versions.map((version) => <div key={version.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#f6f8fc] p-3">
                             <div className="min-w-0"><p className="text-sm font-semibold">Version {version.version}</p>
-                              <p className="text-xs text-slate-500">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('vi-VN')}</p>
-                              {version.fileAsset && <p className="text-xs text-slate-500">{version.fileAsset.fileName}</p>}
+                              <p className="text-xs text-slate-600">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('vi-VN')}</p>
+                              {version.fileAsset && <p className="text-xs text-slate-600">{version.fileAsset.fileName}</p>}
                             </div>
                             {version.fileAsset && <button className={secondary} onClick={() => void getDownload(version.fileAsset!.id)}>Download</button>}
                           </div>)}
                         </div>
                         {canWrite && <button className={secondary + ' mt-3'} onClick={() => revise(item)}><Wand2 size={15} className="mr-1 inline"/> Tạo phiên bản cải tiến</button>}
                       </div>)}
-                      {!evidence.length && <p className="text-sm text-slate-500">Chưa có evidence.</p>}
+                      {!evidence.length && <p className="text-sm text-slate-600">Chưa có evidence.</p>}
                     </div>
                   </section>
 
@@ -354,7 +338,7 @@ export default function EvidenceStudioPage() {
                         <p className="font-semibold">{item.mode || 'Project'} · {item.reason}</p>
                         <p className="mt-1 text-slate-600">Quyết định tiếp theo: {item.nextDecision}</p>
                       </div>)}
-                      {!iterations.length && <p className="text-sm text-slate-500">Chưa có iteration notes.</p>}
+                      {!iterations.length && <p className="text-sm text-slate-600">Chưa có iteration notes.</p>}
                     </div>
                     {canWrite && <form onSubmit={(event) => void recordIteration(event)} className="mt-4 space-y-3">
                       <textarea required maxLength={2500} rows={2} className={input} placeholder="Vì sao cần thay đổi?" value={iterationReason} onChange={(e) => setIterationReason(e.target.value)}/>
@@ -367,7 +351,7 @@ export default function EvidenceStudioPage() {
                 <div className="space-y-5">
                   {canWrite && <section className={panel + ' space-y-4'}>
                     <div className="flex items-center gap-2"><Send size={20} className="text-[#153b77]"/><h3 className="text-xl font-bold">Nộp bài theo phiên bản</h3></div>
-                    <p className="text-xs text-slate-500">Mỗi lần nộp tạo snapshot riêng; phiên bản evidence sau đó không thay đổi nội dung đã nộp.</p>
+                    <p className="text-xs text-slate-600">Mỗi lần nộp tạo snapshot riêng; phiên bản evidence sau đó không thay đổi nội dung đã nộp.</p>
                     <form onSubmit={(event) => void submitSnapshot(event)} className="space-y-3">
                       <label className="block text-sm font-semibold">Submission scope
                         <select className={input + ' mt-2'} value={milestoneId} onChange={(e) => setMilestoneId(e.target.value)}>
@@ -383,7 +367,7 @@ export default function EvidenceStudioPage() {
                           {item.versions.map((version) => <option key={version.id} value={version.id}>Version {version.version} · {version.title}</option>)}
                         </select>
                       </label>)}
-                      {!evidence.length && <p className="text-sm text-slate-500">Bạn cần tạo evidence trước.</p>}
+                      {!evidence.length && <p className="text-sm text-slate-600">Bạn cần tạo evidence trước.</p>}
                       <textarea rows={3} className={input} maxLength={3000} placeholder="Submission note (tùy chọn)" value={submissionNote} onChange={(e) => setSubmissionNote(e.target.value)}/>
                       <button className={primary} disabled={busy || !evidence.length}><Shield size={15} className="mr-1 inline"/> Tạo snapshot & nộp</button>
                     </form>
@@ -397,7 +381,7 @@ export default function EvidenceStudioPage() {
                           <h4 className="font-bold">{item.scopeKey} · v{item.version}</h4>
                           <span className="rounded-full bg-[#eaf0fa] px-3 py-1 text-xs font-bold text-[#153b77]">{item.status}</span>
                         </div>
-                        <p className="mt-2 text-xs text-slate-500">{new Date(item.submittedAt).toLocaleString('vi-VN')} {item.isLate ? '· Nộp muộn' : ''}</p>
+                        <p className="mt-2 text-xs text-slate-600">{new Date(item.submittedAt).toLocaleString('vi-VN')} {item.isLate ? '· Nộp muộn' : ''}</p>
                         {item.note && <p className="mt-2 text-sm">{item.note}</p>}
                         {item.assessments?.map((assessment) => <div key={assessment.id} className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
                           <p className="font-bold">{assessment.decision === 'APPROVED' ? '✓ Approved' : '↻ Revision requested'} · {assessment.totalScore}/100</p>
@@ -413,7 +397,7 @@ export default function EvidenceStudioPage() {
                           </div>)}
                         </div>
                       </div>)}
-                      {!submissions.length && <p className="text-sm text-slate-500">Chưa có submission.</p>}
+                      {!submissions.length && <p className="text-sm text-slate-600">Chưa có submission.</p>}
                     </div>
                   </section>
                 </div>

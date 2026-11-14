@@ -11,3 +11,10 @@ backend/node_modules/
 out/
 .publish/
 .npm-cache/
+
+/test-results/
+/playwright-report/
+/tsconfig.tsbuildinfo
+
+/baseline-results/
+/baseline-learn/
