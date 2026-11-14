@@ -100,9 +100,16 @@ export default function LearningFoundationPage() {
         const list = await api<Course[]>('/courses', token);
         if (!active) return;
         setCourses(list);
+        let currentEnrollments: Enrollment[] = [];
         if (me.role === 'STUDENT') {
           const enrolled = await api<Enrollment[]>('/courses/my-enrollments', token);
+          currentEnrollments = enrolled;
           if (active) setEnrollments(enrolled);
+        }
+        if (!active) return;
+        const requestedCourse = new URLSearchParams(window.location.search).get('course');
+        if (requestedCourse && list.some(item => item.id === requestedCourse)) {
+          await selectCourse(requestedCourse, me, currentEnrollments);
         }
         setError('');
       } catch (loadError) {
