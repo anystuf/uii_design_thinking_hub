@@ -58,6 +58,8 @@ export default function LearningFoundationPage() {
   const [lessonType, setLessonType] = useState<NonNullable<Lesson['contentType']>>('ARTICLE');
   const [lessonPublished, setLessonPublished] = useState(true);
   const [reload, setReload] = useState(0);
+  const [courseSearch, setCourseSearch] = useState('');
+  const [catalogView, setCatalogView] = useState<'all' | 'enrolled'>('all');
 
   useEffect(() => {
     let active = true;
@@ -120,6 +122,10 @@ export default function LearningFoundationPage() {
   const isEnrolled = course ? enrollments.some((item) => item.courseId === course.id) : false;
   const canEditCourse = !!course && canTeach && (user?.role === 'ADMIN' || course.createdById === user?.id);
   const completed = new Set(progress?.lessons.filter((item) => item.completed).map((item) => item.lessonId) ?? []);
+  const visibleCourses = courses.filter((item) =>
+    item.title.toLocaleLowerCase().includes(courseSearch.trim().toLocaleLowerCase()) &&
+    (catalogView === 'all' || enrollments.some((enrollment) => enrollment.courseId === item.id)),
+  );
 
   async function refreshData() {
     if (!session) return;
@@ -285,28 +291,44 @@ export default function LearningFoundationPage() {
         {session && (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><p className="text-sm font-semibold uppercase tracking-widest text-[#ad4007]">{user?.role ?? 'Loading account'}</p>
+              <div><p className="text-sm font-semibold uppercase tracking-widest text-[#ad4007]">{user ? { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên', MENTOR: 'Mentor' }[user.role] : 'Đang tải tài khoản'}</p>
                 <h2 className="text-3xl font-extrabold">Xin chào, {user?.fullName ?? 'Learner'}</h2>
                 <p className="mt-1 text-sm text-slate-600">{user?.email}</p>
               </div>
-              <div className="rounded-full bg-[#e7eef9] px-4 py-2 text-sm font-bold text-[#153b77]">Học tập theo tiến độ của bạn</div>
+
             </div>
+            {user?.role === 'STUDENT' && !busy && <section className="rounded-2xl border border-blue-100 bg-white p-5 sm:p-7" aria-labelledby="learning-path-title">
+              <h3 id="learning-path-title" className="text-xl font-bold">{enrollments.length ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hành trình Design Thinking'}</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Chọn một khóa học, học qua video và hoạt động, rồi áp dụng cùng nhóm vào một thử thách thực tế.</p>
+              <ol className="mt-4 grid gap-2 sm:gap-4 sm:grid-cols-3">
+                <li className="flex items-center gap-3 rounded-xl bg-blue-50 p-3 sm:block sm:p-4"><BookOpen aria-hidden="true" className="shrink-0 text-[#153b77] sm:mb-2" size={22}/><p className="font-bold">Chọn khóa học</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Ghi danh để lưu tiến độ và mở nội dung học.</p></li>
+                <li className="flex items-center gap-3 rounded-xl bg-orange-50 p-3 sm:block sm:p-4"><Layers3 aria-hidden="true" className="shrink-0 text-[#ad4007] sm:mb-2" size={22}/><p className="font-bold">Học và thực hành</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Hoàn thành bài học và thử các phương pháp thiết kế.</p></li>
+                <li className="flex items-center gap-3 rounded-xl bg-emerald-50 p-3 sm:block sm:p-4"><Users aria-hidden="true" className="shrink-0 text-emerald-800 sm:mb-2" size={22}/><p className="font-bold">Làm dự án cùng nhóm</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Lưu minh chứng, nộp bài và cải tiến từ phản hồi.</p></li>
+              </ol>
+              <a href="#course-catalog" onClick={() => setCatalogView(enrollments.length ? 'enrolled' : 'all')} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white">{enrollments.length ? 'Xem khóa học của tôi' : 'Khám phá khóa học'}</a>
+            </section>}
             <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
               <section className="space-y-4">
-                <div className="rounded-2xl border bg-white p-5 shadow-sm">
+                <div id="course-catalog" className="scroll-mt-4 rounded-2xl border bg-white p-5 shadow-sm">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="flex items-center gap-2 font-bold"><BookOpen size={18}/> Khóa học</h3>
                     <button type="button" title="Tải lại" disabled={busy} onClick={() => void refreshData()}><RefreshCw size={17}/></button>
                   </div>
+                  <label htmlFor="course-search" className="mb-2 block text-sm font-semibold">Tìm khóa học</label>
+                  <input id="course-search" type="search" value={courseSearch} onChange={(event) => setCourseSearch(event.target.value)} placeholder="Tên khóa học" className="mb-4 w-full rounded-xl border border-slate-300 px-3 py-3 text-base" />
+                  {user?.role === 'STUDENT' && <div className="mb-4 flex flex-wrap gap-2" aria-label="Lọc khóa học">
+                    <button type="button" aria-pressed={catalogView === 'all'} onClick={() => setCatalogView('all')} className="min-h-11 rounded-lg border px-3 text-sm font-semibold">Tất cả</button>
+                    <button type="button" aria-pressed={catalogView === 'enrolled'} onClick={() => setCatalogView('enrolled')} className="min-h-11 rounded-lg border px-3 text-sm font-semibold">Đã ghi danh ({enrollments.length})</button>
+                  </div>}
                   <div className="space-y-2">
-                    {courses.map((item) => (
+                    {visibleCourses.map((item) => (
                       <button key={item.id} type="button" onClick={() => void selectCourse(item.id)} className={'w-full rounded-xl border p-4 text-left transition hover:border-[#153b77] ' + (course?.id === item.id ? 'border-[#153b77] bg-[#eef3fa]' : 'bg-white')}>
                         <div className="flex items-start justify-between gap-2"><span className="font-bold">{item.title}</span><ChevronRight size={16} className="shrink-0"/></div>
-                        <p className="mt-2 text-xs text-slate-600">{item.level} · {item.status}</p>
+                        <p className="mt-2 text-xs text-slate-600">{item.level} · {{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[item.status]}</p>
                         {enrollments.some((e) => e.courseId === item.id) && <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-green-700"><CheckCircle2 size={13}/> Đã ghi danh</span>}
                       </button>
                     ))}
-                    {!courses.length && <p className="text-sm text-slate-600">Chưa có khóa học. {busy ? 'Đang tải…' : ''}</p>}
+                    {!visibleCourses.length && <p role="status" className="text-sm text-slate-600">{busy ? 'Đang tải khóa học…' : courseSearch ? 'Không có khóa học phù hợp. Hãy thử từ khóa khác.' : catalogView === 'enrolled' ? 'Bạn chưa ghi danh. Chọn Tất cả để khám phá khóa học.' : 'Khóa học sẽ xuất hiện tại đây khi được giảng viên công bố.'}</p>}
                   </div>
                 </div>
                 {canTeach && <form onSubmit={(event) => void createCourse(event)} className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
@@ -323,7 +345,7 @@ export default function LearningFoundationPage() {
                   <>
                     <div className="rounded-2xl border bg-white p-6 shadow-sm">
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                        <span className="rounded-full bg-[#edf2fb] px-3 py-1 text-xs font-bold text-[#153b77]">{course.status}</span>
+                        <span className="rounded-full bg-[#edf2fb] px-3 py-1 text-xs font-bold text-[#153b77]">{{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[course.status]}</span>
                         {canEditCourse && course.status === 'DRAFT' && <button disabled={busy} type="button" onClick={() => void publishCourse()} className="rounded-full bg-[#b94708] px-4 py-2 text-xs font-bold text-white">Xuất bản khóa học</button>}
                       </div>
                       <h3 className="text-2xl font-extrabold">{course.title}</h3>
@@ -331,7 +353,7 @@ export default function LearningFoundationPage() {
                       {user?.role === 'STUDENT' && !isEnrolled && <button disabled={busy} type="button" onClick={() => void enroll()} className="mt-5 flex items-center gap-2 rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white"><Users size={17}/> Ghi danh khóa học</button>}
                       {progress && <div className="mt-6">
                         <div className="mb-2 flex justify-between text-sm font-bold"><span>Learning progress</span><span>{progress.completedLessons}/{progress.totalLessons} · {progress.percent}%</span></div>
-                        <div className="h-3 overflow-hidden rounded-full bg-slate-100"><div style={{ width: progress.percent + '%' }} className="h-full rounded-full bg-[#b94708]"/></div>
+                        <div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent} className="h-3 overflow-hidden rounded-full bg-slate-100"><div style={{ width: progress.percent + '%' }} className="h-full rounded-full bg-[#b94708]"/></div>
                       </div>}
                     </div>
                     {(canEditCourse || isEnrolled) && <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -374,6 +396,9 @@ export default function LearningFoundationPage() {
                       <textarea required value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} maxLength={10000} rows={5} placeholder="Nội dung bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
                       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={lessonPublished} onChange={(e) => setLessonPublished(e.target.checked)}/> Công bố bài học khi tạo</label>
                       <button disabled={busy} className="rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">Lưu bài học</button>
+                      {editingLessonId && <button type="button" disabled={busy} onClick={() => {
+                        setEditingLessonId(null); setLessonTitle(''); setLessonContent(''); setLessonVideoUrl(''); setLessonType('ARTICLE'); setLessonPublished(true);
+                      }} className="ml-3 min-h-11 rounded-xl border px-4 py-3 text-sm font-semibold">Hủy chỉnh sửa</button>}
                     </form>}
                   </>
                 )}

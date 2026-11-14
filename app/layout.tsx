@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
+import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-sharp', display: 'swap' });
+const jakarta = Plus_Jakarta_Sans({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-ui', display: 'swap', preload: false });
+const playfair = Playfair_Display({ subsets: ['latin', 'vietnamese'], variable: '--font-serif-display', display: 'swap', preload: false });
 
 export const metadata: Metadata = {
   title: {
@@ -18,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body className={`${inter.variable} ${jakarta.variable} ${playfair.variable}`}>{children}</body>
     </html>
   );
 }

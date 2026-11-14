@@ -2,7 +2,7 @@ name: MVP Releases A–D checks
 
 on:
   pull_request:
-    branches: ['chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
+    branches: ['feat/production-learning-experience-20261114', 'chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
   workflow_dispatch:
 
 permissions:
@@ -17,6 +17,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
+      - run: npm run lint
+      - run: npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org
       - run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co

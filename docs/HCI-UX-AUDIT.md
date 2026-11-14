@@ -73,3 +73,7 @@ Final local results for this iteration: 50 backend tests pass, frontend/backend 
 7. CI lint/integration/E2E gates, backup restoration rehearsal, privacy/retention decisions, monitoring, pilot cohort and owner launch approval.
 
 The mission remains in progress. This iteration establishes shared navigation, bounded workflow requests, lesson editing, an authorized Admin directory and a reproducible responsive harness. Full authenticated UAT, production operations and pilot acceptance are outstanding.
+
+## Security and learning follow-up
+
+The subsequent branch preserves this baseline and upgrades Next.js/React, patches the additional critical backend proxy dependency, introduces Student orientation/search/filtering, and records controlled mobile LCP/CLS measurements. The [follow-up verification report](SECURITY-UAT-PROGRESS-2026-11-14.md) distinguishes implemented tests from credential-blocked real staging acceptance and lists the remaining dependency risks.

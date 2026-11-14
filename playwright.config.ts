@@ -6,9 +6,10 @@ export default defineConfig({
   workers: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   webServer: process.env.E2E_BASE_URL ? undefined : {
-    command: 'npm run dev -- --port 3100',
+    command: 'npm run build && npm run start -- --port 3100',
     url: 'http://localhost:3100',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
+    timeout: 120000,
     env: {
       NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'local-layout-check',
