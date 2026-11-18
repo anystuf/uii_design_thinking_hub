@@ -18,7 +18,7 @@
 | Builds | Frontend production build, TypeScript, backend Prisma generation/Nest build | Local pass; live revision compatibility pending |
 | Browser | 15 local tests: eight widths, role fixtures, editor, onboarding and exact resume with keyboard focus | Fixture pass; no real account certification |
 | Lint | Zero errors, 19 existing warnings | Warnings retained |
-| Backend tests | Query-scope/count and completion-gap checks added; DB tests explicitly skip locally | Local: 51 pass, 3 explicit database skips, 0 failures; configured CI result pending |
+| Backend tests | Query-scope/count and completion-gap checks added; DB tests explicitly skip locally | Local: 51 pass, 3 explicit database skips, 0 failures. Configured CI: 54 pass, 0 skips, including migrated Postgres relation queries and persisted evidence/assessment tests |
 | Real authentication/files | Four staging tests failed missing-secret checks before authentication/content creation | Blocked; zero live journeys accepted |
 | Accounts | Read-only inventory: one ADMIN profile; no local E2E variables or UAT secret file | Four dedicated identities required |
 | Storage | Bucket design-evidence is private, object limit 50,000,000 bytes | Metadata verified; bytes/access checks pending |
@@ -30,6 +30,10 @@
 | Human tasks | No representative users or observed task sessions | Start-under-60-seconds and satisfaction unverified |
 
 Raw audit summaries and mobile samples: `docs/verification/2026-11-18/`. No remote data mutation during discovery. No schema migration required by these changes. Existing API response fields remain; new frontend needs the updated backend for summary/milestone functionality.
+
+### CI evidence for source commit 5b8bdc1
+
+[GitHub Actions run 44234585517](https://github.com/anystuf/uii_design_thinking_hub/actions/runs/44234585517) completed: backend success (54/54, zero skips), browser/responsive success, frontend failure at the strict high-severity dependency audit. Overall CI is failing and production remains NO-GO. The local frontend build passed independently; the CI frontend job stops at its audit gate. Subsequent report-only commits do not change the implementation verified by this run.
 
 ## Security
 
