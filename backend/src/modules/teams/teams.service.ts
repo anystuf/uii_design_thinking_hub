@@ -82,6 +82,17 @@ export class TeamsService {
     });
   }
 
+  async myMilestones(user: AuthenticatedUser) {
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Student access required.');
+    return this.prisma.challengeMilestone.findMany({
+      where: { dueAt: { not: null }, challenge: { projects: { some: {
+        OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }],
+      } } } },
+      select: { id: true, title: true, dueAt: true },
+      orderBy: [{ dueAt: 'asc' }, { id: 'asc' }],
+    });
+  }
+
   async mine(user: AuthenticatedUser) {
     if (user.role !== UserRole.STUDENT) {
       throw new ForbiddenException('Only students join teams.');

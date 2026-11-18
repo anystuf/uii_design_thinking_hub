@@ -17,6 +17,10 @@ import { TeamsService } from './teams.service';
 export class TeamsController {
   constructor(private readonly service: TeamsService) {}
 
+  @Get('teams/my/milestones')
+  @Roles(UserRole.STUDENT)
+  milestones(@CurrentUser() user: AuthenticatedUser) { return this.service.myMilestones(user); }
+
   @Get('teams/my')
   @Roles(UserRole.STUDENT)
   mine(@CurrentUser() user: AuthenticatedUser) {

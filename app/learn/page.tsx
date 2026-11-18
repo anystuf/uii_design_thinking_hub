@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { WorkspaceNav } from '@/components/workspace-nav';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
   ArrowLeft, BookOpen, CheckCircle2, ChevronRight, GraduationCap, LogOut,
@@ -129,6 +129,17 @@ export default function LearningFoundationPage() {
   const isEnrolled = course ? enrollments.some((item) => item.courseId === course.id) : false;
   const canEditCourse = !!course && canTeach && (user?.role === 'ADMIN' || course.createdById === user?.id);
   const completed = new Set(progress?.lessons.filter((item) => item.completed).map((item) => item.lessonId) ?? []);
+  const resumedCourse = useRef<string | null>(null);
+  useEffect(() => {
+    if (!course || !progress || user?.role !== 'STUDENT' || resumedCourse.current === course.id) return;
+    if (new URLSearchParams(window.location.search).get('course') !== course.id) return;
+    const done = new Set(progress.lessons.filter(item => item.completed).map(item => item.lessonId));
+    const next = lessons.find(item => !done.has(item.id));
+    if (!next) return;
+    resumedCourse.current = course.id;
+    document.getElementById('lesson-' + next.id)?.querySelector('summary')?.focus();
+  }, [course, progress, lessons, user?.role]);
+
   const visibleCourses = courses.filter((item) =>
     item.title.toLocaleLowerCase().includes(courseSearch.trim().toLocaleLowerCase()) &&
     (catalogView === 'all' || enrollments.some((enrollment) => enrollment.courseId === item.id)),
@@ -367,7 +378,7 @@ export default function LearningFoundationPage() {
                       <div className="mb-4 flex items-center gap-2"><BookOpen size={20} className="text-[#153b77]"/><h3 className="text-xl font-bold">Bài học</h3></div>
                       <div className="space-y-3">
                         {lessons.map((lesson, index) => (
-                          <details key={lesson.id} open={index === 0} className="rounded-xl border border-[#e8edf3] bg-[#fbfcfe] p-4">
+                          <details key={lesson.id} open={lesson.id === (lessons.find(item => !completed.has(item.id))?.id ?? lessons[0]?.id)} id={'lesson-' + lesson.id} className="rounded-xl border border-[#e8edf3] bg-[#fbfcfe] p-4">
                             <summary className="min-h-11 cursor-pointer font-bold">{index + 1}. {lesson.title}{completed.has(lesson.id) ? ' · Đã hoàn thành' : ''}</summary>
                             <div className="flex flex-wrap justify-between gap-3">
                               <div className="min-w-0 flex-1">

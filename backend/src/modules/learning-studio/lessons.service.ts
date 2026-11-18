@@ -27,7 +27,7 @@ export class LessonsService {
       where: managesCourse
         ? { courseId }
         : { courseId, publishedAt: { not: null } },
-      orderBy: { orderIndex: 'asc' },
+      orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }],
     });
   }
 

@@ -1,0 +1,100 @@
+{
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 10,
+    "critical": 0,
+    "total": 10
+  },
+  "packages": [
+    {
+      "name": "anymatch",
+      "severity": "high",
+      "range": ">=3.0.0",
+      "fixAvailable": true,
+      "advisories": []
+    },
+    {
+      "name": "chokidar",
+      "severity": "high",
+      "range": "3.0.0 - 3.6.0",
+      "fixAvailable": true,
+      "advisories": []
+    },
+    {
+      "name": "fast-glob",
+      "severity": "high",
+      "range": ">=3.0.0",
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.5",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "fdir",
+      "severity": "high",
+      "range": ">=5.2.1",
+      "fixAvailable": true,
+      "advisories": []
+    },
+    {
+      "name": "micromatch",
+      "severity": "high",
+      "range": ">=4.0.0",
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.5",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "picomatch",
+      "severity": "high",
+      "range": "*",
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.5",
+        "isSemVerMajor": true
+      },
+      "advisories": [
+        "https://github.com/advisories/GHSA-fc5q-39xc-vjpf"
+      ]
+    },
+    {
+      "name": "readdirp",
+      "severity": "high",
+      "range": "3.0.0 - 3.6.0",
+      "fixAvailable": true,
+      "advisories": []
+    },
+    {
+      "name": "sucrase",
+      "severity": "high",
+      "range": ">=3.35.1",
+      "fixAvailable": true,
+      "advisories": []
+    },
+    {
+      "name": "tailwindcss",
+      "severity": "high",
+      "range": "<=0.0.0-oxide-insiders.ff2c25f || 2.1.0-canary.1 - 3.4.19",
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.5",
+        "isSemVerMajor": true
+      },
+      "advisories": []
+    },
+    {
+      "name": "tinyglobby",
+      "severity": "high",
+      "range": "*",
+      "fixAvailable": true,
+      "advisories": []
+    }
+  ]
+}

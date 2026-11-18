@@ -46,10 +46,38 @@ export class CoursesService {
   }
 
   async myEnrollments(user: AuthenticatedUser) {
-    return this.prisma.enrollment.findMany({
-      where: { userId: user.id },
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Student access required.');
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { userId: user.id, course: { status: CourseStatus.PUBLISHED } },
       include: { course: { select: { id: true, title: true, description: true, status: true, level: true } } },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    });
+    const courseIds = enrollments.map(item => item.courseId);
+    // Two bulk reads, independent of the number of enrolled courses.
+    const lessons = courseIds.length ? await this.prisma.lesson.findMany({
+      where: { courseId: { in: courseIds }, publishedAt: { not: null } },
+      select: { id: true, title: true, courseId: true },
+      orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }],
+    }) : [];
+    const records = lessons.length ? await this.prisma.lessonProgress.findMany({
+      where: { userId: user.id, lessonId: { in: lessons.map(lesson => lesson.id) } },
+      select: { lessonId: true, completed: true },
+    }) : [];
+    const completed = new Set(records.filter(item => item.completed).map(item => item.lessonId));
+    const byCourse = new Map<string, typeof lessons>();
+    for (const lesson of lessons) {
+      const group = byCourse.get(lesson.courseId) ?? [];
+      group.push(lesson); byCourse.set(lesson.courseId, group);
+    }
+    return enrollments.map(item => {
+      const curriculum = byCourse.get(item.courseId) ?? [];
+      const count = curriculum.filter(lesson => completed.has(lesson.id)).length;
+      const next = curriculum.find(lesson => !completed.has(lesson.id));
+      return { ...item, progress: {
+        totalLessons: curriculum.length, completedLessons: count,
+        percent: curriculum.length ? Math.round(count * 100 / curriculum.length) : 0,
+        nextLesson: next ? { id: next.id, title: next.title } : null,
+      } };
     });
   }
 

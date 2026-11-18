@@ -11,7 +11,7 @@ function required(name: string): string {
   return value;
 }
 
-async function identity(role: Role) {
+async function identity(role: Role | 'STUDENT_B') {
   const client = createClient(supabaseUrl, required('E2E_SUPABASE_PUBLISHABLE_KEY'), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -25,8 +25,8 @@ async function identity(role: Role) {
     timeout: 75000,
   });
   const me = await call(context, 'GET', '/auth/me');
-  expect(me.role).toBe(role);
-  return { client, context };
+  expect(me.role).toBe(role === 'STUDENT_B' ? 'STUDENT' : role);
+  return { client, context, id: me.id };
 }
 
 async function call(context: APIRequestContext, method: string, path: string, data?: unknown) {
@@ -67,27 +67,44 @@ for (const role of ['STUDENT', 'LECTURER', 'ADMIN'] as const) {
 }
 
 test('real private bytes → immutable submission → revision → assessment → notification', async () => {
+  required('E2E_STUDENT_B_EMAIL'); required('E2E_STUDENT_B_PASSWORD');
   const student = await identity('STUDENT');
   const teacher = await identity('LECTURER');
+  const outsider = await identity('STUDENT_B');
   try {
+    expect(outsider.id).not.toBe(student.id);
     const marker = `UAT ${new Date().toISOString()}`;
     const course = await call(teacher.context, 'POST', '/courses', { title: marker, level: 'Foundation', description: 'Dedicated automated staging acceptance run.' });
     await call(teacher.context, 'PUT', `/courses/${course.id}`, { status: 'PUBLISHED' });
     const lesson = await call(teacher.context, 'POST', `/courses/${course.id}/lessons`, { title: `${marker} lesson`, content: 'Staging acceptance content', isPublished: true });
     await call(student.context, 'POST', `/courses/${course.id}/enroll`);
     await call(student.context, 'PUT', `/lessons/${lesson.id}/progress`, { completed: true });
+    const nextLesson = await call(teacher.context, 'POST', `/courses/${course.id}/lessons`, {title:`${marker} next lesson`,content:'Next unpublished-completion gap',isPublished:true,orderIndex:2});
     const progress = await call(student.context, 'GET', `/courses/${course.id}/my-progress`);
     expect(progress.completedLessons).toBe(1);
+    const summaries = await call(student.context, 'GET', '/courses/my-enrollments');
+    const summary = summaries.find((item: {courseId:string}) => item.courseId === course.id);
+    expect(summary.progress.nextLesson.id).toBe(nextLesson.id);
+    expect(summary.progress.percent).toBe(50);
     const denied = await send(student.context, 'POST', '/courses', { title: marker, level: 'Foundation' });
     expect(denied.status()).toBe(403);
     const challenge = await call(teacher.context, 'POST', `/courses/${course.id}/challenges`, { title: marker, brief: 'Staging design challenge' });
     await call(teacher.context, 'PATCH', `/challenges/${challenge.id}`, { status: 'PUBLISHED' });
     const project = await call(student.context, 'POST', `/challenges/${challenge.id}/teams`, { name: `${marker} team` });
+    await call(outsider.context, 'POST', `/courses/${course.id}/enroll`);
+    const otherTeam = await call(outsider.context, 'POST', `/challenges/${challenge.id}/teams`, { name: `${marker} other team` });
+    for (const path of [`/teams/${project.id}`, `/projects/${project.id}/versioned-evidence`, `/projects/${project.id}/snapshot-submissions`]) {
+      expect((await send(outsider.context, 'GET', path)).status()).toBe(403);
+    }
+    expect((await send(outsider.context, 'POST', `/projects/${project.id}/uploads/presign`, {fileName:'denied.txt',mimeType:'text/plain',size:1})).status()).toBe(403);
     const bytes = new TextEncoder().encode(`UII staging upload verification ${marker}`);
     const upload = await call(student.context, 'POST', `/projects/${project.id}/uploads/presign`, { fileName: 'uat-evidence.txt', mimeType: 'text/plain', size: bytes.byteLength });
     const stored = await student.client.storage.from(upload.bucket).uploadToSignedUrl(upload.storageKey, upload.token, bytes, { contentType: 'text/plain' });
     if (stored.error) throw new Error('Real signed storage upload failed.');
+    expect((await send(outsider.context, 'POST', `/uploads/${upload.intentId}/complete`)).status()).toBe(403);
     const file = await call(student.context, 'POST', `/uploads/${upload.intentId}/complete`);
+    expect((await send(outsider.context, 'GET', `/file-assets/${file.id}/download`)).status()).toBe(403);
+    expect((await send(outsider.context, 'POST', `/projects/${otherTeam.id}/versioned-evidence`, {mode:'EMPATHIZE',type:'DOCUMENT',title:'Denied foreign file',fileAssetId:file.id})).status()).toBe(400);
     const download = await call(student.context, 'GET', `/file-assets/${file.id}/download`);
     const downloaded = await fetch(download.signedUrl);
     expect(downloaded.status).toBe(200);
@@ -96,10 +113,14 @@ test('real private bytes → immutable submission → revision → assessment �
     expect(publicObject.ok).toBe(false);
     const evidence = await call(student.context, 'POST', `/projects/${project.id}/versioned-evidence`, { mode: 'EMPATHIZE', type: 'DOCUMENT', title: `${marker} evidence`, fileAssetId: file.id });
     const originalVersion = evidence.version.id;
+    expect((await send(outsider.context, 'PATCH', `/versioned-evidence/${evidence.evidence.id}`, {title:'Denied foreign edit'})).status()).toBe(403);
+    expect((await send(outsider.context, 'POST', `/projects/${otherTeam.id}/snapshot-submissions`, {evidenceVersionIds:[originalVersion]})).status()).toBe(400);
     const submission = await call(student.context, 'POST', `/projects/${project.id}/snapshot-submissions`, { evidenceVersionIds: [originalVersion] });
+    expect((await send(outsider.context, 'GET', `/snapshot-submissions/${submission.id}`)).status()).toBe(403);
     await call(student.context, 'PATCH', `/versioned-evidence/${evidence.evidence.id}`, { title: `${marker} revised evidence` });
     const frozen = await call(teacher.context, 'GET', `/snapshot-submissions/${submission.id}`);
     expect(frozen.items[0].evidenceVersion.id).toBe(originalVersion);
+    expect(frozen.items[0].evidenceVersion.fileAssetId).toBe(file.id);
     expect(frozen.items[0].evidenceVersion.title).toBe(`${marker} evidence`);
     const rubric = await call(teacher.context, 'POST', `/challenges/${challenge.id}/rubrics`, { title: `${marker} rubric` });
     const rubricId = rubric.versions[0].id;
@@ -116,9 +137,15 @@ test('real private bytes → immutable submission → revision → assessment �
     expect(resubmission.version).toBe(submission.version + 1);
     await call(teacher.context, 'POST', `/snapshot-submissions/${resubmission.id}/assessment`, { rubricVersionId: rubricId, decision: 'APPROVED', feedback: 'Staging acceptance verification complete.', scores: [{ criterionId: criterion.id, score: 4 }] });
     const notices = await call(student.context, 'GET', '/notifications');
+    const outsiderNotices = await call(outsider.context, 'GET', '/notifications');
+    const approval = notices.find((notice: {entityId:string}) => notice.entityId === resubmission.id);
+    expect(approval).toBeTruthy();
+    expect(outsiderNotices.some((notice: {id:string}) => notice.id === approval.id)).toBe(false);
+    expect((await call(outsider.context, 'PATCH', `/notifications/${approval.id}/read`)).success).toBe(false);
     expect(notices.some((notice: { entityId: string }) => notice.entityId === resubmission.id)).toBe(true);
   } finally {
     await student.client.auth.signOut(); await student.context.dispose();
+    await outsider.client.auth.signOut(); await outsider.context.dispose();
     await teacher.client.auth.signOut(); await teacher.context.dispose();
   }
 });

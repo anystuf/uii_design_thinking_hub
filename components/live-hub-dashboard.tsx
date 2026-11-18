@@ -20,7 +20,7 @@ type Course = {
   createdById?: string;
   _count?: { lessons?: number; enrollments?: number };
 };
-type Enrollment = { id: string; courseId: string; course: Course };
+type Enrollment = { id: string; courseId: string; course: Course; progress?: Progress & { nextLesson: {id: string; title: string} | null } };
 type Project = {
   id: string;
   title: string;
@@ -168,6 +168,7 @@ export function LiveHubDashboard() {
           notificationsResult,
           enrollmentsResult,
           queueResult,
+          milestonesResult,
         ] = await Promise.allSettled([
           api<Course[]>("/courses", token),
           api<Project[]>("/projects", token),
@@ -178,6 +179,7 @@ export function LiveHubDashboard() {
           reviewer
             ? api<Submission[]>("/assessments/queue", token)
             : Promise.resolve(null),
+          me.role === "STUDENT" ? api<Milestone[]>("/teams/my/milestones", token) : Promise.resolve(null),
         ]);
         if (!alive()) return;
         const courses = valueOf(coursesResult),
@@ -191,6 +193,7 @@ export function LiveHubDashboard() {
           notificationsResult,
           enrollmentsResult,
           queueResult,
+          milestonesResult,
         ].filter((result) => result.status === "rejected").length;
         setData({
           courses,
@@ -198,8 +201,8 @@ export function LiveHubDashboard() {
           notifications,
           enrollments,
           queue,
-          progress: null,
-          milestones: null,
+          progress: (enrollments?.find(item => item.progress?.nextLesson) ?? enrollments?.[0])?.progress ?? null,
+          milestones: valueOf(milestonesResult),
         });
         if (failed)
           setPartialError(
@@ -207,48 +210,7 @@ export function LiveHubDashboard() {
               failed +
               " nguồn dữ liệu. Một số chỉ số chưa sẵn sàng; hãy thử tải lại.",
           );
-        const activeCourse = enrollments?.[0];
-        const supplemental = await Promise.allSettled([
-          me.role === "STUDENT" && activeCourse
-            ? api<Progress>(
-                "/courses/" +
-                  encodeURIComponent(activeCourse.courseId) +
-                  "/my-progress",
-                token,
-              )
-            : Promise.resolve(null),
-          me.role === "STUDENT" && projects !== null
-            ? Promise.all(
-                (projects ?? [])
-                  .filter((project) => project.challengeId)
-                  .map((project) =>
-                    api<{ challenge: { milestones: Milestone[] } | null }>(
-                      "/teams/" + encodeURIComponent(project.id),
-                      token,
-                    ),
-                  ),
-              ).then((teams) =>
-                [
-                  ...new Map(
-                    teams
-                      .flatMap((team) => team.challenge?.milestones ?? [])
-                      .filter((m) => m.dueAt)
-                      .map((m) => [m.id, m]),
-                  ).values(),
-                ].sort((a, b) => Date.parse(a.dueAt!) - Date.parse(b.dueAt!)),
-              )
-            : Promise.resolve(null),
-        ]);
-        if (!alive()) return;
-        setData((previous) => ({
-          ...previous,
-          progress: valueOf(supplemental[0]),
-          milestones: valueOf(supplemental[1]),
-        }));
-        if (supplemental.some((result) => result.status === "rejected"))
-          setPartialError(
-            "Một số tiến độ hoặc mốc dự án chưa tải được. Hãy thử tải lại.",
-          );
+
       } catch (err) {
         if (alive()) {
           setAccount(null);
@@ -296,7 +258,8 @@ export function LiveHubDashboard() {
   const ownedCourses = lecturer
     ? data.courses?.filter((course) => course.createdById === account?.id)
     : data.courses;
-  const nextCourse = data.enrollments?.[0]?.course;
+  const nextEnrollment = data.enrollments?.find(item => item.progress?.nextLesson) ?? data.enrollments?.[0];
+  const nextCourse = nextEnrollment?.course;
   const title = student
     ? "Việc học của tôi"
     : admin
@@ -437,11 +400,11 @@ export function LiveHubDashboard() {
                   <Action
                     href={
                       nextCourse
-                        ? "/learn?course=" + encodeURIComponent(nextCourse.id)
+                        ? "/learn?course=" + encodeURIComponent(nextCourse.id) + (nextEnrollment?.progress?.nextLesson ? '&lesson=' + encodeURIComponent(nextEnrollment.progress.nextLesson.id) : '')
                         : "/learn"
                     }
                   >
-                    {nextCourse ? "Tiếp tục học" : "Khám phá khóa học"}
+                    {nextEnrollment?.progress?.nextLesson ? "Tiếp tục học" : nextCourse ? "Xem khóa học" : "Khám phá khóa học"}
                   </Action>
                 </Panel>
                 <Panel title="Khóa học của tôi">
@@ -468,7 +431,7 @@ export function LiveHubDashboard() {
                           />
                           <h3 className="font-bold">{item.course.title}</h3>
                           <p className="mt-2 text-sm text-slate-600">
-                            Mở chương trình và tiến độ học →
+                            {item.progress ? `${item.progress.completedLessons}/${item.progress.totalLessons} bài · ${item.progress.percent}%` : 'Tiến độ chưa có dữ liệu'} →
                           </p>
                         </Link>
                       ))}

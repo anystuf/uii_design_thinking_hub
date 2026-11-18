@@ -6,7 +6,7 @@ Owner approval is required for launch. This document prepares execution and reco
 
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
-| Patched runtime | Locked Next/React versions, runtime audit and build | Next 16.4.6 / React 19.3.1 builds, runtime audit reports zero vulnerabilities |
+| Patched runtime | Locked Next/React versions, runtime audit and build | Next 16.4.6 / React 19.3.1 builds. November 18 audit now reports 10 frontend high findings from the picomatch build dependency chain; see latest acceptance report. |
 | Role boundaries | Real authenticated Student/Lecturer/Admin journeys and negative cases | Staging suite prepared, dedicated credentials missing |
 | File integrity | Known bytes upload/download, unauthorized access denied | Staging test prepared, execution blocked on accounts |
 | Immutable submissions | Original version survives revision and resubmission | Existing unit checks pass, live acceptance pending |
@@ -42,3 +42,5 @@ For application regression, restore the previously approved frontend/API revisio
 ## Sign-off record
 
 Record owner, QA/teaching representative, operations owner, approved commit, evidence links, accepted residual risks and launch time. Privacy/retention policy, alerting destination, backup drill, real staging UAT and pilot sign-off remain open.
+
+Latest measured Go/No-Go: [Production acceptance, 2026-11-18](PRODUCTION-ACCEPTANCE-2026-11-18.md). Historical audit counts in earlier reports are dated observations, not current certification.

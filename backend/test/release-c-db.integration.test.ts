@@ -6,8 +6,8 @@ import { PrismaClient, EvidenceType, SprintStageType, UserRole } from '@prisma/c
 import { EvidenceService } from '../src/modules/evidence/evidence.service';
 import { SnapshotSubmissionsService } from '../src/modules/snapshot-submissions/snapshot-submissions.service';
 
-test('Release C: persisted evidence versions and submissions are immutable snapshots', async () => {
-  if (!process.env.DATABASE_URL || process.env.RUN_DB_INTEGRATION !== 'true') return;
+test('Release C: persisted evidence versions and submissions are immutable snapshots', async (t) => {
+  if (!process.env.DATABASE_URL || process.env.RUN_DB_INTEGRATION !== 'true') { t.skip('Requires isolated seeded DATABASE_URL and RUN_DB_INTEGRATION=true'); return; }
   const prisma = new PrismaClient();
   try {
     const student = await prisma.user.findUniqueOrThrow({

@@ -33,7 +33,7 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
       if (path === "/courses") data = [course];
       if (path === "/courses/course") data = course;
       if (path === "/courses/my-enrollments")
-        data = [{ id: "enrollment", courseId: "course", course }];
+        data = [{ id: "enrollment", courseId: "course", course, progress: {totalLessons:4,completedLessons:1,percent:25,nextLesson:{id:"next",title:"Next lesson"}} }];
       if (path.endsWith("/my-progress"))
         data = { totalLessons: 4, completedLessons: 1, percent: 25, lessons: [] };
       await route.fulfill({ json: data });
@@ -43,7 +43,7 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
     if (role === "STUDENT") {
       await expect(
         page.getByRole("link", { name: "Tiếp tục học", exact: true }),
-      ).toHaveAttribute("href", "/learn?course=course");
+      ).toHaveAttribute("href", "/learn?course=course&lesson=next");
       await expect(page.getByRole("progressbar")).toHaveAttribute(
         "aria-valuenow",
         "25",

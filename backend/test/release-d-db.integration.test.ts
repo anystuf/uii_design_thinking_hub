@@ -8,8 +8,8 @@ import {
 import { AssessmentsService } from '../src/modules/assessments/assessments.service';
 import { SnapshotSubmissionsService } from '../src/modules/snapshot-submissions/snapshot-submissions.service';
 
-test('Release D: review is bound to a submission and preserved published rubric', async () => {
-  if (process.env.RUN_DB_INTEGRATION !== 'true') return;
+test('Release D: review is bound to a submission and preserved published rubric', async (t) => {
+  if (!process.env.DATABASE_URL || process.env.RUN_DB_INTEGRATION !== 'true') { t.skip('Requires isolated seeded DATABASE_URL and RUN_DB_INTEGRATION=true'); return; }
   const prisma = new PrismaClient();
   try {
     const studentId = '22222222-2222-4222-8222-222222222222';
