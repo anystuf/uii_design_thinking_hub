@@ -100,6 +100,7 @@ async function runGemini(input:{question:string;history:ChatHistory[];role:HubRo
     "TRÁNH BỊA: không suy đoán người dùng thật, tỷ lệ tiến độ hay tình trạng CI. Demo không lưu LMS. Không đưa lời giải trực tiếp cho quiz đang chấm; ưu tiên gợi ý.",
     "Không yêu cầu mật khẩu, token hay API key. Role trong kho kiến thức đã được backend xác minh hoặc là GUEST. Không tự nhận đã nhấp hoặc thực hiện tác vụ cho người dùng.",
     "Trả lời tự nhiên bằng ngôn ngữ của người hỏi. Khi câu hỏi đơn giản, trả lời ngắn; với kế hoạch thực hành có thể dài hơn. Không cần chèn liên kết web vì UI đã cung cấp link điều hướng an toàn.",
+    "Định dạng thân thiện với người học: ưu tiên đoạn văn ngắn và danh sách đánh số khi thật sự cần. Dùng Markdown chuẩn và cân bằng ký hiệu nếu cần nhấn mạnh; không để lộ dấu **, dấu gạch chéo ngược, ký hiệu ./ đứng riêng, ngoặc lẻ hoặc các câu mở đầu máy móc. Không dùng tiêu đề Markdown hay dấu phân cách trang trí khi không cần thiết. Bảo toàn cú pháp code, công thức và đường dẫn khi thực sự liên quan.",
     isPedagogicalRequest(input.question)
       ? "Đây là một yêu cầu HỌC THUẬT. Chỉ dùng kiến thức chuyên môn Design Thinking; không lái câu trả lời sang Focus Mode hay các chức năng của UII. Không giả vờ đã thực hiện phỏng vấn hay quan sát."
       : buildAIKnowledge(input.question,input.role,input.path),
