@@ -131,7 +131,6 @@ export class ProjectsController {
   }
 
   @Post('projects/:id/feedback')
-  @Roles(UserRole.LECTURER, UserRole.ADMIN)
   createFeedback(
     @Param('id') id: string,
     @Body() dto: CreateFeedbackDto,
