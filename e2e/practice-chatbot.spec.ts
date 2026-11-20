@@ -153,7 +153,7 @@ test('red creative cursor works automatically and draws real pixels over the ent
   })).toBe(true);
 });
 
-test('creative cursor is disabled by operating-system reduced motion', async ({page}) => {
+test('reduced-motion system renders a static red cursor marker, never a moving trail', async ({page}) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
@@ -161,5 +161,42 @@ test('creative cursor is disabled by operating-system reduced motion', async ({p
   await expect(trail).toHaveCount(1);
   await page.mouse.move(100,120);
   await page.mouse.move(350,200, {steps:8});
-  await expect(trail).toHaveAttribute('data-active','false');
+  await expect(trail).toHaveAttribute('data-active','true');
+  await expect(trail).toHaveAttribute('data-render-mode','marker');
+  const positions = await page.evaluate(() => {
+    const c = document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]');
+    const ctx = c!.getContext('2d')!;
+    const ratio = c!.width / innerWidth;
+    const at = (x:number, y:number) => Array.from(ctx.getImageData(Math.floor(x * ratio), Math.floor(y * ratio),1,1).data);
+    return {last:at(350,200),old:at(100,120)};
+  });
+  expect(positions.last[0]).toBeGreaterThan(180);
+  expect(positions.last[3]).toBeGreaterThan(100);
+  expect(positions.old[3]).toBe(0);
+});
+
+
+test('dashboard shows globally mounted red ink cursor for admin after pointer movement', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
+  await page.setViewportSize({width:1100,height:750});
+  await loginFixture(page,'teacher');
+  await page.route('http://localhost:4000/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    const data = path === '/auth/me' ? {id:'teacher',fullName:'Teacher Demo',role:'ADMIN'} : [];
+    await route.fulfill({json:data});
+  });
+  await page.goto('/dashboard');
+  const trail=page.getByTestId('creative-pointer-trail');
+  await expect(trail).toHaveCount(1);
+  await page.mouse.move(150,240);
+  await page.mouse.move(340,380,{steps:16});
+  await expect(trail).toHaveAttribute('data-active','true');
+  await expect(trail).toHaveAttribute('data-render-mode','trail');
+  expect(await page.evaluate(() => {
+    const canvas=document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]')!;
+    const ctx=canvas.getContext('2d')!;
+    const dpr=canvas.width / window.innerWidth;
+    const color=ctx.getImageData(Math.floor(340*dpr),Math.floor(380*dpr),1,1).data;
+    return color[0] > 150 && color[1] < 130 && color[2] < 130 && color[3] > 100;
+  })).toBe(true);
 });
