@@ -2,8 +2,9 @@
 
 import {useState} from "react";
 import Link from "next/link";
-import {ArrowRight, BookOpenCheck, Check, CircleHelp, Compass, ExternalLink, Lightbulb, Users} from "lucide-react";
+import {ArrowRight, Check, CircleHelp, Compass, ExternalLink, Lightbulb, Users} from "lucide-react";
 import {SAMPLE_TEAMS, STAGE_GUIDES, guideForStage, type ThinkingStage} from "@/lib/stage-experience";
+import {DemoToolCanvas} from "@/components/demo-tool-canvas";
 
 export function SampleTeamGallery({stage,compact=false}:{stage:ThinkingStage;compact?:boolean}) {
   const [active,setActive]=useState(SAMPLE_TEAMS[0].id);
@@ -14,7 +15,7 @@ export function SampleTeamGallery({stage,compact=false}:{stage:ThinkingStage;com
       <div>
         <p className="text-[11px] font-black uppercase tracking-[.14em] text-[#a74730]">CLASSROOM LAB · MINH HỌA</p>
         <h5 className="mt-1 text-lg font-black tracking-tight text-[#163844]">Hai nhóm, hai cách tiếp cận.</h5>
-        <p className="mt-1 text-xs leading-5 text-[#506a70]">Tình huống và tên nhóm **mô phỏng**; không phải tài khoản hay bài nộp thật.</p>
+        <p className="mt-1 text-xs leading-5 text-[#506a70]">Tình huống và tên nhóm mô phỏng; không phải tài khoản hay bài nộp thật.</p>
       </div>
       <span className="rounded-full border border-[#f0bdad] bg-[#fff0e9] px-3 py-1.5 text-[11px] font-black text-[#8b3d2e]">SAMPLE · KHÔNG LƯU LMS</span>
     </div>
@@ -96,6 +97,6 @@ export function LearningStageWorkbench({stage,courseId,focusMode=false}:{stage:T
 function InlineStageTool({name}:{name:string}){
  // Lazy import requires no new network calls or third-party whiteboard SDK.
  // The tool component is reused from the richer public demo and has a copy button.
- return <StageTool name={name}/>;
+ return <DemoToolCanvas name={name}/>;
 }
-import {DemoToolCanvas as StageTool} from "@/components/demo-tool-canvas";
+
