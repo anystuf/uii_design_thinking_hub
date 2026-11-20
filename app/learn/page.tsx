@@ -7,8 +7,8 @@ import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
-  ArrowLeft, BookOpen, CheckCircle2, ChevronRight, GraduationCap, LogOut,
-  Plus, RefreshCw, Users, AlertCircle, Layers3,
+  ArrowLeft, ArrowRight, BookOpen, CheckCircle2, ChevronRight, GraduationCap,
+  Plus, RefreshCw, Users, AlertCircle, Layers3, PlayCircle, Clock3, FileText, Video, ListChecks, Sparkles, Search, X,
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
@@ -20,12 +20,13 @@ type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 
 type Course = {
   id: string; title: string; description?: string | null; status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   createdById: string; level: string; lessons?: Lesson[];
+  createdBy?: { fullName: string; id: string }; _count?: { lessons?: number; enrollments?: number };
 };
 type Lesson = {
   id: string; courseId: string; title: string; description?: string | null;
   content?: string | null; orderIndex: number; publishedAt?: string | null;
   contentType?: 'VIDEO' | 'ARTICLE' | 'WORKSHOP' | 'TEMPLATE' | 'ASSIGNMENT';
-  videoUrl?: string | null; durationMinutes?: number;
+  videoUrl?: string | null; durationMinutes?: number; thumbnailUrl?: string | null; isPreview?: boolean;
 };
 type Enrollment = { id: string; courseId: string; course: Course };
 type Progress = {
@@ -66,6 +67,9 @@ export default function LearningFoundationPage() {
   }, [course]);
   const [courseSearch, setCourseSearch] = useState('');
   const [catalogView, setCatalogView] = useState<'all' | 'enrolled'>('all');
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [learningView, setLearningView] = useState<'overview' | 'player'>('overview');
+  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -145,9 +149,26 @@ export default function LearningFoundationPage() {
   }, [course, progress, lessons, user?.role]);
 
   const visibleCourses = courses.filter((item) =>
-    item.title.toLocaleLowerCase().includes(courseSearch.trim().toLocaleLowerCase()) &&
-    (catalogView === 'all' || enrollments.some((enrollment) => enrollment.courseId === item.id)),
+    (item.title + ' ' + (item.description ?? '')).toLocaleLowerCase('vi').includes(courseSearch.trim().toLocaleLowerCase('vi')) &&
+    (catalogView === 'all' || enrollments.some((enrollment) => enrollment.courseId === item.id)) &&
+    (levelFilter === 'all' || item.level === levelFilter),
   );
+  const levels = [...new Set(courses.map(item => item.level).filter(Boolean))];
+  const currentLesson = lessons.find(item => item.id === activeLessonId) ?? null;
+  const selectedLessonIndex = currentLesson ? lessons.findIndex(item => item.id === currentLesson.id) : -1;
+  const nextUnfinishedLesson = lessons.find(item => !completed.has(item.id)) ?? lessons[0];
+  function openLesson(lesson: Lesson) {
+    if (!course) return;
+    setActiveLessonId(lesson.id);
+    setLearningView('player');
+    window.history.replaceState(window.history.state, '', '/learn?course=' + encodeURIComponent(course.id) + '&lesson=' + encodeURIComponent(lesson.id));
+  }
+  useEffect(() => {
+    if (learningView === 'player' && activeLessonId) {
+      document.getElementById('lesson-player-title')?.focus({ preventScroll: true });
+      document.getElementById('lesson-player')?.scrollIntoView({ block: 'start' });
+    }
+  }, [learningView, activeLessonId]);
 
   async function refreshData() {
     if (!session) return;
@@ -178,8 +199,15 @@ export default function LearningFoundationPage() {
       ]);
       if (moveFocus) focusCourse.current = id;
       setCourse(selected);
-      setLessons(list);
+      const availableLessons = list.length ? list : (selected.lessons ?? []).filter(item => item.isPreview);
+      setLessons(availableLessons);
       setProgress(nextProgress);
+      const requestedLesson = !moveFocus ? new URLSearchParams(window.location.search).get('lesson') : null;
+      if (requestedLesson && availableLessons.some(item => item.id === requestedLesson)) {
+        setActiveLessonId(requestedLesson); setLearningView('player');
+      } else {
+        setActiveLessonId(null); setLearningView('overview');
+      }
     } catch (err) { fail(err); } finally { setBusy(false); }
   }
 
@@ -264,131 +292,177 @@ export default function LearningFoundationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="min-h-screen bg-[#f5f7fb] text-[#12284a]">
       <WorkspaceNav title="Khóa học" role={user?.role} guest={!session} onSignOut={session ? () => void getSupabaseBrowserClient().auth.signOut() : undefined} />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
-        {error && <div role="alert" className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><AlertCircle size={18} className="shrink-0"/>{error}</div>}
-        {message && <div role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</div>}
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-[1320px] space-y-7 px-4 py-7 sm:px-7 lg:px-9">
+        {error && <div role="alert" className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={18} className="shrink-0"/><span>{error}</span></div>}
+        {message && <div role="status" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{message}</div>}
         {!authReady && <WorkspaceLoading label="Đang kiểm tra phiên đăng nhập…"/>}
         {authReady && !session && <LearningAuthForm />}
         {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
-        {session && !user && error && !busy && <button type="button" onClick={() => setReload(n => n + 1)} className="min-h-11 rounded-md border bg-white px-4 font-semibold">Thử lại</button>}
-        {session && user && (
-          <>
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">Khóa học</h1>
-              <p className="text-sm text-slate-600">{{ STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên', MENTOR: 'Cố vấn' }[user.role]}</p>
+        {session && !user && error && !busy && <button type="button" onClick={() => setReload(n => n + 1)} className="min-h-11 rounded-xl border bg-white px-4 font-semibold">Thử lại</button>}
+        {session && user && <>
+          <section className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.17em] text-[#b94708]">UII · LEARNING EXPERIENCE</p>
+              <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Không gian khóa học</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{canTeach ? 'Thiết kế và quản lý những trải nghiệm học tập thực hành.' : 'Khám phá kiến thức, học theo tiến độ riêng và áp dụng vào dự án thực tế.'}</p>
             </div>
-            {user?.role === 'STUDENT' && !busy && <section className="rounded-2xl border border-blue-100 bg-white p-5 sm:p-7" aria-labelledby="learning-path-title">
-              <h3 id="learning-path-title" className="text-xl font-bold">{enrollments.length ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hành trình Design Thinking'}</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Chọn một khóa học, học qua video và hoạt động, rồi áp dụng cùng nhóm vào một thử thách thực tế.</p>
-              <ol className="mt-4 hidden gap-4 sm:grid sm:grid-cols-3">
-                <li className="flex items-center gap-3 rounded-xl bg-blue-50 p-3 sm:block sm:p-4"><BookOpen aria-hidden="true" className="shrink-0 text-[#153b77] sm:mb-2" size={22}/><p className="font-bold">Chọn khóa học</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Ghi danh để lưu tiến độ và mở nội dung học.</p></li>
-                <li className="flex items-center gap-3 rounded-xl bg-orange-50 p-3 sm:block sm:p-4"><Layers3 aria-hidden="true" className="shrink-0 text-[#ad4007] sm:mb-2" size={22}/><p className="font-bold">Học và thực hành</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Hoàn thành bài học và thử các phương pháp thiết kế.</p></li>
-                <li className="flex items-center gap-3 rounded-xl bg-emerald-50 p-3 sm:block sm:p-4"><Users aria-hidden="true" className="shrink-0 text-emerald-800 sm:mb-2" size={22}/><p className="font-bold">Làm dự án cùng nhóm</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Lưu minh chứng, nộp bài và cải tiến từ phản hồi.</p></li>
-              </ol>
-              <a href="#course-catalog" onClick={() => setCatalogView(enrollments.length ? 'enrolled' : 'all')} className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white">{enrollments.length ? 'Xem khóa học của tôi' : 'Khám phá khóa học'}</a>
-            </section>}
-            <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
-              <section className="space-y-4">
-                <div id="course-catalog" className="scroll-mt-4 rounded-2xl border bg-white p-5 shadow-sm">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="flex items-center gap-2 font-bold"><BookOpen size={18}/> Khóa học</h3>
-                    <button type="button" title="Tải lại" aria-label="Tải lại khóa học" className="grid size-11 place-items-center rounded-md hover:bg-slate-50" disabled={busy} onClick={() => void refreshData()}><RefreshCw size={17}/></button>
+            <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600">{user.role === 'STUDENT' ? 'Sinh viên' : user.role === 'LECTURER' ? 'Giảng viên' : user.role === 'ADMIN' ? 'Quản trị viên' : 'Cố vấn'}</span>
+          </section>
+
+          {user.role === 'STUDENT' && <section aria-labelledby="learning-path-title" className="overflow-hidden rounded-[24px] border border-blue-100 bg-white p-5 shadow-sm sm:p-7">
+            <div className="flex flex-wrap items-center gap-5">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl bg-blue-50 text-[#153b77]"><GraduationCap size={27} aria-hidden="true"/></div>
+              <div className="min-w-0 flex-1">
+                <h2 id="learning-path-title" className="text-xl font-extrabold">{enrollments.length ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hành trình Design Thinking'}</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Khám phá khóa học, học qua video và thực hành phương pháp thiết kế cùng nhóm.</p>
+              </div>
+              <a href="#course-catalog" onClick={() => setCatalogView(enrollments.length ? 'enrolled' : 'all')} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white hover:bg-[#214d8a]">{enrollments.length ? 'Xem khóa học của tôi' : 'Khám phá khóa học'} <ArrowRight size={16}/></a>
+            </div>
+            <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+              <li className="rounded-xl bg-blue-50 p-3 text-sm"><strong className="block">01 · Khám phá</strong><span className="text-slate-600">Chọn khóa học và ghi danh.</span></li>
+              <li className="rounded-xl bg-orange-50 p-3 text-sm"><strong className="block">02 · Học và thực hành</strong><span className="text-slate-600">Xem bài học, lưu tiến độ.</span></li>
+              <li className="rounded-xl bg-emerald-50 p-3 text-sm"><strong className="block">03 · Áp dụng</strong><span className="text-slate-600">Thực hiện thử thách cùng nhóm.</span></li>
+            </ol>
+          </section>}
+
+          <section id="course-catalog" className="scroll-mt-4 space-y-4" aria-labelledby="course-catalog-title">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div><p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#ad4007]">COURSE CATALOG</p><h2 id="course-catalog-title" className="mt-1 text-2xl font-extrabold">Khám phá khóa học</h2><p className="mt-1 text-sm text-slate-600">Chọn một hành trình phù hợp và bắt đầu học theo nhịp độ của bạn.</p></div>
+              <button type="button" disabled={busy} onClick={() => void refreshData()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-semibold hover:border-blue-400"><RefreshCw size={16} aria-hidden="true"/> Làm mới</button>
+            </div>
+            <div className="flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="min-w-[180px] flex-[2]">
+                <label htmlFor="course-search" className="mb-1 block text-sm font-semibold">Tìm khóa học</label>
+                <input id="course-search" type="search" value={courseSearch} onChange={event => setCourseSearch(event.target.value)} placeholder="Tên khóa học hoặc chủ đề…" className="min-h-11 w-full rounded-xl border border-slate-300 px-3 text-base focus:border-[#153b77]"/>
+              </div>
+              <div className="min-w-[145px] flex-1">
+                <label htmlFor="course-level" className="mb-1 block text-sm font-semibold">Trình độ</label>
+                <select id="course-level" value={levelFilter} onChange={event => setLevelFilter(event.target.value)} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-base">
+                  <option value="all">Tất cả trình độ</option>
+                  {levels.map(level => <option key={level} value={level}>{level}</option>)}
+                </select>
+              </div>
+              {user.role === 'STUDENT' && <div className="flex min-w-[175px] items-end gap-2" aria-label="Lọc khóa học">
+                <button type="button" aria-pressed={catalogView === 'all'} onClick={() => setCatalogView('all')} className={"min-h-11 rounded-xl border px-3 text-sm font-semibold " + (catalogView === 'all' ? 'border-[#153b77] bg-blue-50 text-[#153b77]' : 'text-slate-700')}>Tất cả</button>
+                <button type="button" aria-pressed={catalogView === 'enrolled'} onClick={() => setCatalogView('enrolled')} className={"min-h-11 rounded-xl border px-3 text-sm font-semibold " + (catalogView === 'enrolled' ? 'border-[#153b77] bg-blue-50 text-[#153b77]' : 'text-slate-700')}>Đã ghi danh ({enrollments.length})</button>
+              </div>}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {visibleCourses.map((item, index) => {
+                const joined = enrollments.find(record => record.courseId === item.id);
+                const palette = ['from-[#0b2854] via-[#144782] to-[#2c78a0]', 'from-[#3a255d] via-[#684585] to-[#9861a7]', 'from-[#174e50] via-[#248178] to-[#71a987]', 'from-[#773e24] via-[#b55a2c] to-[#ed9c56]'];
+                return <button key={item.id} type="button" disabled={busy} onClick={() => void selectCourse(item.id, undefined, undefined, true)} aria-pressed={course?.id === item.id} className={"group overflow-hidden rounded-[22px] border bg-white text-left shadow-[0_6px_28px_rgba(20,42,78,0.05)] transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-4 focus-visible:outline-blue-600 " + (course?.id === item.id ? 'border-[#153b77] ring-2 ring-blue-100' : 'border-slate-200')}>
+                  <div className={"relative flex min-h-[148px] items-end overflow-hidden bg-gradient-to-br p-5 text-white " + palette[index % palette.length]}>
+                    <div aria-hidden="true" className="absolute -right-12 -top-16 size-52 rounded-full border-[28px] border-white/15"/><div aria-hidden="true" className="absolute right-12 top-8 size-20 rotate-12 rounded-[25px] border-[12px] border-white/10"/>
+                    <div className="relative flex w-full items-end justify-between gap-3"><span className="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-bold backdrop-blur">UII · DESIGN THINKING</span><GraduationCap size={31} aria-hidden="true" className="text-white/85"/></div>
                   </div>
-                  <label htmlFor="course-search" className="mb-2 block text-sm font-semibold">Tìm khóa học</label>
-                  <input id="course-search" type="search" value={courseSearch} onChange={(event) => setCourseSearch(event.target.value)} placeholder="Tên khóa học" className="mb-4 w-full rounded-xl border border-slate-300 px-3 py-3 text-base" />
-                  {user?.role === 'STUDENT' && <div className="mb-4 flex flex-wrap gap-2" aria-label="Lọc khóa học">
-                    <button type="button" aria-pressed={catalogView === 'all'} onClick={() => setCatalogView('all')} className="min-h-11 rounded-lg border px-3 text-sm font-semibold">Tất cả</button>
-                    <button type="button" aria-pressed={catalogView === 'enrolled'} onClick={() => setCatalogView('enrolled')} className="min-h-11 rounded-lg border px-3 text-sm font-semibold">Đã ghi danh ({enrollments.length})</button>
-                  </div>}
-                  <div className="space-y-2">
-                    {visibleCourses.map((item) => (
-                      <button key={item.id} type="button" disabled={busy} onClick={() => void selectCourse(item.id, undefined, undefined, true)} className={'w-full rounded-xl border p-4 text-left transition hover:border-[#153b77] ' + (course?.id === item.id ? 'border-[#153b77] bg-[#eef3fa]' : 'bg-white')}>
-                        <div className="flex items-start justify-between gap-2"><span className="font-bold">{item.title}</span><ChevronRight size={16} className="shrink-0"/></div>
-                        <p className="mt-2 text-xs text-slate-600">{item.level} · {{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[item.status]}</p>
-                        {enrollments.some((e) => e.courseId === item.id) && <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-green-700"><CheckCircle2 size={13}/> Đã ghi danh</span>}
-                      </button>
-                    ))}
-                    {!visibleCourses.length && <p role="status" className="text-sm text-slate-600">{busy ? 'Đang tải khóa học…' : courseSearch ? 'Không có khóa học phù hợp. Hãy thử từ khóa khác.' : catalogView === 'enrolled' ? 'Bạn chưa ghi danh. Chọn Tất cả để khám phá khóa học.' : 'Khóa học sẽ xuất hiện tại đây khi được giảng viên công bố.'}</p>}
+                  <div className="space-y-3 p-5">
+                    <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">{item.level || 'Khóa học'}</span><span className="text-xs text-slate-500">{item.status === 'PUBLISHED' ? 'Đang mở' : item.status === 'DRAFT' ? 'Bản nháp' : 'Lưu trữ'}</span></div>
+                    <h3 className="line-clamp-2 min-h-12 text-lg font-extrabold leading-6 text-[#10284a]">{item.title}</h3>
+                    <p className="line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">{item.description || 'Khám phá kiến thức và thực hành phương pháp thiết kế lấy con người làm trung tâm.'}</p>
+                    {item.createdBy?.fullName && <p className="text-xs text-slate-600">Giảng viên: {item.createdBy.fullName}</p>}
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs text-slate-600"><span>{item._count?.lessons != null ? item._count.lessons + ' bài học' : 'Lộ trình học tập'}</span><span className="inline-flex items-center gap-1 font-bold text-[#153b77]">{joined ? 'Tiếp tục học' : 'Xem khóa học'} <ChevronRight size={15} aria-hidden="true"/></span></div>
+                  </div>
+                </button>;
+              })}
+            </div>
+            {!visibleCourses.length && <div role="status" className="rounded-2xl border border-dashed bg-white p-10 text-center text-sm text-slate-600">{busy ? 'Đang tải khóa học…' : courseSearch || levelFilter !== 'all' ? 'Không có khóa học phù hợp. Hãy thử từ khóa khác.' : catalogView === 'enrolled' ? 'Bạn chưa ghi danh. Chọn Tất cả để khám phá khóa học.' : 'Khóa học sẽ xuất hiện tại đây khi được giảng viên công bố.'}</div>}
+          </section>
+
+          {canTeach && <details className="rounded-2xl border bg-white p-5" id="course-authoring">
+            <summary className="min-h-11 cursor-pointer text-lg font-bold">Dành cho giảng viên · Tạo khóa học mới</summary>
+            <form onSubmit={event => void createCourse(event)} className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className="block text-sm font-semibold">Tên khóa học<input required maxLength={160} value={courseTitle} onChange={e => setCourseTitle(e.target.value)} className="mt-2 min-h-11 w-full rounded-xl border px-3"/></label>
+              <label className="block text-sm font-semibold">Mô tả khóa học<textarea maxLength={1200} value={courseDescription} onChange={e => setCourseDescription(e.target.value)} rows={3} className="mt-2 w-full rounded-xl border px-3 py-2"/></label>
+              <button disabled={busy} className="min-h-11 rounded-xl bg-[#153b77] px-5 font-bold text-white disabled:opacity-50">Tạo khóa học nháp</button>
+            </form>
+          </details>}
+
+          {!course ? <section className="rounded-2xl border border-dashed bg-white p-10 text-center"><BookOpen size={34} className="mx-auto text-[#153b77]"/><h2 className="mt-3 text-xl font-extrabold">Chọn một khóa học</h2><p className="mt-2 text-sm text-slate-600">Xem giới thiệu, chương trình và ghi danh để bắt đầu.</p></section> : <>
+            <section id="course-detail" className="scroll-mt-4 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm" aria-labelledby="course-detail-title">
+              <div className="border-b bg-[#f7f9fd] p-5 sm:p-8">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-[#153b77]">{course.status === 'PUBLISHED' ? 'Đang mở ghi danh' : course.status === 'DRAFT' ? 'Bản nháp' : 'Đã lưu trữ'}</span>
+                  {canEditCourse && course.status === 'DRAFT' && <button type="button" disabled={busy} onClick={() => void publishCourse()} className="min-h-11 rounded-xl bg-[#b94708] px-5 text-sm font-bold text-white">Xuất bản khóa học</button>}
+                  <button type="button" onClick={() => {setCourse(null); setLessons([]); setProgress(null); setLearningView('overview'); setActiveLessonId(null);}} className="inline-flex min-h-11 items-center gap-1 rounded-xl border px-3 text-sm font-semibold text-[#153b77]"><X size={16} aria-hidden="true"/> Đóng chi tiết</button>
+                </div>
+                <p className="text-xs font-bold uppercase tracking-widest text-[#ad4007]">COURSE OVERVIEW</p>
+                <h2 id="course-detail-title" ref={courseHeading} tabIndex={-1} className="scroll-mt-4 mt-2 text-2xl font-extrabold outline-none focus-visible:outline sm:text-3xl">{course.title}</h2>
+                <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">{course.description || 'Giảng viên chưa thêm mô tả khóa học.'}</p>
+                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+                  {course.level && <span className="inline-flex items-center gap-2"><GraduationCap size={16} aria-hidden="true"/>{course.level}</span>}
+                  {course.createdBy?.fullName && <span>Giảng viên: {course.createdBy.fullName}</span>}
+                  {lessons.length > 0 && <span className="inline-flex items-center gap-2"><BookOpen size={16} aria-hidden="true"/>{lessons.length} bài học có thể xem</span>}
+                  {lessons.some(item => item.durationMinutes && item.durationMinutes > 0) && <span className="inline-flex items-center gap-2"><Clock3 size={16} aria-hidden="true"/>{lessons.reduce((total, item) => total + (item.durationMinutes ?? 0), 0)} phút nội dung đã định thời lượng</span>}
+                </div>
+                {user.role === 'STUDENT' && !isEnrolled && <button disabled={busy} type="button" onClick={() => void enroll()} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-6 py-3 text-sm font-bold text-white hover:bg-blue-900"><Users size={18} aria-hidden="true"/> Ghi danh khóa học</button>}
+                {isEnrolled && nextUnfinishedLesson && <button type="button" onClick={() => openLesson(nextUnfinishedLesson)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-6 py-3 text-sm font-bold text-white hover:bg-orange-800"><PlayCircle size={19} aria-hidden="true"/>{progress?.percent === 100 ? 'Ôn tập bài học' : 'Bắt đầu / tiếp tục học'}</button>}
+                {progress && <div className="mt-5 max-w-xl"><div className="mb-2 flex justify-between gap-3 text-sm font-semibold"><span>Tiến độ của bạn</span><span>{progress.completedLessons}/{progress.totalLessons} bài · {progress.percent}%</span></div><div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent} className="h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-[#b94708]" style={{width:progress.percent+'%'}}/></div></div>}
+              </div>
+              {learningView === 'overview' && <div className="grid gap-7 p-5 lg:grid-cols-[minmax(0,1fr)_280px] sm:p-8">
+                <div className="space-y-7">
+                  <div><h3 className="text-xl font-extrabold">Bạn sẽ học được gì?</h3><p className="mt-2 text-sm leading-7 text-slate-600">{course.description || 'Khám phá các phương pháp học và thực hành theo định hướng của giảng viên.'}</p></div>
+                  <div><h3 className="mb-4 text-xl font-extrabold">Chương trình học</h3>
+                    <div className="space-y-3">
+                      {lessons.map((lesson,index) => <div key={lesson.id} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-200 p-4">
+                        <div className="flex min-w-0 flex-1 items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#153b77]">{lesson.contentType === 'VIDEO' ? <PlayCircle size={20}/> : lesson.contentType === 'ASSIGNMENT' ? <ListChecks size={20}/> : <FileText size={20}/>}</span><div className="min-w-0"><p className="text-xs font-semibold text-[#b94708]">Bài {index+1} · {lesson.contentType === 'VIDEO' ? 'Video' : lesson.contentType === 'WORKSHOP' ? 'Workshop' : lesson.contentType === 'ASSIGNMENT' ? 'Bài tập' : 'Bài đọc'}</p><h4 className="mt-1 font-bold">{lesson.title}</h4>{lesson.description && <p className="mt-1 text-sm text-slate-600">{lesson.description}</p>}{lesson.durationMinutes ? <p className="mt-1 text-xs text-slate-600">{lesson.durationMinutes} phút</p> : null}</div></div>
+                        <div className="flex flex-wrap items-center gap-2">{completed.has(lesson.id) && <span className="text-xs font-bold text-emerald-700"><CheckCircle2 size={15} className="inline"/> Đã học</span>}{(isEnrolled || canEditCourse || lesson.isPreview) && <button type="button" className="min-h-11 rounded-xl border border-blue-200 px-3 text-sm font-bold text-[#153b77]" onClick={() => openLesson(lesson)}>Mở bài học</button>}{canEditCourse && <button type="button" disabled={busy} className="min-h-11 rounded-xl border px-3 text-sm font-semibold" onClick={() => {setEditingLessonId(lesson.id); setLessonTitle(lesson.title);setLessonContent(lesson.content??'');setLessonVideoUrl(lesson.videoUrl??'');setLessonType(lesson.contentType??'ARTICLE');setLessonPublished(!!lesson.publishedAt);document.getElementById('lesson-editor')?.scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('lesson-title')?.focus({preventScroll:true});}}>Chỉnh sửa bài học</button>}{canEditCourse && !lesson.publishedAt && <button type="button" className="min-h-11 rounded-xl border px-3 text-sm font-semibold" disabled={busy} onClick={() => void publishLesson(lesson)}>Xuất bản bài học</button>}</div>
+                      </div>)}
+                      {lessons.length === 0 && <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-600">{isEnrolled || canEditCourse ? 'Khóa học chưa có bài học được công bố.' : 'Ghi danh để xem nội dung học tập. Một số bài học xem trước có thể xuất hiện tại đây.'}</div>}
+                    </div>
                   </div>
                 </div>
-                {canTeach && <form onSubmit={(event) => void createCourse(event)} className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
-                  <h3 className="flex items-center gap-2 font-bold"><Plus size={18}/> Tạo khóa học</h3>
-                  <input required maxLength={160} value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} placeholder="Tên khóa học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
-                  <textarea maxLength={1200} value={courseDescription} onChange={(e) => setCourseDescription(e.target.value)} placeholder="Mô tả khóa học" rows={3} className="w-full rounded-xl border px-3 py-3 text-sm"/>
-                  <button disabled={busy} className="w-full rounded-xl bg-[#153b77] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">Tạo khóa học nháp</button>
-                </form>}
-              </section>
-              <section className="space-y-5">
-                {!course ? <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed bg-white p-8 text-center">
-                  <Layers3 className="mb-3 text-[#153b77]" size={32}/><h3 className="text-xl font-bold">Chọn một khóa học</h3><p className="mt-2 text-sm text-slate-600">Bắt đầu bằng một khóa học. Ghi danh để xem bài học và lưu tiến độ của bạn.</p>
-                </div> : (
-                  <>
-                    <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                        <span className="rounded-full bg-[#edf2fb] px-3 py-1 text-xs font-bold text-[#153b77]">{{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[course.status]}</span>
-                        {canEditCourse && course.status === 'DRAFT' && <button disabled={busy} type="button" onClick={() => void publishCourse()} className="rounded-full bg-[#b94708] px-4 py-2 text-xs font-bold text-white">Xuất bản khóa học</button>}
-                      </div>
-                      <h3 ref={courseHeading} tabIndex={-1} className="scroll-mt-4 text-xl font-semibold">{course.title}</h3>
-                      <p className="mt-2 text-sm text-slate-600">{course.description || 'Chưa có mô tả khóa học.'}</p>
-                      {user?.role === 'STUDENT' && !isEnrolled && <button disabled={busy} type="button" onClick={() => void enroll()} className="mt-5 flex items-center gap-2 rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white"><Users size={17}/> Ghi danh khóa học</button>}
-                      {progress && <div className="mt-6">
-                        <div className="mb-2 flex justify-between text-sm font-bold"><span>Tiến độ học</span><span>{progress.completedLessons}/{progress.totalLessons} · {progress.percent}%</span></div>
-                        <div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent} className="h-3 overflow-hidden rounded-full bg-slate-100"><div style={{ width: progress.percent + '%' }} className="h-full rounded-full bg-[#b94708]"/></div>
-                      </div>}
-                    </div>
-                    {(canEditCourse || isEnrolled) && <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                      <div className="mb-4 flex items-center gap-2"><BookOpen size={20} className="text-[#153b77]"/><h3 className="text-xl font-bold">Bài học</h3></div>
-                      <div className="space-y-3">
-                        {lessons.map((lesson, index) => (
-                          <details key={lesson.id} open={lesson.id === (lessons.find(item => !completed.has(item.id))?.id ?? lessons[0]?.id)} id={'lesson-' + lesson.id} className="rounded-xl border border-[#e8edf3] bg-[#fbfcfe] p-4">
-                            <summary className="min-h-11 cursor-pointer font-bold">{index + 1}. {lesson.title}{completed.has(lesson.id) ? ' · Đã hoàn thành' : ''}</summary>
-                            <div className="flex flex-wrap justify-between gap-3">
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-[#ad4007]">Bài {index+1}</p>
-                                <h4 className="mt-1 font-bold">{lesson.title}</h4>
-                                {lesson.description && <p className="mt-2 text-sm text-slate-600">{lesson.description}</p>}
-                                {getYouTubeEmbedUrl(lesson.videoUrl) && <div className="mt-4 aspect-video overflow-hidden rounded-xl bg-slate-900"><iframe className="h-full w-full" src={getYouTubeEmbedUrl(lesson.videoUrl)!} title={lesson.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>}
-                                {lesson.videoUrl && !getYouTubeEmbedUrl(lesson.videoUrl) && getSafeHttpUrl(lesson.videoUrl) && <a className="mt-3 inline-flex text-sm font-semibold text-[#153b77] underline" href={getSafeHttpUrl(lesson.videoUrl)!} target="_blank" rel="noreferrer">Mở video trong tab mới ↗</a>}
-                                {lesson.content && <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{lesson.content}</p>}
-                                {getResourceLinks(lesson.content).length > 0 && <div className="mt-3 flex flex-wrap gap-3">{getResourceLinks(lesson.content).map((resource) => <a key={resource} className="text-sm font-semibold text-[#153b77] underline" href={resource} target="_blank" rel="noreferrer">Tài liệu tham khảo ↗</a>)}</div>}
-                                {!lesson.publishedAt && <p className="mt-2 text-xs text-amber-700">Bản nháp, chưa công bố</p>}
-                              </div>
-                              {user?.role === 'STUDENT' && <button disabled={busy} type="button" onClick={() => void toggleProgress(lesson)} className={'self-start rounded-lg px-3 py-2 text-xs font-bold ' + (completed.has(lesson.id) ? 'bg-green-100 text-green-800' : 'bg-[#e7eef9] text-[#153b77]')}>{completed.has(lesson.id) ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button>}
-                              {canEditCourse && !lesson.publishedAt && <button disabled={busy} type="button" onClick={() => void publishLesson(lesson)} className="self-start rounded-lg border px-3 py-2 text-xs font-bold">Publish</button>}
-                              {canEditCourse && <button type="button" disabled={busy} className="self-start rounded-lg border px-3 py-2 text-sm font-semibold" onClick={() => {
-                                setEditingLessonId(lesson.id); setLessonTitle(lesson.title); setLessonContent(lesson.content ?? '');
-                                setLessonVideoUrl(lesson.videoUrl ?? ''); setLessonType(lesson.contentType ?? 'ARTICLE'); setLessonPublished(!!lesson.publishedAt);
-                                document.getElementById('lesson-editor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                document.getElementById('lesson-title')?.focus({ preventScroll: true });
-                              }}>Chỉnh sửa bài học</button>}
-                            </div>
-                          </details>
-                        ))}
-                        {!lessons.length && <p className="text-sm text-slate-600">Chưa có bài học được công bố.</p>}
-                      </div>
-                    </div>}
-                    {canEditCourse && <form id="lesson-editor" onSubmit={(event) => void createLesson(event)} className="space-y-3 rounded-2xl border bg-white p-6 shadow-sm">
-                      <h3 className="flex items-center gap-2 text-xl font-bold"><Plus size={20}/> {editingLessonId ? 'Chỉnh sửa bài học' : 'Tạo bài học mới'}</h3>
-                      <label htmlFor="lesson-title" className="block text-sm font-semibold">Tiêu đề bài học</label>
-                      <input id="lesson-title" required maxLength={160} value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Tiêu đề bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
-                      <select value={lessonType} onChange={(e) => setLessonType(e.target.value as NonNullable<Lesson['contentType']>)} className="w-full rounded-xl border px-3 py-3 text-sm" aria-label="Loại bài học"><option value="ARTICLE">Bài đọc</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Template</option><option value="ASSIGNMENT">Bài tập</option></select>
-                      {(lessonType === 'VIDEO' || lessonVideoUrl) && <input type="url" value={lessonVideoUrl} onChange={(e) => setLessonVideoUrl(e.target.value)} placeholder="Link video YouTube (https://...)" className="w-full rounded-xl border px-3 py-3 text-sm" />}
-                      <textarea required value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} maxLength={10000} rows={5} placeholder="Nội dung bài học" className="w-full rounded-xl border px-3 py-3 text-sm"/>
-                      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={lessonPublished} onChange={(e) => setLessonPublished(e.target.checked)}/> Công bố bài học khi tạo</label>
-                      <button disabled={busy} className="rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">Lưu bài học</button>
-                      {editingLessonId && <button type="button" disabled={busy} onClick={() => {
-                        setEditingLessonId(null); setLessonTitle(''); setLessonContent(''); setLessonVideoUrl(''); setLessonType('ARTICLE'); setLessonPublished(true);
-                      }} className="ml-3 min-h-11 rounded-xl border px-4 py-3 text-sm font-semibold">Hủy chỉnh sửa</button>}
-                    </form>}
-                  </>
-                )}
-              </section>
-            </div>
-            <p className="text-center text-xs text-slate-600">Tiếp tục thực hành trong Không gian dự án sau khi học.</p>
-          </>
-        )}
+                <aside className="self-start rounded-2xl bg-[#edf3fa] p-5">
+                  <h3 className="font-extrabold">Học tập cùng UII</h3><p className="mt-2 text-sm leading-6 text-slate-600">Học phương pháp, thực hành và quay lại cải tiến dựa trên phản hồi.</p>
+                  <ol className="mt-4 space-y-3 text-sm text-slate-700"><li>1. Xem bài học và ghi chú</li><li>2. Hoàn thành bài học theo tiến độ</li><li>3. Áp dụng phương pháp vào dự án</li></ol>
+                  <Link href="/studio" className="mt-5 inline-flex min-h-11 items-center gap-1 font-bold text-[#153b77] underline">Khám phá Design Studio <ArrowRight size={16}/></Link>
+                </aside>
+              </div>}
+            </section>
+            {learningView === 'player' && currentLesson && <section id="lesson-player" className="scroll-mt-4 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm" aria-label="Không gian học bài">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-slate-50 p-4">
+                <button type="button" onClick={() => {setLearningView('overview'); setActiveLessonId(null);window.history.replaceState(window.history.state,'','/learn?course='+encodeURIComponent(course.id));}} className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-bold"><ArrowLeft size={17}/> Chương trình khóa học</button>
+                <span className="text-sm font-semibold text-slate-600">Bài {selectedLessonIndex+1}/{lessons.length}</span>
+              </div>
+              <div className="grid lg:grid-cols-[260px_minmax(0,1fr)]">
+                <aside className="border-b border-slate-200 bg-[#f8fafd] p-4 lg:border-b-0 lg:border-r" aria-label="Danh sách bài học">
+                  <h3 className="mb-3 font-extrabold">Nội dung khóa học</h3>
+                  <div className="space-y-2">{lessons.map((lesson,index) => <button key={lesson.id} type="button" aria-current={currentLesson.id===lesson.id?'step':undefined} onClick={() => openLesson(lesson)} className={"flex min-h-11 w-full items-start gap-2 rounded-xl border px-3 py-3 text-left text-sm "+(currentLesson.id===lesson.id?'border-[#153b77] bg-blue-50 font-bold text-[#153b77]':'border-transparent hover:border-slate-200 hover:bg-white')}><span>{index+1}.</span><span className="min-w-0 flex-1">{lesson.title}{completed.has(lesson.id) && <span className="mt-1 block text-xs text-emerald-700">✓ Đã hoàn thành</span>}</span></button>)}</div>
+                </aside>
+                <article className="min-w-0 space-y-6 p-5 sm:p-8">
+                  <div><p className="text-xs font-extrabold uppercase tracking-widest text-[#ad4007]">LEARNING PLAYER</p><h3 id="lesson-player-title" tabIndex={-1} className="mt-2 text-2xl font-extrabold outline-none focus-visible:outline sm:text-3xl">{currentLesson.title}</h3>{currentLesson.description && <p className="mt-2 text-sm leading-7 text-slate-600">{currentLesson.description}</p>}</div>
+                  {getYouTubeEmbedUrl(currentLesson.videoUrl) && <div className="aspect-video overflow-hidden rounded-2xl bg-slate-950"><iframe title={'Video bài học: '+currentLesson.title} src={getYouTubeEmbedUrl(currentLesson.videoUrl)!} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full" allowFullScreen/></div>}
+                  {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && (/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <video className="aspect-video w-full rounded-2xl bg-black" controls preload="metadata" src={getSafeHttpUrl(currentLesson.videoUrl)!}>Trình duyệt không hỗ trợ phát video.</video>}
+                  {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && !(/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <a href={getSafeHttpUrl(currentLesson.videoUrl)!} target="_blank" rel="noreferrer" className="text-sm font-bold text-[#153b77] underline">Mở video trong tab mới</a>}
+                  {currentLesson.content && <div className="rounded-xl bg-[#f8fafd] p-5"><h4 className="mb-3 font-bold">Nội dung bài học</h4><p className="whitespace-pre-wrap break-words text-base leading-8 text-slate-700">{currentLesson.content}</p></div>}
+                  {getResourceLinks(currentLesson.content).length > 0 && <div><h4 className="mb-3 font-bold">Tài liệu tham khảo</h4><ul className="space-y-2">{getResourceLinks(currentLesson.content).map(link => <li key={link}><a className="break-all text-sm font-semibold text-[#153b77] underline" href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>}
+                  <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5"><h4 className="flex items-center gap-2 font-bold"><Sparkles size={18} aria-hidden="true"/> Áp dụng kiến thức</h4><p className="mt-2 text-sm leading-7">Tìm một vấn đề thực tế, ghi nhận điều bạn quan sát và thử áp dụng phương pháp vừa học trong dự án.</p><Link href="/studio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#153b77] underline">Thực hành trong Design Studio <ArrowRight size={16}/></Link></div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
+                    <div className="flex flex-wrap gap-2">{selectedLessonIndex > 0 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex-1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold"><ArrowLeft size={16}/> Bài trước</button>}{selectedLessonIndex < lessons.length-1 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex+1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Bài tiếp theo <ArrowRight size={16}/></button>}</div>
+                    {user.role === 'STUDENT' && isEnrolled && <button type="button" disabled={busy} onClick={() => void toggleProgress(currentLesson)} className={"min-h-11 rounded-xl px-5 text-sm font-bold "+(completed.has(currentLesson.id)?'border border-emerald-300 bg-emerald-50 text-emerald-800':'bg-[#b94708] text-white')}>{completed.has(currentLesson.id) ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button>}
+                  </div>
+                </article>
+              </div>
+            </section>}
+            {canEditCourse && <section id="lesson-editor" className="scroll-mt-5 rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+              <div className="mb-4"><p className="text-xs font-extrabold uppercase tracking-widest text-[#ad4007]">LECTURER WORKSPACE</p><h3 className="mt-1 text-xl font-extrabold">{editingLessonId ? 'Chỉnh sửa bài học' : 'Biên soạn bài học mới'}</h3><p className="mt-1 text-sm text-slate-600">Nội dung giảng dạy chỉ được chỉnh sửa bởi người có quyền quản lý khóa học.</p></div>
+              <form onSubmit={event => void createLesson(event)} className="space-y-4">
+                <label htmlFor="lesson-title" className="block text-sm font-semibold">Tiêu đề bài học</label>
+                <input id="lesson-title" required maxLength={160} value={lessonTitle} onChange={event => setLessonTitle(event.target.value)} className="min-h-11 w-full rounded-xl border px-3 text-base"/>
+                <label htmlFor="lesson-type" className="block text-sm font-semibold">Loại bài học</label>
+                <select id="lesson-type" value={lessonType} onChange={event => setLessonType(event.target.value as NonNullable<Lesson['contentType']>)} className="min-h-11 w-full rounded-xl border bg-white px-3 text-base"><option value="ARTICLE">Bài đọc</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Template</option><option value="ASSIGNMENT">Bài tập</option></select>
+                {(lessonType==='VIDEO'||lessonVideoUrl) && <><label htmlFor="lesson-video" className="block text-sm font-semibold">Video bài học</label><input id="lesson-video" type="url" placeholder="Link video YouTube (https://...)" value={lessonVideoUrl} onChange={event=>setLessonVideoUrl(event.target.value)} className="min-h-11 w-full rounded-xl border px-3 text-base"/></>}
+                <label htmlFor="lesson-content" className="block text-sm font-semibold">Nội dung bài học</label>
+                <textarea id="lesson-content" required rows={7} maxLength={10000} value={lessonContent} onChange={event => setLessonContent(event.target.value)} className="w-full rounded-xl border px-3 py-3 text-base"/>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={lessonPublished} onChange={event=>setLessonPublished(event.target.checked)}/> Công bố bài học khi tạo</label>
+                <div className="flex flex-wrap gap-3"><button disabled={busy} className="min-h-11 rounded-xl bg-[#153b77] px-5 text-sm font-bold text-white disabled:opacity-50">Lưu bài học</button>{editingLessonId && <button type="button" disabled={busy} onClick={()=>{setEditingLessonId(null);setLessonTitle('');setLessonContent('');setLessonVideoUrl('');setLessonType('ARTICLE');setLessonPublished(true);}} className="min-h-11 rounded-xl border px-5 text-sm font-semibold">Hủy chỉnh sửa</button>}</div>
+              </form>
+            </section>}
+          </>}
+          <p className="border-t pt-6 text-center text-xs text-slate-500">UII Design Thinking Hub · Học, thực hành và cải tiến dựa trên minh chứng.</p>
+        </>}
       </main>
     </div>
   );
