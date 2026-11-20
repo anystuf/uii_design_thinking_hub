@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {test} from "node:test";
-import assert from "node:assert/strict";
+import * as assert from "node:assert/strict";
 import {ForbiddenException, BadRequestException} from "@nestjs/common";
 import {UserRole} from "@prisma/client";
 import {ProjectsService} from "../src/modules/projects/projects.service";
