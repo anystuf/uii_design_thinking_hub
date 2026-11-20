@@ -31,7 +31,7 @@ export const GUIDE_TOPICS:readonly GuideTopic[]=[
     keys:["quiz","bai tap","luyen tap","trac nghiem","assessment","practice","tu luan","exercise"],
     href:"/learn",action:"Vào Luyện tập",status:"available",roles:all,
     summary:"Bài tập thật nằm trong bài học. Quiz được chấm tự động; tự luận hoặc dự án được đánh giá theo quyền. Bài học không có bài tập là trạng thái hợp lệ khi giảng viên chưa công bố.",
-    steps:["Khóa học → mở bài học đã ghi danh","Kéo tới mục Luyện tập và bài tập, đọc yêu cầu","Nộp và xem điểm hoặc chờ phản hồi từ giảng viên"]},
+    steps:["Khóa học → mở bài học đã ghi danh","kéo tới mục Luyện tập và bài tập, đọc yêu cầu","Nộp và xem điểm hoặc chờ phản hồi từ giảng viên"]},
   {id:"authoring",title:"Giảng viên tạo khóa học và bài tập",
     keys:["tao khoa hoc","tao bai tap","giang day","lecturer","authoring","soan bai","cong bo","quiz builder"],
     href:"/learn",action:"Mở biên soạn khóa học",status:"available",roles:["LECTURER","ADMIN"],
