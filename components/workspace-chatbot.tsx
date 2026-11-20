@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Bot, BookOpen, CheckCircle2, MessageCircle, Send, Sparkles, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { AssistantMessageContent } from "@/components/assistant-message-content";
 import { deterministicGuide, type HubRole, type GuideReply } from "@/lib/uii-assistant-knowledge";
 
 type LinkItem = {href:string;label:string};
@@ -145,7 +146,7 @@ export function WorkspaceChatbot() {
         className="min-h-[145px] flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[#f5f8f7] p-4">
         {messages.map(message=><div key={message.id}
           className={"max-w-[94%] rounded-2xl p-3 text-sm leading-6 "+(message.from==="user"?"ml-auto bg-[#173c57] text-white":"mr-auto border border-[#dce5e0] bg-white text-[#203c47]")}>
-          <p className="whitespace-pre-wrap">{message.text}</p>
+          {message.from==="bot" ? <AssistantMessageContent text={message.text}/> : <p className="whitespace-pre-wrap">{message.text}</p>}
           {message.links&&message.links.length>0&&<div className="mt-3 flex flex-wrap gap-2">
             {message.links.map(link=><Link key={link.href} href={link.href} onClick={()=>setOpen(false)}
               className="inline-flex min-h-10 items-center rounded-full border border-[#9fb9c1] bg-[#f0f6f5] px-3 text-xs font-black text-[#16415b] underline-offset-2 hover:underline">{link.label}</Link>)}
