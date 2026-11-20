@@ -2,105 +2,155 @@
 
 import { useEffect, useRef } from "react";
 
-type Point = { x: number; y: number; at: number };
-const LIFE_MS = 1150;
-const MAX_POINTS = 76;
+type CursorPoint = { x: number; y: number; at: number };
+
+const TRAIL_LIFETIME_MS = 2800;
+const MAX_POINTS = 110;
 
 /**
- * A playful red hand-drawn cursor line, inspired by creative sketching.
- * Purely decorative: never intercepts clicks, never replaces the native
- * cursor, and is disabled automatically for touch/reduced-motion/Focus Mode.
+ * A decorative, Stanford d.school-style hand-drawn red trace for mouse and
+ * trackpad users. Rendered ONCE in RootLayout, never behind a clipped course
+ * section. It is enabled by default, has no toggle, and never captures input.
+ *
+ * Device respect: touch does not draw, prefers-reduced-motion disables motion,
+ * and UII's Focus Mode temporarily suppresses the entire effect.
  */
-export function CreativePointerTrail({ enabled }: { enabled: boolean }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const dotRef = useRef<SVGCircleElement>(null);
+export function CreativePointerTrail() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const svg = svgRef.current;
-    if (svg) svg.style.opacity = "0";
-    if (!enabled || !window.matchMedia("(pointer: fine)").matches ||
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d", { alpha: true });
+    if (!canvas || !context) return;
 
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const points: CursorPoint[] = [];
     let frame = 0;
-    const points: Point[] = [];
-    const syncViewport = () => svgRef.current?.setAttribute("viewBox", "0 0 " + window.innerWidth + " " + window.innerHeight);
-    syncViewport();
+    let viewportWidth = 1;
+    let viewportHeight = 1;
 
-    const paint = (now: number) => {
-      while (points.length && now - points[0].at > LIFE_MS) points.shift();
-      if (!points.length) {
-        svgRef.current?.style.setProperty("opacity", "0");
-        pathRef.current?.setAttribute("d", "");
-        frame = 0;
-        return;
-      }
-      const first = points[0];
-      let path = "M " + first.x + " " + first.y;
-      for (let i = 1; i < points.length; i++) {
-        const p = points[i];
-        const prev = points[i - 1];
-        const midX = (prev.x + p.x) / 2;
-        const midY = (prev.y + p.y) / 2;
-        path += " Q " + prev.x + " " + prev.y + " " + midX + " " + midY;
-      }
-      const last = points[points.length - 1];
-      path += " L " + last.x + " " + last.y;
-      pathRef.current?.setAttribute("d", path);
-      dotRef.current?.setAttribute("cx", String(last.x));
-      dotRef.current?.setAttribute("cy", String(last.y));
-      svgRef.current?.style.setProperty("opacity", "1");
-      frame = requestAnimationFrame(paint);
-    };
+    const isDisabled = () =>
+      prefersReducedMotion.matches ||
+      document.documentElement.dataset.uiiFocusMode === "true" ||
+      document.visibilityState === "hidden";
 
-    const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse" || event.clientX < 0 || event.clientY < 0 ||
-          window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-          !window.matchMedia("(pointer: fine)").matches) return;
-      const last = points[points.length - 1];
-      if (last && Math.hypot(last.x - event.clientX, last.y - event.clientY) < 3) return;
-      points.push({ x: event.clientX, y: event.clientY, at: performance.now() });
-      if (points.length > MAX_POINTS) points.splice(0, points.length - MAX_POINTS);
-      if (!frame) frame = requestAnimationFrame(paint);
-    };
-
-    const onLeave = () => {
+    const clear = () => {
       points.length = 0;
       if (frame) cancelAnimationFrame(frame);
       frame = 0;
-      svgRef.current?.style.setProperty("opacity", "0");
-      pathRef.current?.setAttribute("d", "");
+      context.clearRect(0, 0, viewportWidth, viewportHeight);
+      canvas.setAttribute("data-active", "false");
     };
-    const onPreferencesChanged = () => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-          !window.matchMedia("(pointer: fine)").matches) onLeave();
-    };
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const finePointer = window.matchMedia("(pointer: fine)");
-    window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("resize", syncViewport, { passive: true });
-    window.addEventListener("blur", onLeave);
-    reducedMotion.addEventListener("change", onPreferencesChanged);
-    finePointer.addEventListener("change", onPreferencesChanged);
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("resize", syncViewport);
-      window.removeEventListener("blur", onLeave);
-      reducedMotion.removeEventListener("change", onPreferencesChanged);
-      finePointer.removeEventListener("change", onPreferencesChanged);
-      onLeave();
-    };
-  }, [enabled]);
 
-  return <svg ref={svgRef} data-testid="creative-pointer-trail"
-    data-enabled={enabled ? "true" : "false"}
-    aria-hidden="true" focusable="false"
-    className="pointer-events-none fixed inset-0 z-[60] h-[100dvh] w-screen select-none"
-    style={{ opacity: 0 }} viewBox="0 0 100 100" preserveAspectRatio="none">
-    {/* A viewport-coordinate drawing must use CSS pixels, not scaled viewBox units.
-        Set a matching SVG viewBox at runtime on resize below. */}
-    <path ref={pathRef} fill="none" stroke="#f0352b" strokeWidth="3"
-      strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke"/>
-    <circle ref={dotRef} cx="-100" cy="-100" r="6" fill="#f0352b" />
-  </svg>;
+    const resize = () => {
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      viewportWidth = window.innerWidth;
+      viewportHeight = window.innerHeight;
+      canvas.width = Math.max(1, Math.round(viewportWidth * ratio));
+      canvas.height = Math.max(1, Math.round(viewportHeight * ratio));
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      clear();
+    };
+
+    const render = (now: number) => {
+      frame = 0;
+      if (isDisabled()) {
+        clear();
+        return;
+      }
+
+      while (points.length && now - points[0].at > TRAIL_LIFETIME_MS)
+        points.shift();
+
+      context.clearRect(0, 0, viewportWidth, viewportHeight);
+      if (!points.length) {
+        canvas.setAttribute("data-active", "false");
+        return;
+      }
+
+      const latest = points[points.length - 1];
+      const fade = Math.min(1, (TRAIL_LIFETIME_MS - (now - latest.at)) / 700);
+      context.globalAlpha = Math.max(0, fade);
+      context.strokeStyle = "#f0362b";
+      context.lineWidth = 3.5;
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      context.beginPath();
+      context.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        const before = points[i - 1];
+        const current = points[i];
+        context.quadraticCurveTo(
+          before.x, before.y,
+          (before.x + current.x) / 2,
+          (before.y + current.y) / 2,
+        );
+      }
+      context.lineTo(latest.x, latest.y);
+      context.stroke();
+
+      // A bright red endpoint is visible even before a longer stroke forms.
+      context.fillStyle = "#f0362b";
+      context.beginPath();
+      context.arc(latest.x, latest.y, 6, 0, Math.PI * 2);
+      context.fill();
+      context.globalAlpha = 1;
+      canvas.setAttribute("data-active", "true");
+      frame = requestAnimationFrame(render);
+    };
+
+    const record = (x: number, y: number) => {
+      if (isDisabled()) {
+        clear();
+        return;
+      }
+      if (x < 0 || y < 0 || x > viewportWidth || y > viewportHeight) return;
+      const latest = points[points.length - 1];
+      if (latest && Math.hypot(latest.x - x, latest.y - y) < 2) return;
+      points.push({ x, y, at: performance.now() });
+      if (points.length > MAX_POINTS)
+        points.splice(0, points.length - MAX_POINTS);
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+
+    const pointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" || event.pointerType === "pen")
+        record(event.clientX, event.clientY);
+    };
+    // Trackpads, hybrid laptops, and some browsers fire mousemove but do not
+    // report (pointer:fine). Do not gate on that media query.
+    const mouseMove = (event: MouseEvent) => record(event.clientX, event.clientY);
+    const visibilityChange = () => { if (isDisabled()) clear(); };
+
+    resize();
+    window.addEventListener("pointermove", pointerMove, { passive: true });
+    window.addEventListener("mousemove", mouseMove, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("blur", clear);
+    window.addEventListener("uii:focus-mode-changed", visibilityChange);
+    document.addEventListener("visibilitychange", visibilityChange);
+    prefersReducedMotion.addEventListener("change", visibilityChange);
+
+    return () => {
+      window.removeEventListener("pointermove", pointerMove);
+      window.removeEventListener("mousemove", mouseMove);
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("blur", clear);
+      window.removeEventListener("uii:focus-mode-changed", visibilityChange);
+      document.removeEventListener("visibilitychange", visibilityChange);
+      prefersReducedMotion.removeEventListener("change", visibilityChange);
+      clear();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      data-testid="creative-pointer-trail"
+      data-active="false"
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[9999] h-[100dvh] w-screen select-none"
+      style={{ background: "transparent" }}
+    />
+  );
 }
