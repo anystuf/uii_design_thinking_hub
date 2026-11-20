@@ -2,19 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-type CursorPoint = { x: number; y: number; at: number };
+type InkPoint = { x: number; y: number; time: number };
 
-const TRAIL_LIFETIME_MS = 6500;
-const MAX_POINTS = 220;
+const INK_HOLD_MS = 1800;
+const INK_FADE_MS = 900;
+const MAX_POINTS = 180;
+const PAUSE_BETWEEN_STROKES_MS = 450;
 
 /**
- * A decorative, Stanford d.school-style hand-drawn red trace for mouse and
- * trackpad users. Rendered ONCE in RootLayout, never behind a clipped course
- * section. It is enabled by default, has no toggle, and never captures input.
+ * An auto-on, truly hand-drawn red line — not a custom red cursor dot.
+ * The user draws by moving the mouse/trackpad in any part of the platform.
  *
- * Device respect: touch does not draw, reduced-motion shows an unmoving
- * marker at the latest mouse point rather than an animated trail, and UII's
- * Focus Mode temporarily suppresses the effect.
+ * Reduced Motion still renders a RED LINE, without any animation or fade:
+ * previously that preference removed the line entirely and left only a dot.
+ * Focus Mode always hides ink to keep the interface distraction-free.
  */
 export function CreativePointerTrail() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,136 +25,141 @@ export function CreativePointerTrail() {
     const context = canvas?.getContext("2d", { alpha: true });
     if (!canvas || !context) return;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const points: CursorPoint[] = [];
-    let frame = 0;
-    let viewportWidth = 1;
-    let viewportHeight = 1;
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const points: InkPoint[] = [];
+    let raf = 0;
+    let width = 1;
+    let height = 1;
+    let lastMove = 0;
 
-    const isDisabled = () =>
+    const disabled = () =>
       document.documentElement.dataset.uiiFocusMode === "true" ||
       document.visibilityState === "hidden";
 
     const clear = () => {
       points.length = 0;
-      if (frame) cancelAnimationFrame(frame);
-      frame = 0;
-      context.clearRect(0, 0, viewportWidth, viewportHeight);
-      canvas.setAttribute("data-active", "false");
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      context.clearRect(0, 0, width, height);
+      canvas.dataset.active = "false";
+      canvas.dataset.pointCount = "0";
     };
 
     const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      viewportWidth = window.innerWidth;
-      viewportHeight = window.innerHeight;
-      canvas.width = Math.max(1, Math.round(viewportWidth * ratio));
-      canvas.height = Math.max(1, Math.round(viewportHeight * ratio));
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.max(1, Math.round(width * pixelRatio));
+      canvas.height = Math.max(1, Math.round(height * pixelRatio));
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
       clear();
     };
 
-    const render = (now: number) => {
-      frame = 0;
-      if (isDisabled()) {
+    const paint = (now: number) => {
+      raf = 0;
+      if (disabled()) {
         clear();
         return;
       }
-
-      while (points.length && now - points[0].at > TRAIL_LIFETIME_MS)
-        points.shift();
-
-      context.clearRect(0, 0, viewportWidth, viewportHeight);
-      if (!points.length) {
-        canvas.setAttribute("data-active", "false");
+      context.clearRect(0, 0, width, height);
+      if (points.length < 2) {
+        canvas.dataset.active = "false";
         return;
       }
 
       const latest = points[points.length - 1];
-      const fade = Math.min(1, (TRAIL_LIFETIME_MS - (now - latest.at)) / 700);
-      context.globalAlpha = Math.max(0, fade);
-      context.strokeStyle = "#f0362b";
-      context.lineWidth = 4.5;
-      context.lineJoin = "round";
+      const age = Math.max(0, now - latest.time);
+      const reduced = motionPreference.matches;
+      if (!reduced && age > INK_HOLD_MS + INK_FADE_MS) {
+        clear();
+        return;
+      }
+      context.save();
+      context.globalAlpha = reduced ? 1 : Math.max(0, Math.min(1,
+        (INK_HOLD_MS + INK_FADE_MS - age) / INK_FADE_MS));
+      context.strokeStyle = "#eb302b";
       context.lineCap = "round";
+      context.lineJoin = "round";
+      context.lineWidth = 5;
       context.beginPath();
       context.moveTo(points[0].x, points[0].y);
-      if (!prefersReducedMotion.matches) for (let i = 1; i < points.length; i++) {
-        const before = points[i - 1];
+      for (let i = 1; i < points.length; i++) {
+        const previous = points[i - 1];
         const current = points[i];
         context.quadraticCurveTo(
-          before.x, before.y,
-          (before.x + current.x) / 2,
-          (before.y + current.y) / 2,
+          previous.x, previous.y,
+          (previous.x + current.x) / 2,
+          (previous.y + current.y) / 2,
         );
       }
-      if (!prefersReducedMotion.matches) {
-        context.lineTo(latest.x, latest.y);
-        context.stroke();
-      }
+      context.lineTo(latest.x, latest.y);
+      context.stroke();
+      context.restore();
 
-      // Large contrast-ring and vivid red ink tip are visible independently
-      // of the line, even with reduced-motion turned on in Windows.
-      context.globalAlpha = 1;
-      context.fillStyle = "#ffffff";
-      context.beginPath();
-      context.arc(latest.x, latest.y, 10, 0, Math.PI * 2);
-      context.fill();
-      context.fillStyle = "#f0362b";
-      context.beginPath();
-      context.arc(latest.x, latest.y, 7.5, 0, Math.PI * 2);
-      context.fill();
-      canvas.setAttribute("data-active", "true");
-      canvas.setAttribute("data-render-mode", prefersReducedMotion.matches ? "marker" : "trail");
-      if (!prefersReducedMotion.matches) frame = requestAnimationFrame(render);
+      // Keep the actual stroke as the only UI, instead of a standalone dot.
+      canvas.dataset.active = "true";
+      canvas.dataset.pointCount = String(points.length);
+      canvas.dataset.renderMode = reduced ? "trail-static" : "trail";
+
+      // Reduced Motion: paint synchronously on mouse events, no RAF animation.
+      if (!reduced) raf = requestAnimationFrame(paint);
     };
 
     const record = (x: number, y: number) => {
-      if (isDisabled()) {
+      if (disabled()) {
         clear();
         return;
       }
-      if (x < 0 || y < 0 || x > viewportWidth || y > viewportHeight) return;
-      const latest = points[points.length - 1];
-      if (latest && Math.hypot(latest.x - x, latest.y - y) < 2) return;
-      if (prefersReducedMotion.matches) points.length = 0;
-      points.push({ x, y, at: performance.now() });
-      if (points.length > MAX_POINTS)
-        points.splice(0, points.length - MAX_POINTS);
-      if (!frame) frame = requestAnimationFrame(render);
-    };
+      if (x < 0 || y < 0 || x > width || y > height) return;
+      const now = performance.now();
+      const last = points[points.length - 1];
+      // A pause starts a new sketch rather than connecting two unrelated
+      // positions with a long, distracting line.
+      if (now - lastMove > PAUSE_BETWEEN_STROKES_MS) points.length = 0;
+      lastMove = now;
+      if (last && points.length && Math.hypot(x - last.x, y - last.y) < 2) return;
+      points.push({ x, y, time: now });
+      if (points.length > MAX_POINTS) points.shift();
 
-    const pointerMove = (event: PointerEvent) => {
-      if (event.pointerType === "mouse" || event.pointerType === "pen")
-        record(event.clientX, event.clientY);
-    };
-    // Trackpads, hybrid laptops, and some browsers fire mousemove but do not
-    // report (pointer:fine). Do not gate on that media query.
-    const mouseMove = (event: MouseEvent) => record(event.clientX, event.clientY);
-    const visibilityChange = () => {
-      if (isDisabled()) clear();
-      else if (points.length) {
-        if (frame) cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(render);
+      if (motionPreference.matches) {
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+        paint(now);
+      } else if (!raf) {
+        raf = requestAnimationFrame(paint);
       }
     };
 
-    resize();
-    window.addEventListener("pointermove", pointerMove, { passive: true });
-    window.addEventListener("mousemove", mouseMove, { passive: true });
-    window.addEventListener("resize", resize, { passive: true });
-    window.addEventListener("blur", clear);
-    window.addEventListener("uii:focus-mode-changed", visibilityChange);
-    document.addEventListener("visibilitychange", visibilityChange);
-    prefersReducedMotion.addEventListener("change", visibilityChange);
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerType === "mouse" || e.pointerType === "pen")
+        record(e.clientX, e.clientY);
+    };
+    const onMouseMove = (e: MouseEvent) => record(e.clientX, e.clientY);
+    const onPreferenceChange = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      if (disabled()) clear();
+      else paint(performance.now());
+    };
 
+    resize();
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("scroll", clear, { passive: true });
+    window.addEventListener("blur", clear);
+    document.addEventListener("visibilitychange", onPreferenceChange);
+    window.addEventListener("uii:focus-mode-changed", onPreferenceChange);
+    motionPreference.addEventListener("change", onPreferenceChange);
     return () => {
-      window.removeEventListener("pointermove", pointerMove);
-      window.removeEventListener("mousemove", mouseMove);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", clear);
       window.removeEventListener("blur", clear);
-      window.removeEventListener("uii:focus-mode-changed", visibilityChange);
-      document.removeEventListener("visibilitychange", visibilityChange);
-      prefersReducedMotion.removeEventListener("change", visibilityChange);
+      document.removeEventListener("visibilitychange", onPreferenceChange);
+      window.removeEventListener("uii:focus-mode-changed", onPreferenceChange);
+      motionPreference.removeEventListener("change", onPreferenceChange);
       clear();
     };
   }, []);
@@ -163,6 +169,7 @@ export function CreativePointerTrail() {
       ref={canvasRef}
       data-testid="creative-pointer-trail"
       data-active="false"
+      data-point-count="0"
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-[9999] h-[100dvh] w-screen select-none"
       style={{ background: "transparent" }}
