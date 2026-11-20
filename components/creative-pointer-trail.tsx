@@ -54,7 +54,9 @@ export function CreativePointerTrail({ enabled }: { enabled: boolean }) {
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse" || event.clientX < 0 || event.clientY < 0) return;
+      if (event.pointerType !== "mouse" || event.clientX < 0 || event.clientY < 0 ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+          !window.matchMedia("(pointer: fine)").matches) return;
       const last = points[points.length - 1];
       if (last && Math.hypot(last.x - event.clientX, last.y - event.clientY) < 3) return;
       points.push({ x: event.clientX, y: event.clientY, at: performance.now() });
