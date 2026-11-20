@@ -9,6 +9,7 @@ const field = "mt-1.5 min-h-11 w-full rounded-md border border-slate-300 px-3 py
 
 export function LearningAuthForm() {
   const [signUp, setSignUp] = useState(false);
+  const [requestedRole, setRequestedRole] = useState<"STUDENT" | "LECTURER" | "MENTOR">("STUDENT");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -43,10 +44,19 @@ export function LearningAuthForm() {
       const auth = getSupabaseBrowserClient().auth;
       if (signUp) {
         const result = await withAuthDeadline(() => auth.signUp({
-          email: email.trim(), password, options: { emailRedirectTo: window.location.origin + window.location.pathname },
+          email: email.trim(), password, options: {
+            emailRedirectTo: window.location.origin + window.location.pathname,
+            // Metadata represents an interest/request, NEVER an authorization role.
+            // The NestJS JwtAuthGuard always provisions STUDENT until a trusted
+            // administrator approves a teaching or mentoring account.
+            data: { requested_role: requestedRole },
+          },
         }));
         if (result.error) throw result.error;
-        if (!result.data.session) setMessage("Kiểm tra hộp thư để xác nhận tài khoản, rồi quay lại đăng nhập.");
+        if (!result.data.session) setMessage(requestedRole === "STUDENT"
+          ? "Kiểm tra hộp thư để xác nhận tài khoản, rồi quay lại đăng nhập."
+          : "Đã ghi nhận vai trò bạn quan tâm. Hãy xác nhận email; tài khoản trước tiên có quyền Sinh viên. Nhà trường cần xác minh trước khi cấp quyền giảng dạy/cố vấn.");
+        else if (requestedRole !== "STUDENT") setMessage("Đăng ký thành công. Vai trò bạn chọn là một yêu cầu, chưa phải quyền truy cập. Liên hệ quản trị viên để được xác minh.");
         setPassword("");
         setConfirmation("");
       } else {
@@ -113,6 +123,23 @@ export function LearningAuthForm() {
             aria-describedby={signUp ? "auth-password-hint" : undefined} className={field}/>
           {signUp && <p id="auth-password-hint" className="mt-1 text-sm text-slate-600">Dùng ít nhất 8 ký tự.</p>}
         </div>
+        {signUp && <fieldset className="rounded-xl border border-[#d6e3dc] bg-[#f4f9f4] p-4">
+          <legend className="px-1 text-sm font-bold text-[#173c43]">Bạn muốn tham gia UII với vai trò nào?</legend>
+          <div className="mt-2 space-y-2">
+            {([
+              ["STUDENT", "Sinh viên", "Tham gia khóa học và dự án."],
+              ["LECTURER", "Giảng viên", "Đề nghị quyền tạo khóa học và đánh giá."],
+              ["MENTOR", "Cố vấn", "Đề nghị quyền đồng hành cùng dự án."],
+            ] as const).map(([value, label, detail]) => (
+              <label key={value} className="flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+                <input className="mt-1 size-4 accent-[#164767]" type="radio" name="requested-role" value={value}
+                  checked={requestedRole === value} onChange={() => setRequestedRole(value)}/>
+                <span><strong className="block">{label}</strong><span className="mt-0.5 block text-xs leading-5 text-slate-600">{detail}</span></span>
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-xs leading-6 text-[#47606a]">Đây là vai trò <strong>mong muốn</strong>, không phải quyền được cấp ngay. Tất cả tài khoản bắt đầu ở quyền Sinh viên; quyền Giảng viên/Cố vấn/Quản trị phải được xác minh và cấp bởi quản trị viên.</p>
+        </fieldset>}
         {signUp && <div>
           <label htmlFor="auth-confirmation" className="text-sm font-semibold">Xác nhận mật khẩu</label>
           <input ref={confirmInput} id="auth-confirmation" required autoComplete="new-password" type={visible ? "text" : "password"} value={confirmation}
