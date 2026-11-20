@@ -95,6 +95,36 @@ export function LessonPractice({
     return () => { alive = false; };
   }, [kind, isEnrolled, canManage, courseId, token]);
 
+  /** Fill the editor, but never persist or publish without lecturer action. */
+  function loadExample(kindToLoad: Kind) {
+    setKind(kindToLoad);
+    setPublished(false);
+    setMaxAttempts(3);
+    setPassingScore(70);
+    setDueAt("");
+    if (kindToLoad === "QUIZ") {
+      setTitle("Design Thinking Basics Quiz · Bản mẫu");
+      setInstructions("Chọn đáp án phù hợp nhất cho mỗi câu. Sau khi nộp, xem giải thích rồi áp dụng vào một tình huống thực tế.");
+      setQuestions([
+        {id:"demo-1",prompt:"Mục tiêu chính của Design Thinking là gì?",options:["Ghi nhớ lý thuyết","Giải quyết vấn đề lấy con người làm trung tâm","Viết code nhanh hơn","Thay thế mọi cuộc họp"],correctIndex:1,explanation:"Design Thinking tập trung vào nhu cầu người dùng và cải tiến dựa trên bằng chứng.",points:1},
+        {id:"demo-2",prompt:"Chế độ nào tập trung vào việc thấu hiểu con người?",options:["Test","Define","Empathize","Prototype"],correctIndex:2,explanation:"Empathize giúp tìm hiểu trải nghiệm và nhu cầu thực tế.",points:1},
+        {id:"demo-3",prompt:"Một nguyên mẫu ban đầu nên là gì?",options:["Sản phẩm hoàn thiện","Mô hình đủ để học từ người dùng","Chiến dịch quảng cáo","Bảng điểm cuối kỳ"],correctIndex:1,explanation:"Prototype ưu tiên học nhanh thay vì hoàn thiện ngay.",points:1},
+        {id:"demo-4",prompt:"Thử nghiệm mang lại điều gì cho nhóm?",options:["Bảo đảm thành công","Phản hồi để cải tiến","Loại bỏ nhu cầu người dùng","Thay thế giai đoạn phát ý tưởng"],correctIndex:1,explanation:"Test cung cấp dữ liệu để quay lại điều chỉnh định nghĩa, ý tưởng hoặc nguyên mẫu.",points:1},
+        {id:"demo-5",prompt:"Quy trình Design Thinking vận hành như thế nào?",options:["Luôn theo một chiều cố định","Linh hoạt, có thể lặp lại","Chỉ dành cho người làm thiết kế","Chỉ dành cho doanh nghiệp"],correctIndex:1,explanation:"Năm chế độ không phải năm cổng bắt buộc đi theo thứ tự.",points:1},
+      ]);
+    } else if (kindToLoad === "WRITTEN") {
+      setTitle("Observation Reflection · Bản mẫu");
+      setInstructions("Quan sát một trải nghiệm dịch vụ trong trường khoảng 15 phút. Viết 150–200 từ: người dùng làm gì; gặp khó khăn ở đâu; cảm xúc nào chỉ là suy đoán; một nhu cầu chưa được đáp ứng. Tránh nhập dữ liệu nhận dạng cá nhân. Gợi ý rubric: Quan sát 30, insight 30, tập trung người dùng 20, diễn đạt 20.");
+      setQuestions([newQuestion()]);
+    } else {
+      setTitle("Low-Fidelity Prototype Challenge · Bản mẫu");
+      setInstructions("Tạo một nguyên mẫu giấy hoặc storyboard cho ý tưởng nhóm. Chuẩn bị 1 hình ảnh nguyên mẫu, 1 đoạn mô tả ngắn, 3 giả định cần thử và 3 phát hiện từ phản hồi. Khi sử dụng thật, liên kết với dự án/nhóm được phép truy cập và nộp minh chứng qua Evidence.");
+      setQuestions([newQuestion()]);
+    }
+    setNotice("Đã nạp nội dung mẫu vào biểu mẫu. Hãy chỉnh sửa, kiểm duyệt đáp án và chủ động bấm Lưu bài tập; không tự công bố.");
+    setError("");
+  }
+
   function reviseQuestion(index: number, patch: Partial<Question>) {
     setQuestions(items => items.map((item, i) => i === index ? { ...item, ...patch } : item));
   }
@@ -162,6 +192,15 @@ export function LessonPractice({
         "Giảng viên chưa công bố bài tập cho bài học này."}
     </div>}
     {!loading && canManage && editing && <form onSubmit={event => void save(event)} className="space-y-5 rounded-2xl bg-slate-50 p-4 sm:p-6">
+      <div className="rounded-xl border border-[#f3d0b5] bg-[#fff7ec] p-4">
+        <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#a44b25]">Bộ bài tập mẫu · Chỉ điền biểu mẫu, không lưu tự động</p>
+        <p className="mt-1 text-xs leading-6 text-slate-600">Chọn một mẫu có sẵn, chỉnh sửa theo khóa học rồi bấm Lưu. Mặc định các mẫu chưa được công bố.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => loadExample("QUIZ")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Quiz mẫu · 5 câu</button>
+          <button type="button" onClick={() => loadExample("WRITTEN")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Tự luận mẫu</button>
+          <button type="button" onClick={() => loadExample("PROJECT")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Dự án mẫu</button>
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-semibold">Hình thức
           <select value={kind} onChange={e => setKind(e.target.value as Kind)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3">
