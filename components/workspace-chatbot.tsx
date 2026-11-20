@@ -90,7 +90,7 @@ export function WorkspaceChatbot({ role, pathname = "/dashboard" }: {role?: Work
   }
   const suggestions = roleQuestions[role ?? "GUEST"];
   return <>
-    <button type="button" aria-label={open ? "Đóng chatbot hướng dẫn" : "Mở chatbot hướng dẫn UII"}
+    <button type="button" aria-label={open ? "Đóng Hỏi UII – chatbot hướng dẫn" : "Mở Hỏi UII – chatbot hướng dẫn"}
       aria-expanded={open} aria-controls="uii-guide-chat" onClick={() => setOpen(value => !value)}
       className="fixed bottom-5 right-4 z-50 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#123c75] px-4 py-3 text-sm font-bold text-white shadow-[0_10px_28px_rgba(8,29,68,0.28)] transition hover:bg-[#0c2c54] focus-visible:outline-4 focus-visible:outline-orange-500">
       {open ? <X size={20} aria-hidden="true"/> : <MessageCircle size={20} aria-hidden="true"/>}
