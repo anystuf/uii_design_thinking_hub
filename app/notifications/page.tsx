@@ -75,7 +75,11 @@ export default function NotificationsPage() {
     <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Thông báo" role={account?.token === token ? account.role : undefined} guest={ready && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-5 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Thông báo</h1>
+        <header className="rounded-[28px] border border-[#cce5d7] bg-[#d4f0dd] p-6 sm:p-9">
+          <p className="text-xs font-black uppercase tracking-[.16em] text-[#78513b]">YOUR NEXT STEP</p>
+          <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Thông báo và phản hồi.</h1>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Nắm những cập nhật quan trọng để tiếp tục học, thực hành và cải tiến.</p>
+        </header>
         <p className="text-sm text-slate-600">Theo dõi hạn nộp và phản hồi dành cho bạn.</p>
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
         {!ready ? <WorkspaceLoading label="Đang kiểm tra phiên đăng nhập…"/> : busy && <WorkspaceLoading label="Đang tải thông báo…"/>}
