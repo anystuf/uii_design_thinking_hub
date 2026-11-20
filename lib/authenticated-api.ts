@@ -87,7 +87,7 @@ export async function authenticatedApi<T>(path: string, token: string, init?: Re
     const payload = await response.text();
     if (!payload.trim()) {
       if ((init?.method ?? 'GET').toUpperCase() === 'GET' &&
-          /^\\/lessons\\/[^/]+\\/exercise$/.test(path)) return null as T;
+          /^\/lessons\/[^/]+\/exercise$/.test(path)) return null as T;
       throw new WorkspaceApiError(502, 'Máy chủ trả về dữ liệu rỗng không hợp lệ. Vui lòng thử lại.');
     }
     try {
