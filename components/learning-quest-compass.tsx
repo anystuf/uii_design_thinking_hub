@@ -7,6 +7,7 @@ import {
   Lightbulb, MapPin, PauseCircle, PlayCircle, RotateCcw, Shapes, Sparkles,
 } from "lucide-react";
 import { authenticatedApi as api } from "@/lib/authenticated-api";
+import { studioModeHref } from "@/lib/design-thinking-learning-kit";
 
 type Mode = "EMPATHIZE" | "DEFINE" | "IDEATE" | "PROTOTYPE" | "TEST";
 export type FocusStep = "learn" | "practice" | "apply";
@@ -153,7 +154,7 @@ export function LearningQuestCompass({
           <p className="mt-1 text-sm leading-6 text-slate-600">{current.hint}</p>
           <p className="mt-1 text-xs text-slate-500">Đây là điểm chú ý do bạn chọn, không phải cấp độ hay điểm số đánh giá.</p>
         </div>
-        <Link href="/studio" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-3 text-sm font-bold text-[#153b77] hover:bg-blue-50">
+        <Link href={studioModeHref(mode, courseId)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-3 text-sm font-bold text-[#153b77] hover:bg-blue-50">
           Thực hành <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </div>
