@@ -357,6 +357,7 @@ export function LiveHubDashboard() {
               <div className="pointer-events-none absolute -right-14 -top-24 h-80 w-80 rounded-full border-[42px] border-[#f37021]/20" aria-hidden="true" />
               <div className="relative flex flex-wrap items-end justify-between gap-6">
                 <div className="max-w-2xl">
+                  <p className="mb-2 text-sm font-semibold text-slate-200">Xin chào, {account.fullName}</p>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Không gian học tập</p>
                   <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">Chào {account.fullName.split(" ").slice(-1)[0] || "bạn"}, <span className="text-[#ff9b59]">tiếp tục tạo khác biệt.</span></h1>
                   <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Học hỏi, khám phá, thực hành và phát triển giải pháp hữu ích cho cộng đồng." : lecturer ? "Dẫn dắt những ý tưởng, đồng hành cùng sinh viên và đưa ra phản hồi giá trị." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
