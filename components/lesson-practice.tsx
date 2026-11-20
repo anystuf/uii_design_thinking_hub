@@ -129,6 +129,7 @@ export function LessonPractice({
         method: "POST", body: JSON.stringify(body),
       });
       setLatest(record); setAttempts(current => [record, ...current]);
+      window.dispatchEvent(new Event("uii:learning-progress-changed"));
       setNotice(record.status === "GRADED" ? "Đã nộp và chấm bài tự động." : "Đã gửi bài. Hãy đợi giảng viên đánh giá.");
       setAnswers([]); setResponseText(""); setProjectId("");
     } catch (err) { setError(err instanceof Error ? err.message : "Không nộp được bài."); }
