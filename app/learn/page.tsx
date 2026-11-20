@@ -74,6 +74,14 @@ export default function LearningFoundationPage() {
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(false);
   const [focusStep, setFocusStep] = useState<FocusStep>('learn');
+  useEffect(() => {
+    if (!focusMode || learningView !== 'player') return;
+    const target = document.getElementById('quest-task-' + focusStep);
+    if (!target) return;
+    target.scrollIntoView({ block: 'start', behavior: 'auto' });
+    target.focus({ preventScroll: true });
+  }, [focusMode, focusStep, learningView, activeLessonId]);
+
 
   useEffect(() => {
     let active = true;
@@ -444,17 +452,17 @@ export default function LearningFoundationPage() {
                     focusMode={focusMode} focusStep={focusStep}
                     onFocusModeChange={setFocusMode} onFocusStepChange={setFocusStep}
                   />}
-                  <div className={focusMode && focusStep !== "learn" && user.role === "STUDENT" ? "hidden" : "space-y-6"}>
+                  <div id="quest-task-learn" role="region" aria-label="Học nội dung bài" tabIndex={-1} className={focusMode && focusStep !== "learn" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5 space-y-6"}>
                   {getYouTubeEmbedUrl(currentLesson.videoUrl) && <div className="aspect-video overflow-hidden rounded-2xl bg-slate-950"><iframe title={'Video bài học: '+currentLesson.title} src={getYouTubeEmbedUrl(currentLesson.videoUrl)!} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full" allowFullScreen/></div>}
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && (/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <video className="aspect-video w-full rounded-2xl bg-black" controls preload="metadata" src={getSafeHttpUrl(currentLesson.videoUrl)!}>Trình duyệt không hỗ trợ phát video.</video>}
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && !(/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <a href={getSafeHttpUrl(currentLesson.videoUrl)!} target="_blank" rel="noreferrer" className="text-sm font-bold text-[#153b77] underline">Mở video trong tab mới</a>}
                   {currentLesson.content && <div className="rounded-xl bg-[#f8fafd] p-5"><h4 className="mb-3 font-bold">Nội dung bài học</h4><p className="whitespace-pre-wrap break-words text-base leading-8 text-slate-700">{currentLesson.content}</p></div>}
                   {getResourceLinks(currentLesson.content).length > 0 && <div><h4 className="mb-3 font-bold">Tài liệu tham khảo</h4><ul className="space-y-2">{getResourceLinks(currentLesson.content).map(link => <li key={link}><a className="break-all text-sm font-semibold text-[#153b77] underline" href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>}
                   </div>
-                  <div className={focusMode && focusStep !== "practice" && user.role === "STUDENT" ? "hidden" : ""}>
+                  <div id="quest-task-practice" role="region" aria-label="Luyện tập và nhận phản hồi" tabIndex={-1} className={focusMode && focusStep !== "practice" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5"}>
                   <LessonPractice key={currentLesson.id} lessonId={currentLesson.id} courseId={course.id} token={token} canManage={canEditCourse} isEnrolled={isEnrolled}/>
                   </div>
-                  <div className={focusMode && focusStep !== "apply" && user.role === "STUDENT" ? "hidden" : ""}>
+                  <div id="quest-task-apply" role="region" aria-label="Vận dụng vào dự án" tabIndex={-1} className={focusMode && focusStep !== "apply" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5"}>
                   <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5"><h4 className="flex items-center gap-2 font-bold"><Sparkles size={18} aria-hidden="true"/> Áp dụng kiến thức</h4><p className="mt-2 text-sm leading-7">Tìm một vấn đề thực tế, ghi nhận điều bạn quan sát và thử áp dụng phương pháp vừa học trong dự án.</p><Link href="/studio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#153b77] underline">Thực hành trong Design Studio <ArrowRight size={16}/></Link></div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
