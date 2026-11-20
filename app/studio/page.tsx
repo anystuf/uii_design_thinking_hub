@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { ProjectDiscussion } from '@/components/project-discussion';
+import { ExternalCollaborationBoard } from '@/components/external-collaboration-board';
 import { SampleTeamGallery } from '@/components/learning-stage-workbench';
 import { guideForStage } from '@/lib/stage-experience';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -549,6 +550,7 @@ export default function DesignStudioPage() {
                         </section>
 
                         <ProjectDiscussion projectId={team.id} token={token} viewerId={user.id}/>
+                        <ExternalCollaborationBoard/>
                         <section className={card}>
                           <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
                             {MODES.map((item) => (
