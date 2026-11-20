@@ -35,6 +35,12 @@ export class CoursesController {
     return this.coursesService.myEnrollments(user);
   }
 
+  @Get(':id/my-rewards')
+  @Roles(UserRole.STUDENT)
+  myRewards(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.coursesService.myRewards(id, user);
+  }
+
   @Get(':id/my-progress')
   @Roles(UserRole.STUDENT)
   myProgress(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
