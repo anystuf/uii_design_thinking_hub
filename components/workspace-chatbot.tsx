@@ -8,9 +8,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { deterministicGuide, type HubRole, type GuideReply } from "@/lib/uii-assistant-knowledge";
 
 type LinkItem = {href:string;label:string};
-type ChatMessage = {id:number;from:"bot"|"user";text:string;links?:LinkItem[];mode?:string};
-type ApiReply = {answer:string;mode:string;links?:LinkItem[];role?:HubRole;verified?:boolean};
-type ApiStatus = {assistant:"gemini"|"guided";deployment:string;modelConfigured:boolean};
+type ChatMessage = {id:number;from:"bot"|"user";text:string;links?:LinkItem[];mode?:string;aiStatus?:string;providerHttpStatus?:number};
+type ApiReply = {answer:string;mode:string;links?:LinkItem[];role?:HubRole;verified?:boolean;aiStatus?:string;providerHttpStatus?:number};
+type ApiStatus = {assistant:"configured"|"gemini"|"guided";deployment:string;modelConfigured:boolean;connectionVerified?:boolean};
 
 const sampleQuestions: Record<HubRole,string[]> = {
   GUEST:["UII có những tính năng nào?","Đăng ký vai trò giảng viên thế nào?","Trạng thái phát triển hiện tại?","Thử học Design Thinking"],
@@ -44,7 +44,7 @@ export function WorkspaceChatbot() {
   const [input,setInput]=useState("");
   const [busy,setBusy]=useState(false);
   const [role,setRole]=useState<HubRole>("GUEST");
-  const [availability,setAvailability]=useState<"loading"|"gemini"|"guided">("loading");
+  const [availability,setAvailability]=useState<"loading"|"configured"|"gemini"|"guided"|"degraded">("loading");
   const [messages,setMessages]=useState<ChatMessage[]>([
     {id:0,from:"bot",text:"Chào bạn! Mình là trợ lý học tập UII. Mình có thể giới thiệu các tính năng, chỉ từng bước thực hiện và giúp bạn xem tiến độ học sau khi đăng nhập. Bạn muốn khám phá điều gì trước?"},
   ]);
@@ -66,7 +66,7 @@ export function WorkspaceChatbot() {
     fetch("/api/assistant/chat",{cache:"no-store"}).then(async response=>{
       if(!response.ok)throw new Error("Assistant status unavailable");
       return response.json() as Promise<ApiStatus>;
-    }).then(data=>{if(!cancelled)setAvailability(data.assistant==="gemini"?"gemini":"guided");})
+    }).then(data=>{if(!cancelled)setAvailability(data.modelConfigured?"configured":"guided");})
       .catch(()=>{if(!cancelled)setAvailability("guided");});
     return ()=>{cancelled=true;};
   },[open]);
@@ -98,9 +98,9 @@ export function WorkspaceChatbot() {
       const result=await response.json() as ApiReply;
       if(result.role&&sampleQuestions[result.role])setRole(result.role);
       if(result.mode==="gemini")setAvailability("gemini");
-      else if(result.mode==="guided")setAvailability("guided");
+      else if(result.mode==="guided")setAvailability(result.aiStatus && result.aiStatus!=="not-configured"?"degraded":"guided");
       const links=(result.links||[]).filter(item=>validLinks.has(item.href)).slice(0,2);
-      setMessages(previous=>[...previous.slice(-19),{id:id+1,from:"bot",text:result.answer.slice(0,6000),links,mode:result.mode}]);
+      setMessages(previous=>[...previous.slice(-19),{id:id+1,from:"bot",text:result.answer.slice(0,6000),links,mode:result.mode,aiStatus:result.aiStatus,providerHttpStatus:result.providerHttpStatus}]);
     }catch(error){
       if(controller.signal.aborted)return;
       const fallback:GuideReply=deterministicGuide(question,role,pathname);
@@ -134,7 +134,9 @@ export function WorkspaceChatbot() {
           <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#d7e9ed]">
             {availability==="gemini"?<><Sparkles size={13}/> Gemini AI · hướng dẫn theo ngữ cảnh</>:
               availability==="loading"?"Đang kiểm tra trạng thái trợ lý…":
-              <><BookOpen size={13}/> Hướng dẫn từ kho kiến thức UII</>}
+              availability==="configured"?<><Sparkles size={13}/> Đã cấu hình Gemini · chưa thử kết nối</>:
+              availability==="degraded"?<><BookOpen size={13}/> Gemini chưa phản hồi · đang dùng hướng dẫn dự phòng</>:
+              <><BookOpen size={13}/> Hướng dẫn từ kho kiến thức UII</>
           </p>
         </div>
         <button type="button" className="grid size-10 place-items-center rounded-lg hover:bg-white/10" aria-label="Đóng cửa sổ chatbot" onClick={()=>setOpen(false)}><X size={18} aria-hidden="true"/></button>
@@ -152,6 +154,8 @@ export function WorkspaceChatbot() {
             {message.mode==="gemini"?"Gemini AI · kiến thức UII":
              message.mode==="verified-data"?"Tiến độ từ API xác thực":
              message.mode==="verified-status"?"Thông tin trạng thái hệ thống":
+             message.aiStatus && message.aiStatus!=="ok" && message.aiStatus!=="not-configured" ?
+               "Hướng dẫn dự phòng · Gemini: "+({["invalid-key"]:"khóa bị từ chối",["quota"]:"giới hạn sử dụng",["model-unavailable"]:"model không khả dụng",["timeout"]:"quá thời gian",["empty-response"]:"không có nội dung trả lời",["provider-unavailable"]:"dịch vụ tạm gián đoạn",["request-rejected"]:"request bị từ chối",["invalid-model"]:"cấu hình model không hợp lệ"} as Record<string,string>)[message.aiStatus] + (message.providerHttpStatus?" (HTTP "+message.providerHttpStatus+")":""):
              "Hướng dẫn từ dữ liệu nền tảng"}
           </p>}
         </div>)}
@@ -176,6 +180,8 @@ export function WorkspaceChatbot() {
         </form>
         <p className="mt-2 text-[11px] leading-5 text-[#58717a]">
           {availability==="gemini"?"Trợ lý Gemini có thể trả lời tự nhiên; thông tin liên quan tài khoản chỉ lấy khi được xác minh.":
+          availability==="configured"?"Đã nhận cấu hình Gemini. Hãy gửi câu hỏi học thuật để kiểm tra kết nối thực tế.":
+          availability==="degraded"?"Gemini chưa trả lời thành công. Bản hướng dẫn dự phòng vẫn hoạt động; xem trạng thái dưới câu trả lời.":
           "Bạn vẫn được hướng dẫn ngay cả khi chưa cấu hình Gemini."}
           {" "}Không gửi mật khẩu, API key hay dữ liệu cá nhân nhạy cảm.
         </p>
