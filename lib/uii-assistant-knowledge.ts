@@ -48,6 +48,11 @@ export const GUIDE_TOPICS:readonly GuideTopic[]=[
     href:"/studio",action:"Mở Design Studio",status:"available",roles:all,
     summary:"Design Studio giúp học theo thử thách, nhóm và năm chế độ tư duy. Sinh viên chỉ xem/sửa dự án được phân quyền; các chế độ không bắt buộc theo thứ tự cố định.",
     steps:["Đăng nhập và mở Dự án → thử thách/nhóm được tham gia","Chọn Empathize/Define/Ideate/Prototype/Test tùy nhu cầu","Lưu bản nháp hoặc minh chứng, dùng phản hồi để lặp lại"]},
+  {id:"community",title:"Cộng đồng UII: hỏi đáp như Quora và trưng bày dự án",
+    keys:["cong dong","quora","mang xa hoi","hoi dap","dat cau hoi","dang cau hoi","tra loi","tra loi huu ich","binh chon","upvote","thao luan","bai dang","community","forum"],
+    href:"/community",action:"Mở Hỏi đáp cộng đồng",status:"limited",roles:all,
+    summary:"UII có mục Cộng đồng gồm hai khu vực khác nhau: Hỏi đáp nội bộ (chủ đề theo Empathize, Define, Ideate, Prototype, Test hoặc hỏi chung; thành viên đăng nhập có thể đặt câu hỏi, trả lời, bình chọn hữu ích, chủ câu hỏi hoặc ADMIN có thể chọn câu trả lời) và trưng bày dự án đã được duyệt. Hỏi đáp cần backend/migration mới; nếu tải lỗi thì chưa sẵn sàng ở môi trường đó. Không nhúng hoặc đăng chéo lên Quora. Thảo luận riêng dự án vẫn ở Studio.",
+    steps:["Đăng nhập → mở Cộng đồng → Hỏi đáp cùng cộng đồng","Tìm kiếm hoặc lọc giai đoạn → Đặt câu hỏi → điền tiêu đề, chủ đề, bối cảnh → Đăng câu hỏi","Mở một câu hỏi để đọc và gửi câu trả lời; bấm hữu ích để bình chọn; chủ câu hỏi có thể chọn câu trả lời","Muốn chia sẻ dự án: chỉ chủ dự án đã được duyệt hoặc quản trị viên có quyền đăng; mục riêng của nhóm nằm tại /studio"]},
   {id:"evidence",title:"Nộp minh chứng và tải tệp",
     keys:["minh chung","evidence","upload","tep","file","tai len","nop bai","submission"],
     href:"/evidence",action:"Mở Minh chứng & phản hồi",status:"available",roles:["STUDENT","LECTURER","MENTOR","ADMIN"],
@@ -110,7 +115,7 @@ export function findGuideTopics(question:string,role:HubRole,count=5):GuideTopic
 }
 export type GuideReply={text:string;links:{href:string;label:string}[]};
 export function deterministicGuide(query:string,role:HubRole,path="/"):GuideReply {
-  if(isPedagogicalRequest(query))return {text:pedagogicalFallback(query),links:[{href:"/demo",label:"Thử hoạt động học tập"}]};
+  if(isPedagogicalRequest(query) && !/(cong dong|quora|hoi dap|dat cau hoi|dang cau hoi|bai dang|binh chon|upvote|thao luan)/.test(normalizeGuide(query)))return {text:pedagogicalFallback(query),links:[{href:"/demo",label:"Thử hoạt động học tập"}]};
   if(isPersonalProgress(query))return {text:"Mình chỉ có thể thông báo tiến độ cá nhân sau khi tài khoản và dữ liệu được xác thực. Hãy đăng nhập và xem Tổng quan hoặc Khóa học; mình sẽ không tự đoán điểm hoặc phần trăm.",links:[{href:"/dashboard",label:"Xem tiến độ thật"}]};
   const matched=findGuideTopics(query,role,3);
   const chosen=isProductStatus(query)?GUIDE_TOPICS.find(t=>t.id==="status")!:matched[0];
