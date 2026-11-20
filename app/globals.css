@@ -145,3 +145,69 @@ input, select, textarea {
   /* Chat launcher is a sibling between the sidebar and main: retain the desktop offset. */
   .workspace-header ~ main { margin-left: 15rem; max-width: none; }
 }
+
+
+/* UII Design System — homepage is the canonical visual reference.
+   Shared across dashboard, course player, project, evidence, review & admin. */
+:root {
+  --uii-cream: #faf8f1;
+  --uii-navy: #173445;
+  --uii-ink: #132a35;
+  --uii-coral: #c94b35;
+  --uii-mint: #c8ebe3;
+  --uii-blue: #c4edf4;
+  --uii-border: #dbe4dc;
+}
+body:has(.uii-workspace) {
+  background: var(--uii-cream);
+  color: var(--uii-ink);
+  font-family: var(--font-sans-ui), "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+}
+.uii-workspace {
+  background: var(--uii-cream) !important;
+  color: var(--uii-ink);
+  font-family: var(--font-sans-ui), "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+}
+.uii-workspace main {
+  background: var(--uii-cream);
+  color: var(--uii-ink);
+}
+.uii-workspace main h1 {
+  color: var(--uii-ink);
+  font-size: clamp(1.9rem, 3vw, 3.25rem);
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+}
+.uii-workspace main h2 {
+  letter-spacing: -0.035em;
+}
+.uii-workspace main :is(section,article).rounded-2xl,
+.uii-workspace main :is(section,article).rounded-xl {
+  border-radius: 24px;
+}
+.uii-workspace main :is(button,a)[class*="bg-[#153b77]"],
+.uii-workspace main :is(button,a)[class*="bg-[#173762]"],
+.uii-workspace main :is(button,a)[class*="bg-[#123c75]"] {
+  background-color: var(--uii-navy);
+}
+.uii-workspace main :is(button,a)[class*="bg-[#b94708]"] {
+  background-color: var(--uii-coral);
+}
+.uii-workspace main :is(button,a)[class*="text-[#153b77]"] {
+  color: var(--uii-navy);
+}
+.uii-workspace main :is(input,textarea,select) {
+  border-radius: 14px;
+  border-color: #c9d8d0;
+  background-color: #fffefa;
+}
+.uii-workspace main :is(input,textarea,select):focus-visible {
+  outline-color: var(--uii-coral);
+}
+.uii-workspace main :is(.bg-blue-50,.bg-\[\#eef3fc\]) {
+  background-color: #dff1ee;
+}
+@media (max-width: 767px) {
+  .uii-workspace main h1 { font-size: clamp(1.75rem, 7vw, 2.5rem); }
+}
