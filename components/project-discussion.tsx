@@ -1,6 +1,7 @@
 "use client";
 
 import {useCallback,useEffect,useState,type FormEvent} from "react";
+import Link from "next/link";
 import {CheckCircle2,MessageSquareText,RefreshCcw,Send,ShieldCheck} from "lucide-react";
 import {authenticatedApi} from "@/lib/authenticated-api";
 
@@ -83,6 +84,6 @@ export function ProjectDiscussion({projectId,token,viewerId}:{projectId:string;t
      </div>
    </form>
    {sent&&<p role="status" className="mt-3 flex items-center gap-2 rounded-xl bg-[#e2f2e4] p-3 text-xs font-semibold text-[#246044]"><CheckCircle2 size={17}/>{sent}</p>}
-   {error&&<p role="alert" className="mt-3 rounded-xl border border-[#f6c6bd] bg-[#fff3ef] p-3 text-xs font-semibold text-[#a43d2a]">{error}</p>}
+   {error&&<p role="alert" className="mt-3 rounded-xl border border-[#f6c6bd] bg-[#fff3ef] p-3 text-xs font-semibold text-[#a43d2a]">{error} Nếu hệ thống chưa cho phép gửi, hãy kiểm tra quyền thành viên hoặc dùng <Link href="/community" className="underline">Cộng đồng sáng tạo</Link> để trao đổi về dự án đã công bố.</p>}
  </section>;
 }
