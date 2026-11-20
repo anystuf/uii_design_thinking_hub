@@ -45,3 +45,15 @@ test("public demo offers usable tools and shows truthful no-persistence feedback
   await page.getByRole("button",{name:"Đã thử công cụ"}).click();
   await expect(page.getByRole("status").filter({hasText:/không được gửi lên máy chủ/})).toBeVisible();
 });
+
+
+test("homepage and demo render without client-side JavaScript exceptions", async ({ page }) => {
+  test.skip(!!process.env.E2E_BASE_URL, "Local fixture only");
+  const exceptions: string[] = [];
+  page.on("pageerror", error => exceptions.push(error.message));
+  await page.goto("/");
+  await expect(page.getByRole("heading", {level:1})).toBeVisible();
+  await page.goto("/demo");
+  await expect(page.getByRole("heading",{name:/Try, learn/})).toBeVisible();
+  expect(exceptions, "unexpected client-side errors in public pages").toEqual([]);
+});
