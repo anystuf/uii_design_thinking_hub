@@ -33,14 +33,14 @@ const mentor: Guide = {
 };
 const guides = { STUDENT: student, LECTURER: teaching, ADMIN: [admin, ...teaching], MENTOR: [mentor] };
 
-export function WorkspaceGuide({ role }: { role?: WorkspaceRole }) {
+export function WorkspaceGuide({ role, triggerClassName }: { role?: WorkspaceRole; triggerClassName?: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<Guide | null>(null);
   const topics = role ? guides[role] : [login];
   return (
     <>
       <button type="button" onClick={() => { setSelected(null); dialog.current?.showModal(); }}
-        className="flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+        className={"flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold " + (triggerClassName ?? "text-slate-700 hover:bg-slate-100")}>
         <MessageCircle aria-hidden="true" size={17}/> <span>Trợ giúp</span>
       </button>
       <dialog ref={dialog} aria-labelledby="workspace-guide-title"
