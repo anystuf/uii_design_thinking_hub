@@ -352,9 +352,11 @@ export default function DesignStudioPage() {
       <WorkspaceNav title="Không gian dự án" role={user?.role} guest={authReady && !session} />
 
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-[#d5edc4] p-5 sm:p-8">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Dự án</h1>
+            <p className="text-xs font-black uppercase tracking-[.15em] text-[#95402a]">LEARN BY MAKING · PROJECT STUDIO</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight">Biến ý tưởng thành thứ có thể thử.</h1>
+            <p className="mt-1 text-sm font-semibold text-[#3f5860]">Dự án · Từ thử thách đến nguyên mẫu, minh chứng và cải tiến.</p>
             <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để bắt đầu'}</p>
           </div>
           {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Đang lưu hoặc tải thay đổi…</span>}
@@ -482,7 +484,10 @@ export default function DesignStudioPage() {
                     {team && (
                       <>
                         <section className={card}>
-                          <h3 className="mb-3 text-lg font-bold">{team.title} · Team Workspace</h3>
+                          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                             <h3 className="text-lg font-black">{team.title} · Team Workspace</h3>
+                             <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Nộp minh chứng hoặc link Drive ↗</Link>
+                           </div>
                           <div className="mb-4 flex flex-wrap gap-2">
                             {team.members.map((m) => <span key={m.id} className="rounded-full bg-[#eaf0fa] px-3 py-1.5 text-xs font-semibold">
                               {m.user.fullName} · {m.role}
@@ -525,6 +530,10 @@ export default function DesignStudioPage() {
                             ))}
                           </div>
                           <h3 className="text-xl font-extrabold">{MODES.find((m) => m.id === mode)?.label} Workspace</h3>
+                           <Link href={"/demo?tool="+encodeURIComponent(mode==="EMPATHIZE"?"Empathy Map":mode==="DEFINE"?"POV Builder":mode==="IDEATE"?"Crazy 8s":mode==="PROTOTYPE"?"Storyboard":"Feedback Canvas")+"#tools"}
+                             className="my-3 inline-flex min-h-11 items-center rounded-full border border-[#aacabd] bg-[#eaf5e6] px-4 text-xs font-black text-[#173445]">
+                             Mở canvas thực hành theo chế độ {mode} ↗
+                           </Link>
                           <p className="mb-4 text-sm text-slate-600">{MODES.find((m) => m.id === mode)?.hint} · Có thể quay lại bất kỳ mode nào.</p>
 
                           <div className="mb-5 grid gap-3 sm:grid-cols-2">
@@ -553,8 +562,9 @@ export default function DesignStudioPage() {
                                 <h4 className="text-lg font-bold">{activeActivity.template.name}</h4>
                                 <p className="mt-1 text-xs text-slate-600">{activeActivity.template.instructions}</p>
                               </div>
-                              {activeActivity.template.fields.map((field) => (
-                                <label key={field.key} className="block text-sm font-semibold">{field.label}
+                              <div className="grid gap-3 sm:grid-cols-2">
+                              {activeActivity.template.fields.map((field, fieldIndex) => (
+                                <label key={field.key} className="min-w-0 rounded-2xl border border-[#d3deda] p-4 text-sm font-extrabold text-[#173445]" style={{backgroundColor:["#ffe4b8","#c5edf1","#f7d7e2","#dcefc9"][fieldIndex%4]}}>{field.label}
                                   {field.type === 'textarea' ?
                                     <textarea rows={4} maxLength={5000} disabled={!canEditTeam}
                                       className={input + ' mt-2'} value={answers[field.key] ?? ''}
@@ -564,6 +574,8 @@ export default function DesignStudioPage() {
                                       onChange={(event) => { setAnswers((prev) => ({ ...prev, [field.key]: event.target.value })); setDirty(true); }}/>}
                                 </label>
                               ))}
+                              </div>
+                              <p className="text-xs leading-6 text-[#65787a]">Các ô được lưu trong hoạt động của nhóm trên máy chủ. Nếu cần bản đồ thấu cảm hoặc storyboard chi tiết, sử dụng canvas Miro từ bộ công cụ.</p>
                               {canEditTeam && <div className="flex flex-wrap gap-3">
                                 <button disabled={busy} className={minor} onClick={() => void saveActivity(false)}><RefreshCcw size={15} className="mr-1 inline"/> Lưu nháp</button>
                                 <button disabled={busy} className={action} onClick={() => void saveActivity(true)}><CheckCircle2 size={15} className="mr-1 inline"/> Hoàn thành activity</button>
