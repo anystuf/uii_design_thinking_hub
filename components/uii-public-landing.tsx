@@ -251,7 +251,7 @@ export function UIIPublicLanding() {
       <footer className="bg-[#132b3b] px-5 py-10 text-white sm:px-9 xl:px-14">
         <div className="mx-auto flex max-w-[1390px] flex-wrap items-start justify-between gap-6">
           <div><p className="text-xl font-black">UII <span className="text-[#e96a4a]">✳</span> Design Thinking Hub</p><p className="mt-3 max-w-lg text-xs leading-6 text-[#c4d1d6]">UII đang trong giai đoạn xây dựng, thử nghiệm. Khóa học, dự án, hình thức đánh giá và sự kiện trên landing page được minh họa riêng, không tự động tạo trong hệ thống LMS.</p></div>
-          <div className="flex flex-wrap gap-5 text-xs font-bold"><Link href="/learn">Đăng nhập</Link><Link href="/demo">Bài tập Demo</Link><Link href="/dashboard">Dashboard</Link><a href="https://unsplash.com/license" target="_blank" rel="noreferrer">Ảnh: Unsplash / tác giả gốc</a></div>
+          <div className="flex flex-wrap gap-5 text-xs font-bold"><Link href="/learn">Đăng nhập</Link><Link href="/demo">Bài tập Demo</Link><Link href="/dashboard">Dashboard</Link><a href="https://unsplash.com/license" target="_blank" rel="noreferrer">Ảnh: Unsplash / tác giả gốc</a><a href="https://unsplash.com/photos/people-in-a-design-meeting-in-an-office-boardroom-pzFzd1AD8Ow" target="_blank" rel="noreferrer">Hình nhóm: Mapbox (Unsplash)</a></div>
         </div>
       </footer>
     </div>
