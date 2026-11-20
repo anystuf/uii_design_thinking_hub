@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight, Brain, CheckCircle2, Compass, Flag, HeartHandshake,
-  Lightbulb, MapPin, PauseCircle, PlayCircle, RotateCcw, Shapes, Sparkles,
+  Lightbulb, MapPin, MousePointer2, PauseCircle, PlayCircle, RotateCcw, Shapes, Sparkles,
 } from "lucide-react";
 import { authenticatedApi as api } from "@/lib/authenticated-api";
 import { studioModeHref } from "@/lib/design-thinking-learning-kit";
+import { CreativePointerTrail } from "./creative-pointer-trail";
 
 type Mode = "EMPATHIZE" | "DEFINE" | "IDEATE" | "PROTOTYPE" | "TEST";
 export type FocusStep = "learn" | "practice" | "apply";
@@ -53,7 +54,21 @@ export function LearningQuestCompass({
   const [loading, setLoading] = useState(true);
   const [rewardError, setRewardError] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [doodlePointer, setDoodlePointer] = useState(true);
   const storageKey = "uii:learning-compass:v1:" + userId + ":" + courseId;
+  const pointerStorageKey = "uii:creative-pointer:v1:" + userId;
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(pointerStorageKey);
+      if (saved === "off") setDoodlePointer(false);
+      if (saved === "on") setDoodlePointer(true);
+    } catch { /* visual preference must never block learning */ }
+  }, [pointerStorageKey]);
+  const toggleDoodlePointer = () => setDoodlePointer(current => {
+    const next = !current;
+    try { window.localStorage.setItem(pointerStorageKey, next ? "on" : "off"); } catch { /* optional */ }
+    return next;
+  });
 
   useEffect(() => {
     try {
@@ -100,6 +115,7 @@ export function LearningQuestCompass({
   const current = modes.find(item => item.id === mode) ?? modes[0];
   return (
     <section aria-labelledby="quest-compass-title" className="space-y-5 rounded-[24px] border border-[#d7e5f7] bg-gradient-to-br from-[#f9fbff] via-white to-[#fff7f1] p-4 shadow-sm sm:p-6">
+      <CreativePointerTrail enabled={doodlePointer && !focusMode} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.13em] text-[#9c410f]">
@@ -112,14 +128,24 @@ export function LearningQuestCompass({
             Chọn điều bạn muốn khám phá. Năm chế độ có thể đi qua lại — không phải năm cửa phải vượt theo đúng thứ tự.
           </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" aria-pressed={doodlePointer} disabled={focusMode} onClick={toggleDoodlePointer}
+            aria-label={doodlePointer ? "Tắt con trỏ nét vẽ" : "Bật con trỏ nét vẽ"}
+            title="Nét vẽ đỏ chạy theo chuột trên máy tính. Tự tắt khi Focus Mode hoặc Reduce Motion được bật."
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#f0aca6] bg-[#fff4f2] px-4 text-sm font-bold text-[#9b241d] hover:bg-[#ffe7e2] disabled:cursor-not-allowed disabled:opacity-50">
+            <MousePointer2 size={18} aria-hidden="true"/>
+            {doodlePointer ? "Con trỏ vẽ · Bật" : "Con trỏ vẽ · Tắt"}
+          </button>
         <button type="button" aria-pressed={focusMode} onClick={toggleFocus}
           className={"inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold focus-visible:outline-4 " +
             (focusMode ? "border-[#0e4b84] bg-[#123c75] text-white" : "border-blue-200 bg-white text-[#153b77]")}>
           {focusMode ? <PauseCircle size={18} aria-hidden="true"/> : <Brain size={18} aria-hidden="true"/>}
           {focusMode ? "Thoát chế độ tập trung" : "Chế độ tập trung"}
         </button>
+        </div>
       </div>
 
+      {!focusMode && <p className="text-xs leading-5 text-[#8a3027]">Di chuyển chuột để vẽ đường đỏ như một nét phác thảo sáng tạo. Bạn có thể tắt hiệu ứng; trên thiết bị cảm ứng hoặc khi bật giảm chuyển động, nét vẽ tự tắt.</p>}
       <div role="group" aria-label="La bàn năm chế độ tư duy thiết kế" className={focusMode ? "hidden" : "grid grid-cols-2 gap-2 sm:grid-cols-5"}>
         {modes.map((item, index) => {
           const Icon = item.icon;
@@ -145,12 +171,13 @@ export function LearningQuestCompass({
       </div>
 
       {focusMode && <p className="text-xs text-slate-600">Đã thu gọn bản đồ và điểm số để bạn tập trung vào một nhiệm vụ.</p>}
-      <div role="status" className="flex flex-wrap items-start gap-3 rounded-2xl border border-orange-100 bg-white p-4">
+      <div role="status" className="flex flex-wrap items-start gap-3 rounded-2xl border-2 border-[#f3b5ad] bg-white p-4 shadow-[0_4px_0_#fff0ed]">
         <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff0e3] text-[#a6450b]">
           <MapPin size={20} aria-hidden="true"/>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold">{current.name} — {current.vi}</p>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#a12d26]">Con trỏ hành trình · Bạn ở đây</p>
+          <p className="mt-1 text-sm font-extrabold">{current.name} — {current.vi}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{current.hint}</p>
           <p className="mt-1 text-xs text-slate-500">Đây là điểm chú ý do bạn chọn, không phải cấp độ hay điểm số đánh giá.</p>
         </div>
