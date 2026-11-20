@@ -36,6 +36,7 @@ const readableDate=(value:string)=>new Date(value).toLocaleDateString("vi-VN",{d
 export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
   const [questions,setQuestions]=useState<Question[]>([]);
   const [loading,setLoading]=useState(true);
+  const [apiReady,setApiReady]=useState(false);
   const [error,setError]=useState("");
   const [notice,setNotice]=useState("");
   const [search,setSearch]=useState("");
@@ -54,15 +55,15 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
 
   const refresh=useCallback(async()=>{
     const result=await authenticatedApi<Question[]>("/community/questions",token);
-    setQuestions(result);
+    setQuestions(result);setApiReady(true);
   },[token]);
 
   useEffect(()=>{
     let active=true;
     setLoading(true);setError("");
     void authenticatedApi<Question[]>("/community/questions",token)
-      .then(items=>{if(active)setQuestions(items);})
-      .catch(err=>{if(active)setError(err instanceof Error?err.message:"Không tải được mục Hỏi đáp.");})
+      .then(items=>{if(active){setQuestions(items);setApiReady(true);}})
+      .catch(err=>{if(active){setApiReady(false);setError(err instanceof Error?err.message:"Không tải được mục Hỏi đáp.");}})
       .finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[token]);
@@ -151,14 +152,14 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
         <h2 id="community-qa-heading" className="mt-1 text-2xl font-black tracking-tight text-[#173445] sm:text-3xl">Hỏi đáp cùng cộng đồng</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[#526b70]">Đặt vấn đề thật, chia sẻ kinh nghiệm và kết nối câu trả lời với từng giai đoạn Design Thinking.</p>
       </div>
-      <button type="button" disabled={busy} onClick={()=>setComposing(v=>!v)} aria-expanded={composing}
+      <button type="button" disabled={busy||loading||!apiReady} onClick={()=>setComposing(v=>!v)} aria-expanded={composing}
         className={primary}><Plus size={18}/>{composing?"Đóng biểu mẫu":"Đặt câu hỏi"}</button>
     </div>
     {notice&&<p role="status" className="rounded-xl border border-[#c3e0ca] bg-[#ebf8ee] px-4 py-3 text-sm text-[#215b3b]"><Check size={16} className="mr-2 inline"/>{notice}</p>}
     {error&&<div role="alert" className="rounded-xl border border-[#f0c3b6] bg-[#fff2eb] p-4 text-sm leading-6 text-[#8b4138]">
       <p>{error}</p>
       <p className="mt-1 text-xs">Nếu backend chưa được cập nhật, Hỏi đáp có thể tạm thời chưa khả dụng. Khu chia sẻ dự án bên dưới vẫn hoạt động riêng.</p>
-      <button type="button" disabled={loading||busy} className="mt-2 text-xs font-bold underline" onClick={()=>{setError("");setLoading(true);void refresh().catch(err=>setError(err instanceof Error?err.message:"Không tải được câu hỏi.")).finally(()=>setLoading(false));}}>Thử tải lại</button>
+      <button type="button" disabled={loading||busy} className="mt-2 text-xs font-bold underline" onClick={()=>{setError("");setLoading(true);void refresh().catch(err=>{setApiReady(false);setError(err instanceof Error?err.message:"Không tải được câu hỏi.");}).finally(()=>setLoading(false));}}>Thử tải lại</button>
     </div>}
     {composing&&<form onSubmit={e=>void publishQuestion(e)} className="space-y-4 rounded-[24px] border border-[#bedad0] bg-white p-5 shadow-sm sm:p-6">
       <div className="flex items-center gap-2 text-[#173445]"><CircleHelp size={19}/><h3 className="text-lg font-black">Bạn muốn hỏi điều gì?</h3></div>
@@ -206,7 +207,7 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
           </div>
         </div>
         {loading&&<div role="status" className="rounded-2xl border bg-white p-5 text-sm">Đang tải câu hỏi thật…</div>}
-        {!loading&&visible.length===0&&<div className="rounded-[22px] border border-dashed border-[#b6d1c5] bg-white p-6 text-center">
+        {!loading&&!error&&visible.length===0&&<div className="rounded-[22px] border border-dashed border-[#b6d1c5] bg-white p-6 text-center">
           <MessageCircle className="mx-auto text-[#76968c]" size={28}/>
           <p className="mt-3 text-sm font-black text-[#20474f]">Chưa có câu hỏi phù hợp.</p>
           <p className="mt-1 text-xs leading-6 text-[#607778]">Hãy đổi bộ lọc hoặc đặt câu hỏi đầu tiên. Đây không phải dữ liệu mô phỏng.</p>
