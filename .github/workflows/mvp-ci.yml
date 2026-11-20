@@ -5,6 +5,12 @@ on:
     branches: ['feat/practice-assignment-chatbot-20261120', 'feat/learning-quest-compass-20261120', 'feat/classic-dashboard-course-experience-20261120', 'feat/workspace-guidance-auth-20261120', 'feat/production-acceptance-20261116', 'feat/role-dashboard-ux-20261114', 'fix/lms-security-and-authenticated-uat-20261114', 'feat/production-learning-experience-20261114', 'chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
   workflow_dispatch:
 
+# Keep a single active validation for a PR. Each new commit supersedes the
+# previous run, so intermediate failures do not waste runner minutes.
+concurrency:
+  group: mvp-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
