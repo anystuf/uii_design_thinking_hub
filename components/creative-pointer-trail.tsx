@@ -88,7 +88,7 @@ export function CreativePointerTrail() {
         const previous = points[i - 1];
         const current = points[i];
         const freshness = reduced ? 1 : Math.max(0, 1 - (now - current.time) / INK_LIFETIME_MS);
-        const tail = 0.34 + 0.66 * i / (points.length - 1);
+        const tail = 0.56 + 0.44 * i / (points.length - 1);
         const alpha = (reduced ? tail : freshness * freshness * tail) * 0.83;
         if (alpha < 0.015) continue;
         context.globalAlpha = alpha;
