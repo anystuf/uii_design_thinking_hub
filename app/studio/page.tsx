@@ -53,7 +53,7 @@ async function request<T>(token: string, path: string, init?: RequestInit): Prom
   return authenticatedApi<T>(path, token, init);
 }
 
-const card = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
+const card = 'min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5';
 const input = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-offset-2 focus:outline-[#f37021]';
 const action = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#214d91] disabled:cursor-not-allowed disabled:opacity-50';
 const minor = 'rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-[#153b77] hover:bg-[#f5f8fd] disabled:opacity-50';
@@ -351,7 +351,7 @@ export default function DesignStudioPage() {
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Không gian dự án" role={user?.role} guest={authReady && !session} />
 
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-6 px-5 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Dự án</h1>
@@ -504,7 +504,7 @@ export default function DesignStudioPage() {
                             ))}
                             {!team.tasks.length && <p className="text-sm text-slate-600">Chưa có công việc nào.</p>}
                           </div>
-                          {canEditTeam && <form onSubmit={(event) => void createTask(event)} className="mt-3 grid gap-2 sm:grid-cols-[1fr_160px_auto]">
+                          {canEditTeam && <form onSubmit={(event) => void createTask(event)} className="mt-3 grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,160px)_auto]">
                             <input required maxLength={160} className={input} placeholder="Task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)}/>
                             <select className={input} aria-label="Giao việc cho" value={taskAssigneeId} onChange={(e) => setTaskAssigneeId(e.target.value)}>
                               <option value="">Unassigned</option>
@@ -515,7 +515,7 @@ export default function DesignStudioPage() {
                         </section>
 
                         <section className={card}>
-                          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Hoạt động thiết kếs">
+                          <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
                             {MODES.map((item) => (
                               <button key={item.id} type="button" role="tab" aria-selected={mode === item.id}
                                 onClick={() => selectMode(item.id)}
