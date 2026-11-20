@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { LearningAuthForm } from '@/components/learning-auth-form';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
+import { LessonPractice } from '@/components/lesson-practice';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -438,6 +439,7 @@ export default function LearningFoundationPage() {
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && !(/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <a href={getSafeHttpUrl(currentLesson.videoUrl)!} target="_blank" rel="noreferrer" className="text-sm font-bold text-[#153b77] underline">Mở video trong tab mới</a>}
                   {currentLesson.content && <div className="rounded-xl bg-[#f8fafd] p-5"><h4 className="mb-3 font-bold">Nội dung bài học</h4><p className="whitespace-pre-wrap break-words text-base leading-8 text-slate-700">{currentLesson.content}</p></div>}
                   {getResourceLinks(currentLesson.content).length > 0 && <div><h4 className="mb-3 font-bold">Tài liệu tham khảo</h4><ul className="space-y-2">{getResourceLinks(currentLesson.content).map(link => <li key={link}><a className="break-all text-sm font-semibold text-[#153b77] underline" href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>}
+                  <LessonPractice key={currentLesson.id} lessonId={currentLesson.id} courseId={course.id} token={token} canManage={canEditCourse} isEnrolled={isEnrolled}/>
                   <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5"><h4 className="flex items-center gap-2 font-bold"><Sparkles size={18} aria-hidden="true"/> Áp dụng kiến thức</h4><p className="mt-2 text-sm leading-7">Tìm một vấn đề thực tế, ghi nhận điều bạn quan sát và thử áp dụng phương pháp vừa học trong dự án.</p><Link href="/studio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#153b77] underline">Thực hành trong Design Studio <ArrowRight size={16}/></Link></div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
                     <div className="flex flex-wrap gap-2">{selectedLessonIndex > 0 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex-1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold"><ArrowLeft size={16}/> Bài trước</button>}{selectedLessonIndex < lessons.length-1 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex+1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Bài tiếp theo <ArrowRight size={16}/></button>}</div>
