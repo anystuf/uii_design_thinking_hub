@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowRight, BookOpen } from "lucide-react";
+import { ArrowRight, BookOpen, Bell, ClipboardCheck, FolderKanban, GraduationCap, Lightbulb, Layers3, Users, Sparkles, RotateCcw } from "lucide-react";
 import { WorkspaceLoading } from "@/components/workspace-loading";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -81,7 +81,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+    <section className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.045)] sm:p-6">
       <h2 className="mb-4 text-lg font-extrabold">{title}</h2>
       {children}
     </section>
@@ -97,7 +97,7 @@ function Action({
   return (
     <Link
       href={href}
-      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 py-3 text-sm font-bold text-white hover:bg-blue-900"
+      className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#963b08]"
     >
       {children}
       <ArrowRight size={16} aria-hidden="true" />
@@ -286,8 +286,9 @@ export function LiveHubDashboard() {
         ? "Không gian giảng dạy"
         : "Tổng quan";
   return (
-    <div className="min-h-screen bg-slate-50 text-[#12284a]">
+    <div className="min-h-screen bg-[#f5f7fb] text-[#10284a]">
       <WorkspaceNav
+        variant="classic"
         title={title}
         guest={authReady && !session}
         role={account?.role}
@@ -352,25 +353,57 @@ export function LiveHubDashboard() {
         )}
         {account && !loading && (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h1 className="w-full text-2xl font-semibold tracking-tight">{title}</h1>
-              <div>
-                <p className="text-sm text-slate-600">
-                  Xin chào, {account.fullName}
-                </p>
-                <p className="mt-1 text-sm">
-                  {roleName(account.role)}
-                </p>
+            <section aria-label="Chào mừng và hành động chính" className="relative overflow-hidden rounded-[30px] bg-[#071d43] p-6 text-white shadow-[0_20px_70px_rgba(7,29,67,0.14)] sm:p-9">
+              <div className="pointer-events-none absolute -right-14 -top-24 h-80 w-80 rounded-full border-[42px] border-[#f37021]/20" aria-hidden="true" />
+              <div className="relative flex flex-wrap items-end justify-between gap-6">
+                <div className="max-w-2xl">
+                  <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Không gian học tập</p>
+                  <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">Chào {account.fullName.split(" ").slice(-1)[0] || "bạn"}, <span className="text-[#ff9b59]">tiếp tục tạo khác biệt.</span></h1>
+                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Học hỏi, khám phá, thực hành và phát triển giải pháp hữu ích cho cộng đồng." : lecturer ? "Dẫn dắt những ý tưởng, đồng hành cùng sinh viên và đưa ra phản hồi giá trị." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link href={student ? (nextCourse ? "/learn?course=" + encodeURIComponent(nextCourse.id) + (nextEnrollment?.progress?.nextLesson ? "&lesson=" + encodeURIComponent(nextEnrollment.progress.nextLesson.id) : "") : "/learn") : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? nextCourse ? "Tiếp tục khóa học" : "Khám phá khóa học" : lecturer ? (data.queue?.length ? "Đánh giá bài nộp" : "Xem công việc giảng dạy") : "Quản trị người dùng"} <ArrowRight size={17} aria-hidden="true"/></Link>
+                    <Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Khóa học</Link>
+                  </div>
+                </div>
+                <span className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold">{roleName(account.role)}</span>
               </div>
-              <button
-                aria-label="Làm mới dữ liệu"
-                disabled={loading}
-                className="min-h-11 rounded-xl border bg-white px-4"
-                onClick={() => setReload((n) => n + 1)}
-              >
-                Làm mới
-              </button>
-            </div>
+            </section>
+            <section aria-labelledby="classic-overview-title">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="classic-overview-title" className="mt-1 text-2xl font-extrabold">Tổng quan hôm nay</h2></div>
+                <button aria-label="Làm mới dữ liệu" disabled={loading} className="min-h-11 rounded-xl border bg-white px-4 font-semibold hover:border-orange-300" onClick={() => setReload((n) => n + 1)}>Làm mới</button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: student ? "Khóa học đã tham gia" : "Khóa học hiển thị", value: student ? data.enrollments?.length : data.courses?.length, icon: BookOpen, tint: "bg-blue-50 text-blue-700" },
+                  { label: student ? "Dự án của tôi" : "Dự án thuộc phạm vi", value: data.projects?.length, icon: FolderKanban, tint: "bg-violet-50 text-violet-700" },
+                  { label: student ? "Tiến độ khóa học" : "Bài chờ đánh giá", value: student ? (data.progress ? data.progress.percent + "%" : "—") : (data.queue?.length ?? "—"), icon: student ? GraduationCap : ClipboardCheck, tint: "bg-orange-50 text-orange-700" },
+                  { label: "Thông báo chưa đọc", value: data.notifications?.filter(note => !note.readAt).length, icon: Bell, tint: "bg-emerald-50 text-emerald-700" },
+                ].map(({ label, value, icon: Icon, tint }) => (
+                  <div key={label} className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.045)]">
+                    <div className="flex items-start justify-between gap-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-600">{label}</p><span className={"grid size-9 shrink-0 place-items-center rounded-xl " + tint}><Icon size={18} aria-hidden="true"/></span></div>
+                    <p className="mt-3 text-3xl font-extrabold text-[#0a2044]">{value ?? "—"}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section aria-labelledby="classic-modules-title">
+              <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#ad4007]">LEARN · CREATE · ITERATE</p>
+              <h2 id="classic-modules-title" className="mb-4 mt-1 text-2xl font-extrabold">Khám phá không gian học tập</h2>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { href: "/learn", title: "Khóa học", subtitle: "Học phương pháp, luyện kỹ năng, lưu tiến độ.", icon: GraduationCap, tint: "bg-blue-50 text-blue-700", number: "01" },
+                  { href: "/studio", title: "Design Studio", subtitle: "Thực hiện thử thách cùng đội nhóm.", icon: Layers3, tint: "bg-violet-50 text-violet-700", number: "02" },
+                  { href: "/evidence", title: "Minh chứng & cải tiến", subtitle: "Lưu minh chứng và phiên bản bài nộp.", icon: BookOpen, tint: "bg-orange-50 text-orange-700", number: "03" },
+                  { href: account.role === "STUDENT" ? "/notifications" : "/review", title: student ? "Phản hồi" : "Đánh giá & phản hồi", subtitle: "Học từ nhận xét và cải tiến sản phẩm.", icon: RotateCcw, tint: "bg-emerald-50 text-emerald-700", number: "04" },
+                ].map(({ href, title, subtitle, icon: Icon, tint, number }) => (
+                  <Link key={href} href={href} className="group flex min-h-[176px] flex-col justify-between rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.045)] transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg">
+                    <div className="flex items-center justify-between"><span className={"grid size-11 place-items-center rounded-xl " + tint}><Icon size={23} aria-hidden="true"/></span><span className="text-xl font-black text-slate-200">{number}</span></div>
+                    <div><h3 className="text-base font-extrabold">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{subtitle}</p></div>
+                  </Link>
+                ))}
+              </div>
+            </section>
             {student && (
               <>
                 <Panel
@@ -599,6 +632,22 @@ export function LiveHubDashboard() {
                 <Action href="/notifications">Xem thông báo</Action>
               </Panel>
             </div>
+            <section aria-labelledby="classic-modes-title" className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+              <p className="text-xs font-extrabold uppercase tracking-widest text-[#ad4007]">DESIGN THINKING IN ACTION</p>
+              <h2 id="classic-modes-title" className="mt-1 text-2xl font-extrabold">Năm chế độ. Vô hạn vòng lặp.</h2>
+              <p className="mt-2 text-sm text-slate-600">Bạn có thể quay lại bất kỳ chế độ nào khi học được điều mới.</p>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                {[
+                  { name: "Empathize", vi: "Thấu hiểu con người", icon: Users, tone: "bg-blue-50 text-blue-700" },
+                  { name: "Define", vi: "Xác định vấn đề", icon: GraduationCap, tone: "bg-violet-50 text-violet-700" },
+                  { name: "Ideate", vi: "Mở rộng ý tưởng", icon: Lightbulb, tone: "bg-amber-50 text-amber-800" },
+                  { name: "Prototype", vi: "Hiện thực hóa", icon: Layers3, tone: "bg-emerald-50 text-emerald-700" },
+                  { name: "Test", vi: "Kiểm chứng", icon: RotateCcw, tone: "bg-rose-50 text-rose-700" },
+                ].map(({ name, vi, icon: Icon, tone }) => (
+                  <Link key={name} href="/studio" className="rounded-2xl border border-slate-200 p-4 transition hover:border-[#b94708] hover:bg-slate-50"><span className={"grid size-10 place-items-center rounded-xl " + tone}><Icon size={20} aria-hidden="true"/></span><h3 className="mt-3 font-bold">{name}</h3><p className="mt-1 text-sm text-slate-600">{vi}</p></Link>
+                ))}
+              </div>
+            </section>
             <details className="rounded-2xl border bg-white p-5">
               <summary className="min-h-11 cursor-pointer font-bold">
                 Cần trợ giúp với bước tiếp theo?
