@@ -43,6 +43,12 @@ export default function CommunityPage(){
  const [notice,setNotice]=useState("");
  const [showPublish,setShowPublish]=useState(false);
  const token=session?.access_token||"";
+ // The seeded showcase record is not a genuine submission by a live student.
+ // Do not mix it into the "real" community activity count or feed.
+ const genuinePosts=feed.filter(post=>
+   post.project.id!=="44444444-4444-4444-8444-444444444444" &&
+   !/^SAMPLE[.:\s-]/i.test(post.project.course?.title||"")
+ );
  const shareable=projects.filter(p=>(p.status==="APPROVED"||p.status==="PUBLISHED")&&(viewer?.role==="ADMIN"||p.ownerId===viewer?.id));
 
  useEffect(()=>{
@@ -160,11 +166,11 @@ export default function CommunityPage(){
        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
          <div><p className="text-xs font-black uppercase tracking-[.15em] text-[#aa4831]">PROJECT SHOWCASE · DỮ LIỆU THẬT</p>
            <h2 id="real-feed-heading" className="mt-1 text-xl font-black text-[#173445] sm:text-2xl">Dự án được chia sẻ trong UII</h2></div>
-         <span className="rounded-full bg-[#f0f6ed] px-3 py-2 text-xs font-bold text-[#43605a]">{feed.length} dự án đã công bố</span>
+         <span className="rounded-full bg-[#f0f6ed] px-3 py-2 text-xs font-bold text-[#43605a]">{genuinePosts.length} dự án đã công bố</span>
        </div>
        {loading&&<WorkspaceLoading label="Đang tải dự án cộng đồng…"/>}
-       {!loading&&feed.length===0&&<p className="rounded-2xl border border-[#dce9dd] bg-white p-5 text-sm leading-7 text-[#567077]">Chưa có bài chia sẻ từ các dự án đã được duyệt. Hai ví dụ bên dưới là minh họa, không phải bài đăng thật.</p>}
-       <div className="grid gap-4 lg:grid-cols-2">{feed.map((post,index)=>(
+       {!loading&&genuinePosts.length===0&&<p className="rounded-2xl border border-[#dce9dd] bg-white p-5 text-sm leading-7 text-[#567077]">Chưa có bài chia sẻ từ các dự án đã được duyệt. Hai ví dụ bên dưới là minh họa, không phải bài đăng thật.</p>}
+       <div className="grid gap-4 lg:grid-cols-2">{genuinePosts.map((post,index)=>(
          <article key={post.id} className="overflow-hidden rounded-[24px] border border-[#dce5dd] bg-white shadow-sm">
            <div className="p-5 sm:p-6" style={{backgroundColor:colors[index%colors.length]}}>
              <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#7b4336]"><span>ĐÃ CÔNG BỐ · DỰ ÁN THẬT</span><span>• {post.project.currentStage}</span></div>
