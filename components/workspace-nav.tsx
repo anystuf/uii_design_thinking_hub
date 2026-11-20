@@ -32,7 +32,7 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
       <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">Đi đến nội dung chính</a>
       <div className={guest ? "mx-auto max-w-6xl px-4 sm:px-6" : "px-4"}>
         <div className="flex min-h-16 items-center justify-between gap-2">
-          <Link href="/" aria-label="Về trang chủ Design Thinking Hub" className="flex min-h-11 min-w-0 items-center gap-2.5">
+          <Link href="/" title="Về trang chủ" className="flex min-h-11 min-w-0 items-center gap-2.5">
             <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-2xl bg-[#173445] text-[11px] font-black text-white">UII</span>
             <span className={"text-sm font-semibold leading-tight " + "text-[#14313d]"}>Design Thinking Hub</span>
           </Link>
