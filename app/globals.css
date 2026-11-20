@@ -211,3 +211,6 @@ body:has(.uii-workspace) {
 @media (max-width: 767px) {
   .uii-workspace main h1 { font-size: clamp(1.75rem, 7vw, 2.5rem); }
 }
+
+/* Hero text stays white on the editorial navy dashboard panel. */
+.uii-workspace main [aria-label="Chào mừng và hành động chính"] h1 { color:#fff; }
