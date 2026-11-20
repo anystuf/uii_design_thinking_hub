@@ -7,6 +7,8 @@ import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
 import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
 import { DesignThinkingLessonGuide } from '@/components/design-thinking-lesson-guide';
+import { DemoPhoto } from '@/components/demo-photo';
+import { DEMO_COURSES } from '@/lib/demo-content';
 import { DESIGN_THINKING_KIT, findKitLesson } from '@/lib/design-thinking-learning-kit';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -432,11 +434,14 @@ export default function LearningFoundationPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {visibleCourses.map((item, index) => {
                 const joined = enrollments.find(record => record.courseId === item.id);
-                const palette = ['from-[#0b2854] via-[#144782] to-[#2c78a0]', 'from-[#3a255d] via-[#684585] to-[#9861a7]', 'from-[#174e50] via-[#248178] to-[#71a987]', 'from-[#773e24] via-[#b55a2c] to-[#ed9c56]'];
                 return <button key={item.id} type="button" disabled={busy} onClick={() => void selectCourse(item.id, undefined, undefined, true)} aria-pressed={course?.id === item.id} className={"group overflow-hidden rounded-[22px] border bg-white text-left shadow-[0_6px_28px_rgba(20,42,78,0.05)] transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline-4 focus-visible:outline-blue-600 " + (course?.id === item.id ? 'border-[#153b77] ring-2 ring-blue-100' : 'border-slate-200')}>
-                  <div className={"relative flex min-h-[148px] items-end overflow-hidden bg-gradient-to-br p-5 text-white " + palette[index % palette.length]}>
-                    <div aria-hidden="true" className="absolute -right-12 -top-16 size-52 rounded-full border-[28px] border-white/15"/><div aria-hidden="true" className="absolute right-12 top-8 size-20 rotate-12 rounded-[25px] border-[12px] border-white/10"/>
-                    <div className="relative flex w-full items-end justify-between gap-3"><span className="rounded-lg bg-white/15 px-3 py-1.5 text-xs font-bold backdrop-blur">UII · DESIGN THINKING</span><GraduationCap size={31} aria-hidden="true" className="text-white/85"/></div>
+                  <div className="relative flex min-h-[170px] items-end overflow-hidden bg-[#a9dadd] p-5 text-white">
+                    <DemoPhoto src={DEMO_COURSES[index % DEMO_COURSES.length].photo}
+                      alt={"Ảnh minh họa Design Thinking cho khóa học " + item.title}
+                      tint={DEMO_COURSES[index % DEMO_COURSES.length].accent}
+                      className="absolute inset-0 h-full w-full"/>
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#071f37]/80 via-[#1c4055]/20 to-transparent"/>
+                    <div className="relative flex w-full items-end justify-between gap-3"><span className="rounded-lg bg-[#0d2a46]/65 px-3 py-1.5 text-xs font-bold backdrop-blur">UII · DESIGN THINKING</span><GraduationCap size={31} aria-hidden="true" className="text-white"/></div>
                   </div>
                   <div className="space-y-3 p-5">
                     <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">{item.level || 'Khóa học'}</span><span className="text-xs text-slate-500">{item.status === 'PUBLISHED' ? 'Đang mở' : item.status === 'DRAFT' ? 'Bản nháp' : 'Lưu trữ'}</span></div>
