@@ -323,17 +323,19 @@ export class ProjectsService {
   async createFeedback(id: string, dto: CreateFeedbackDto, user: AuthenticatedUser) {
     const project = await this.findProjectEntity(id);
 
-    if (user.role === UserRole.LECTURER) {
-      await this.assertLecturerCanAccessProject(project, user);
-    }
-
+    // Both directions of project feedback are allowed, but only for an
+    // authorized team member, the owning lecturer or an administrator.
+    // Never allow students in other groups to post to a private project.
+    await this.assertCanAccessProject(project, user);
+    const content = dto.comment.trim();
+    if (!content) throw new BadRequestException('Message cannot be empty.');
     await this.ensureDevUser(user);
 
     return this.prisma.feedback.create({
       data: {
         projectId: id,
         authorId: user.id,
-        comment: dto.comment,
+        comment: content,
       },
       include: {
         author: {
