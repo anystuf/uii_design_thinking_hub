@@ -362,7 +362,7 @@ export default function LearningFoundationPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f7fb] text-[#12284a]">
-      <CreativePointerTrail enabled={!!user && (user.role === 'ADMIN' || user.role === 'LECTURER') && authorSketchPointer} />
+      {user && (user.role === 'ADMIN' || user.role === 'LECTURER') && <CreativePointerTrail enabled={authorSketchPointer} />}
       <WorkspaceNav title="Khóa học" role={user?.role} guest={!session} onSignOut={session ? () => void getSupabaseBrowserClient().auth.signOut() : undefined} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-[1320px] space-y-7 px-4 py-7 sm:px-7 lg:px-9">
         {error && <div role="alert" className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={18} className="shrink-0"/><span>{error}</span></div>}
