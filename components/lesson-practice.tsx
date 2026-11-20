@@ -21,8 +21,8 @@ type Attempt = {
   createdAt: string; user?: { id: string; fullName: string };
 };
 type Project = { id: string; title: string; courseId: string };
-const newQuestion = (): Question => ({
-  id: String(Date.now()) + Math.random().toString(36).slice(2, 6),
+const newQuestion = (id = "1"): Question => ({
+  id,
   prompt: "", options: ["", "", "", ""], correctIndex: 0, explanation: "", points: 1,
 });
 
@@ -53,6 +53,7 @@ export function LessonPractice({
   const [showReview, setShowReview] = useState(false);
   const [latest, setLatest] = useState<Attempt | null>(null);
   const [reload, setReload] = useState(0);
+  const [checkedAt, setCheckedAt] = useState(0);
 
   useEffect(() => {
     if (!token || (!canManage && !isEnrolled)) {
@@ -67,6 +68,7 @@ export function LessonPractice({
         if (!alive) return;
         const valid = found && !Array.isArray(found) && typeof found.id === "string" && Array.isArray(found.items) ? found : null;
         setExercise(valid);
+        setCheckedAt(Date.now());
         if (valid) {
           setKind(valid.kind); setTitle(valid.title); setInstructions(valid.instructions);
           setQuestions(valid.items.length ? valid.items : [newQuestion()]);
@@ -135,7 +137,7 @@ export function LessonPractice({
 
   if (!canManage && !isEnrolled) return null;
   const attemptLimitReached = !!exercise && attempts.length >= exercise.maxAttempts;
-  const deadlinePassed = !!exercise?.dueAt && Date.parse(exercise.dueAt) < Date.now();
+  const deadlinePassed = !!exercise?.dueAt && Date.parse(exercise.dueAt) < checkedAt;
   const canSubmit = !attemptLimitReached && !deadlinePassed;
   return <section id="lesson-practice" aria-labelledby="lesson-practice-heading"
     className="space-y-5 rounded-[22px] border border-blue-100 bg-white p-5 shadow-sm sm:p-7">
@@ -206,7 +208,7 @@ export function LessonPractice({
             <textarea maxLength={1000} value={q.explanation ?? ""} onChange={e => reviseQuestion(index, {explanation: e.target.value})}
               className="mt-1 w-full rounded-lg border p-3" rows={2}/></label>
         </div>)}
-        <button type="button" disabled={questions.length>=20} onClick={() => setQuestions(items => [...items,newQuestion()])}
+        <button type="button" disabled={questions.length>=20} onClick={() => setQuestions(items => [...items,newQuestion(String(Math.max(0, ...items.map(q => Number(q.id) || 0)) + 1))])}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold"><Plus size={17}/> Thêm câu hỏi</button>
       </fieldset>}
       {kind === "PROJECT" && <p className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6">
