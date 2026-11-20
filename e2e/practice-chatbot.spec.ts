@@ -94,3 +94,54 @@ test('lecturer creates and publishes a quiz with private correct answer and expl
   expect((saved as unknown as {items:{correctIndex:number}[]}).items[0].correctIndex).toBe(1);
   await expect(page.getByText('First empathy quiz').first()).toBeVisible();
 });
+
+
+test('new lesson without exercise: empty HTTP 200 is treated as absence, not broken JSON', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
+  await loginFixture(page,'teacher');
+  let exerciseReads = 0;
+  await page.route('http://localhost:4000/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    let data: unknown = [];
+    if(path==='/auth/me') data={id:'teacher',fullName:'Teacher Demo',role:'LECTURER'};
+    if(path==='/courses') data=[course];
+    if(path==='/courses/course') data=course;
+    if(path==='/courses/course/lessons') data=[lesson];
+    if(path==='/lessons/lesson-a/exercise') {
+      exerciseReads++;
+      return route.fulfill({status:200,body:'',headers:{'content-type':'application/json'}});
+    }
+    await route.fulfill({json:data});
+  });
+  await page.goto('/learn');
+  await page.getByRole('button',{name:/Introduction to Design Thinking/}).click();
+  await page.getByRole('button',{name:'Mở bài học'}).click();
+  await expect(page.getByRole('heading',{name:'Luyện tập và bài tập'})).toBeVisible();
+  await expect(page.getByText('Chưa có bài tập cho bài học này.')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Tạo bài tập'})).toBeVisible();
+  await expect(page.getByText(/Unexpected end of JSON input/)).toHaveCount(0);
+  expect(exerciseReads).toBeGreaterThan(0);
+  await expect(page.getByRole('button',{name:'Tắt con trỏ nét vẽ'})).toBeVisible();
+});
+
+test('sketch pointer draws red mouse trail, can be switched off', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
+  await page.setViewportSize({width:900,height:680});
+  await loginFixture(page,'teacher');
+  await page.route('http://localhost:4000/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    let data: unknown = [];
+    if(path==='/auth/me') data={id:'teacher',fullName:'Teacher Demo',role:'LECTURER'};
+    if(path==='/courses') data=[course];
+    await route.fulfill({json:data});
+  });
+  await page.goto('/learn');
+  const trail=page.getByTestId('creative-pointer-trail');
+  await expect(trail).toHaveAttribute('data-enabled','true');
+  await page.mouse.move(100,180);
+  await page.mouse.move(260,235, {steps:8});
+  await expect.poll(async()=>trail.locator('path').getAttribute('d'), {timeout:3000}).toMatch(/^M /);
+  await page.getByRole('button',{name:'Tắt con trỏ nét vẽ'}).click();
+  await expect(trail).toHaveAttribute('data-enabled','false');
+  await expect(trail.locator('path')).toHaveAttribute('d','');
+});
