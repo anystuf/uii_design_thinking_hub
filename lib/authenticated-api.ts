@@ -1,4 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const upstreamUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+// Preview hostnames are ephemeral. Make browser API calls on the same origin
+// and let the Next.js /backend rewrite forward to the configured Render API.
+// Keep direct API calls in local tests and on GitHub Pages static export.
+const useSameOriginProxy = typeof window !== 'undefined' &&
+  (window.location.hostname.endsWith('.vercel.app') ||
+   process.env.NEXT_PUBLIC_API_PROXY === 'true');
+const API_URL = useSameOriginProxy ? '/backend' : upstreamUrl;
 const REQUEST_TIMEOUT_MS = 25000;
 // Render Free web services spin down after inactivity and can take about a minute to wake.
 const PROFILE_WAKE_TIMEOUT_MS = 75000;
@@ -79,6 +86,9 @@ export async function authenticatedApi<T>(path: string, token: string, init?: Re
       throw new Error(isProfileLookup
         ? 'Máy chủ chưa xác minh được tài khoản. Hãy thử lại.'
         : 'Máy chủ phản hồi chậm. Hãy thử lại.');
+    }
+    if (error instanceof TypeError && /failed to fetch|networkerror|load failed/i.test(error.message)) {
+      throw new Error('Không kết nối được API. Kiểm tra kết nối rồi chọn Thử lại; nếu vẫn lỗi, báo quản trị viên kiểm tra máy chủ.');
     }
     throw error;
   } finally {
