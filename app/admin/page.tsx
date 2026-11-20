@@ -56,7 +56,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  return <div className="min-h-screen bg-[#f6f8fc]">
+  return <div className="uii-workspace min-h-screen bg-[#f6f8fc]">
     <WorkspaceNav title="Quản trị" role={account?.role} />
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
       {loading && <p role="status">Đang kiểm tra quyền quản trị…</p>}
