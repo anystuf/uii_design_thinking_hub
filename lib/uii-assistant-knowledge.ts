@@ -1,3 +1,4 @@
+import { isPedagogicalRequest, pedagogicalFallback } from "./uii-pedagogy";
 /** Curated product facts for Gemini grounding and deterministic offline guidance. */
 export type HubRole = "GUEST" | "STUDENT" | "LECTURER" | "MENTOR" | "ADMIN";
 export type GuideTopic = {
@@ -109,6 +110,7 @@ export function findGuideTopics(question:string,role:HubRole,count=5):GuideTopic
 }
 export type GuideReply={text:string;links:{href:string;label:string}[]};
 export function deterministicGuide(query:string,role:HubRole,path="/"):GuideReply {
+  if(isPedagogicalRequest(query))return {text:pedagogicalFallback(query),links:[{href:"/demo",label:"Thử hoạt động học tập"}]};
   if(isPersonalProgress(query))return {text:"Mình chỉ có thể thông báo tiến độ cá nhân sau khi tài khoản và dữ liệu được xác thực. Hãy đăng nhập và xem Tổng quan hoặc Khóa học; mình sẽ không tự đoán điểm hoặc phần trăm.",links:[{href:"/dashboard",label:"Xem tiến độ thật"}]};
   const matched=findGuideTopics(query,role,3);
   const chosen=isProductStatus(query)?GUIDE_TOPICS.find(t=>t.id==="status")!:matched[0];
