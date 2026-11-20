@@ -18,6 +18,14 @@ test("education questions cannot be misrouted to Focus Mode",()=>{
   expect(pedagogicalFallback("Hãy thiết kế một hoạt động thực hành 20 phút để tìm hiểu nhu cầu sinh viên")).toMatch(/20 phút/);
 });
 
+test("UII guide explains how to use the internal community without claiming external Quora integration",()=>{
+  const reply=deterministicGuide("Làm sao đặt câu hỏi trên cộng đồng như Quora?","STUDENT","/community");
+  expect(reply.text).toMatch(/Hỏi đáp nội bộ/);
+  expect(reply.text).toMatch(/Empathize/);
+  expect(reply.text).toMatch(/backend\/migration mới/);
+  expect(reply.links).toContainEqual({href:"/community",label:"Mở Hỏi đáp cộng đồng"});
+});
+
 test("Gemini configured is not falsely reported as a verified successful generation",async({page})=>{
   test.skip(!!process.env.E2E_BASE_URL,"Local fixture only");
   await page.goto("/");
