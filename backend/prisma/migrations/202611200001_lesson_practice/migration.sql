@@ -40,3 +40,17 @@ ALTER TABLE "ExerciseAttempt" ADD CONSTRAINT "ExerciseAttempt_exerciseId_fkey"
   FOREIGN KEY ("exerciseId") REFERENCES "LessonExercise"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "ExerciseAttempt" ADD CONSTRAINT "ExerciseAttempt_userId_fkey"
   FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- Direct Supabase browser roles must never see exercise keys or learner answers.
+-- Prisma's trusted database connection continues to use a privileged server role.
+ALTER TABLE "LessonExercise" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ExerciseAttempt" ENABLE ROW LEVEL SECURITY;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    REVOKE ALL ON TABLE "LessonExercise", "ExerciseAttempt" FROM anon;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    REVOKE ALL ON TABLE "LessonExercise", "ExerciseAttempt" FROM authenticated;
+  END IF;
+END $$;
