@@ -360,7 +360,7 @@ export default function LearningFoundationPage() {
                   </div>
                   <div className="space-y-3 p-5">
                     <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-800">{item.level || 'Khóa học'}</span><span className="text-xs text-slate-500">{item.status === 'PUBLISHED' ? 'Đang mở' : item.status === 'DRAFT' ? 'Bản nháp' : 'Lưu trữ'}</span></div>
-                    <h3 className="line-clamp-2 min-h-12 text-lg font-extrabold leading-6 text-[#10284a]">{item.title}</h3>
+                    <p className="line-clamp-2 min-h-12 text-lg font-extrabold leading-6 text-[#10284a]">{item.title}</p>
                     <p className="line-clamp-2 min-h-10 text-sm leading-5 text-slate-600">{item.description || 'Khám phá kiến thức và thực hành phương pháp thiết kế lấy con người làm trung tâm.'}</p>
                     {item.createdBy?.fullName && <p className="text-xs text-slate-600">Giảng viên: {item.createdBy.fullName}</p>}
                     <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs text-slate-600"><span>{item._count?.lessons != null ? item._count.lessons + ' bài học' : 'Lộ trình học tập'}</span><span className="inline-flex items-center gap-1 font-bold text-[#153b77]">{joined ? 'Tiếp tục học' : 'Xem khóa học'} <ChevronRight size={15} aria-hidden="true"/></span></div>
