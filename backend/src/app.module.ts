@@ -20,6 +20,7 @@ import { UsersModule } from './modules/users/users.module';
 import { RubricsModule } from './modules/rubrics/rubrics.module';
 import { AssessmentsModule } from './modules/assessments/assessments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { PracticeModule } from './modules/practice/practice.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     RubricsModule,
     AssessmentsModule,
     NotificationsModule,
+    PracticeModule,
   ],
 })
 export class AppModule {}

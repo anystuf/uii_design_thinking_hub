@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Bell, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, Users } from "lucide-react";
 import { WorkspaceGuide, type WorkspaceRole } from "./workspace-guide";
+import { WorkspaceChatbot } from "./workspace-chatbot";
 import { warmWorkspaceApi } from "@/lib/authenticated-api";
 
 const links = [
@@ -26,6 +27,7 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
   if (role === "ADMIN") navigation.push({ href: "/admin", label: "Quản trị", icon: Users });
 
   return (
+    <>
     <header className={guest ? "border-b border-slate-200 bg-white" : "workspace-header border-b lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:w-60 lg:overflow-y-auto lg:border-r " + (classic ? "border-[#17345a] bg-[#071d43] text-white" : "border-slate-200 bg-white")}>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:block focus:p-3">Đi đến nội dung chính</a>
       <div className={guest ? "mx-auto max-w-6xl px-4 sm:px-6" : "px-4"}>
@@ -56,6 +58,8 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
         </>}
       </div>
     </header>
+    <WorkspaceChatbot role={role} pathname={pathname} />
+    </>
   );
 }
 
