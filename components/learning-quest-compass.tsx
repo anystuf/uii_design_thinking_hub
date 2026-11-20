@@ -119,7 +119,7 @@ export function LearningQuestCompass({
         </button>
       </div>
 
-      <div role="group" aria-label="La bàn năm chế độ tư duy thiết kế" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+      <div role="group" aria-label="La bàn năm chế độ tư duy thiết kế" className={focusMode ? "hidden" : "grid grid-cols-2 gap-2 sm:grid-cols-5"}>
         {modes.map((item, index) => {
           const Icon = item.icon;
           const active = mode === item.id;
@@ -143,6 +143,7 @@ export function LearningQuestCompass({
         })}
       </div>
 
+      {focusMode && <p className="text-xs text-slate-600">Đã thu gọn bản đồ và điểm số để bạn tập trung vào một nhiệm vụ.</p>}
       <div role="status" className="flex flex-wrap items-start gap-3 rounded-2xl border border-orange-100 bg-white p-4">
         <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff0e3] text-[#a6450b]">
           <MapPin size={20} aria-hidden="true"/>
@@ -157,7 +158,7 @@ export function LearningQuestCompass({
         </Link>
       </div>
 
-      <section aria-label="Điểm nỗ lực dựa trên dữ liệu học tập" className="rounded-2xl bg-[#092653] p-4 text-white sm:p-5">
+      <section aria-label="Điểm nỗ lực dựa trên dữ liệu học tập" className={focusMode ? "hidden" : "rounded-2xl bg-[#092653] p-4 text-white sm:p-5"}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="inline-flex items-center gap-2 text-sm font-bold text-[#ffd4ae]">
