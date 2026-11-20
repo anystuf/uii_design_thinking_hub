@@ -238,7 +238,7 @@ export function UIIPublicLanding() {
           <div className="pointer-events-none absolute -right-8 -top-24 h-80 w-80 rounded-full border-[55px] border-white/35" aria-hidden="true"/>
           <div className="relative mx-auto max-w-[1390px]">
             <Eyebrow dark>READY FOR YOUR FIRST IDEA?</Eyebrow>
-            <h2 className="mt-4 max-w-[900px] font-[family-name:var(--font-sans-ui)] text-[clamp(2.8rem,6.3vw,6.3rem)] font-black leading-[1] tracking-[-0.065em]">Let's make something <span className="text-[#bd352b]">matter.</span></h2>
+            <h2 className="mt-4 max-w-[900px] font-[family-name:var(--font-sans-ui)] text-[clamp(2.8rem,6.3vw,6.3rem)] font-black leading-[1] tracking-[-0.065em]">Let&apos;s make something <span className="text-[#bd352b]">matter.</span></h2>
             <p className="mt-6 max-w-[680px] text-lg font-semibold">Bắt đầu nhỏ. Học cùng nhau. Thử và cải tiến mỗi ngày.</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href="/demo" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#173445] px-7 text-sm font-black text-white">Thử ngay bài học <ArrowRight size={18}/></Link>
