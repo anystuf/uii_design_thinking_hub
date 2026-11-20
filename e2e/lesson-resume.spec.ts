@@ -109,7 +109,8 @@ test("resume skips completed courses and opens the first unfinished lesson with 
   await expect(
     page.getByRole("heading", { name: "Active course", exact: true }),
   ).toBeVisible();
-  await expect(page.locator("#lesson-gap")).toHaveAttribute("open", "");
-  await expect(page.locator("#lesson-done")).not.toHaveAttribute("open", "");
-  await expect(page.locator("#lesson-gap summary")).toBeFocused();
+  await expect(page.locator("#lesson-player-title")).toHaveText("Next unfinished lesson");
+  await expect(page.locator("#lesson-player-title")).toBeFocused();
+  await expect(page.getByRole("button", { name: /Next unfinished lesson/ })).toHaveAttribute("aria-current", "step");
+  await expect(page.getByRole("button", { name: /Completed lesson/ })).not.toHaveAttribute("aria-current", "step");
 });
