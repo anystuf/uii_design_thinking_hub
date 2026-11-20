@@ -13,6 +13,7 @@ import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { calculateLearningRewards } from './learning-rewards';
 
 @Injectable()
 export class CoursesService {
@@ -79,6 +80,48 @@ export class CoursesService {
         nextLesson: next ? { id: next.id, title: next.title } : null,
       } };
     });
+  }
+
+  async myRewards(id: string, user: AuthenticatedUser) {
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Student access required.');
+
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: id } },
+      select: { id: true },
+    });
+    if (!enrolled) throw new ForbiddenException('Course enrollment required.');
+
+    // All points are calculated from authorized published learning records.
+    const [lessons, exercises] = await Promise.all([
+      this.prisma.lesson.findMany({
+        where: { courseId: id, publishedAt: { not: null } },
+        select: { id: true },
+      }),
+      this.prisma.lessonExercise.findMany({
+        where: { publishedAt: { not: null }, lesson: { courseId: id, publishedAt: { not: null } } },
+        select: { id: true, passingScore: true },
+      }),
+    ]);
+    const [progress, attempts] = await Promise.all([
+      lessons.length ? this.prisma.lessonProgress.findMany({
+        where: { userId: user.id, lessonId: { in: lessons.map(lesson => lesson.id) }, completed: true },
+        select: { lessonId: true },
+      }) : Promise.resolve([]),
+      exercises.length ? this.prisma.exerciseAttempt.findMany({
+        where: { userId: user.id, exerciseId: { in: exercises.map(exercise => exercise.id) }, status: 'GRADED' },
+        select: { exerciseId: true, score: true },
+      }) : Promise.resolve([]),
+    ]);
+
+    return {
+      courseId: id,
+      ...calculateLearningRewards(
+        lessons.map(lesson => lesson.id),
+        progress.map(record => record.lessonId),
+        exercises,
+        attempts,
+      ),
+    };
   }
 
   async myProgress(id: string, user: AuthenticatedUser) {
