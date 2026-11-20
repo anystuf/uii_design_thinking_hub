@@ -3,7 +3,10 @@
 import Link from 'next/link';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
-import { useEffect, useState, type FormEvent } from 'react';
+import { ProjectDiscussion } from '@/components/project-discussion';
+import { SampleTeamGallery } from '@/components/learning-stage-workbench';
+import { guideForStage } from '@/lib/stage-experience';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
   ArrowLeft, BookOpen, CheckCircle2, ClipboardList, FileText,
@@ -74,6 +77,7 @@ export default function DesignStudioPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [activities, setActivities] = useState<ProjectActivity[]>([]);
   const [mode, setMode] = useState<Mode>('EMPATHIZE');
+  const guidedAutoOpenedCourse = useRef('');
   // Deep-link to the selected d.school mode from a course lesson. This is a
   // navigation preference only; challenge/team authorization is still server-side.
   useEffect(() => {
@@ -167,6 +171,23 @@ export default function DesignStudioPage() {
       .catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : 'Challenge request failed.'); });
     return () => { active = false; };
   }, [courseId, token]);
+
+  // Course Player -> Compass -> Studio now preserves the real learning context.
+  // The backend remains the source of authorization for challenge and team IDs.
+  useEffect(() => {
+    if (!token || user?.role !== 'STUDENT' || !courseId || challenges.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('mode') || guidedAutoOpenedCourse.current === courseId) return;
+    const picked = challenges.find(item => item.id === params.get('challenge')) ||
+      challenges.find(item => item.status === 'PUBLISHED');
+    if (!picked) return;
+    guidedAutoOpenedCourse.current = courseId;
+    void run(async () => {
+      await loadChallenge(picked.id);
+      const mine = myTeams.find(item => item.challengeId === picked.id);
+      if (mine) await loadTeam(mine.id);
+    });
+  }, [token, courseId, user?.role, challenges, myTeams]);
 
   function clean() { setError(''); setNotice(''); }
   function report(err: unknown) { setError(err instanceof Error ? err.message : 'Operation failed.'); }
@@ -426,6 +447,7 @@ export default function DesignStudioPage() {
                   <h3 className="text-xl font-bold">Chọn một thử thách</h3>
                   <p role="status" className="mt-2 text-sm font-semibold text-[#153b77]">La bàn của bạn: {MODES.find(item => item.id === mode)?.label} · Chọn thử thách để thực hành ở đúng chế độ này.</p>
                   <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
+                  <div className="mx-auto mt-5 max-w-3xl text-left"><SampleTeamGallery stage={mode}/></div>
                 </section> : (
                   <>
                     <section className={card}>
@@ -481,6 +503,13 @@ export default function DesignStudioPage() {
                       )}
                     </section>
 
+                    {!team && <section className={card}>
+                      <h3 className="text-lg font-black text-[#173445]">Bạn sẽ làm gì trong giai đoạn {guideForStage(mode).title}?</h3>
+                      <p className="mt-2 text-sm leading-7 text-[#526970]">{guideForStage(mode).question}</p>
+                      <p className="mt-2 text-xs font-semibold text-[#ac4f3b]">Đầu ra: {guideForStage(mode).deliverable}</p>
+                      <div className="mt-4"><SampleTeamGallery stage={mode} compact/></div>
+                      <p className="mt-3 text-sm text-[#526970]">Chọn nhóm đã tham gia hoặc tạo nhóm mới để lưu bài làm thật. Ví dụ trên không phải dữ liệu người dùng thật.</p>
+                    </section>}
                     {team && (
                       <>
                         <section className={card}>
@@ -519,6 +548,7 @@ export default function DesignStudioPage() {
                           </form>}
                         </section>
 
+                        <ProjectDiscussion projectId={team.id} token={token} viewerId={user.id}/>
                         <section className={card}>
                           <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
                             {MODES.map((item) => (
@@ -530,6 +560,11 @@ export default function DesignStudioPage() {
                             ))}
                           </div>
                           <h3 className="text-xl font-extrabold">{MODES.find((m) => m.id === mode)?.label} Workspace</h3>
+                          <p className="mt-2 text-sm font-bold text-[#274951]">{guideForStage(mode).question}</p>
+                          <p className="mt-1 text-xs leading-6 text-[#65757a]">Đầu ra: {guideForStage(mode).deliverable}</p>
+                          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                            {guideForStage(mode).prompts.map((q,i)=><p key={q} className="rounded-xl border border-[#dce5df] bg-[#fbfaf5] p-3 text-xs leading-6"><span className="font-black text-[#a94330]">0{i+1}. </span>{q}</p>)}
+                          </div>
                            <Link href={"/demo?tool="+encodeURIComponent(mode==="EMPATHIZE"?"Empathy Map":mode==="DEFINE"?"POV Builder":mode==="IDEATE"?"Crazy 8s":mode==="PROTOTYPE"?"Storyboard":"Feedback Canvas")+"#tools"}
                              className="my-3 inline-flex min-h-11 items-center rounded-full border border-[#aacabd] bg-[#eaf5e6] px-4 text-xs font-black text-[#173445]">
                              Mở canvas thực hành theo chế độ {mode} ↗
