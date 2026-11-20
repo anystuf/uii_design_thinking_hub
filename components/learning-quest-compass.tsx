@@ -78,6 +78,7 @@ export function LearningQuestCompass({
           "/courses/" + encodeURIComponent(courseId) + "/my-rewards", token,
           { signal: controller.signal },
         );
+        if (!result || !Number.isFinite(result.xp) || !Number.isFinite(result.possibleXp)) throw new Error("Rewards not ready");
         if (active) { setRewards(result); setRewardError(false); }
       } catch {
         if (active) { setRewards(null); setRewardError(true); }
