@@ -82,7 +82,7 @@ test("guided lesson reveals accessible hints, honest self-check and stage deep l
   await expect(page.getByRole("heading", { name: "Nhiệm vụ thực hành của bạn" })).toBeVisible();
   await page.getByRole("button", { name: "Xem gợi ý" }).click();
   await expect(page.getByRole("status").filter({ hasText: /Bắt đầu bằng/ })).toBeVisible();
-  await page.getByLabel("Tự kiểm tra nhanh · Không tính điểm").getByText("Hãy kể về lần gần nhất bạn không tìm được chỗ tự học.").click();
+  await page.getByRole("radio", { name: /Hãy kể về lần gần nhất bạn không tìm được chỗ tự học/ }).check();
   await expect(page.getByText(/Đúng! Câu hỏi mở/)).toBeVisible();
   await expect(page.getByRole("link", { name: /Mở đúng chế độ EMPATHIZE trong Studio/ }))
     .toHaveAttribute("href", "/studio?mode=EMPATHIZE&course=course");
