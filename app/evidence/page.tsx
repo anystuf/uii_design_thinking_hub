@@ -246,9 +246,11 @@ export default function EvidenceStudioPage() {
     <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-[#fae2d3] p-5 sm:p-8">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Minh chứng & phản hồi</h1>
+            <p className="text-xs font-black uppercase tracking-[.16em] text-[#9a4536]">MAKE · DOCUMENT · IMPROVE</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Minh chứng và phản hồi.</h1>
+            <p className="mt-2 text-sm text-[#50666b]">Lưu bản nháp, dẫn liên kết sản phẩm, nộp theo phiên bản và học từ phản hồi.</p>
             <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
           </div>
           {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</span>}
