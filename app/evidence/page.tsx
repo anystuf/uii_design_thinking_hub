@@ -240,7 +240,7 @@ export default function EvidenceStudioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
