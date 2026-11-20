@@ -7,6 +7,7 @@ import {ArrowRight,Check,Heart,MessageCircle,Plus,RefreshCcw,Send,ShieldCheck,Us
 import {WorkspaceNav} from "@/components/workspace-nav";
 import {WorkspaceLoading} from "@/components/workspace-loading";
 import {SampleTeamGallery} from "@/components/learning-stage-workbench";
+import {CommunityQaBoard} from "@/components/community-qa-board";
 import {getSupabaseBrowserClient} from "@/lib/supabase-browser";
 import {authenticatedApi,workspaceProfile} from "@/lib/authenticated-api";
 import {withAuthDeadline} from "@/lib/auth-timeout";
@@ -128,9 +129,9 @@ export default function CommunityPage(){
    <WorkspaceNav title="Cộng đồng sáng tạo" role={viewer?.role} guest={authReady&&!session}/>
    <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-7 sm:py-9">
      <header className="overflow-hidden rounded-[31px] bg-[#d5edc4] p-6 sm:p-10">
-       <p className="text-xs font-black uppercase tracking-[.15em] text-[#99503b]">UII COMMUNITY · SHOW, SHARE, LEARN</p>
-       <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-[-.045em] text-[#163844] sm:text-5xl">Ý tưởng tốt hơn khi được chia sẻ.</h1>
-       <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3d5960]">Xem dự án đã được duyệt, bình luận đặt câu hỏi, trao đổi giữa các nhóm và giảng viên. Không cần tích hợp Facebook hoặc lưu video nặng trên UII.</p>
+       <p className="text-xs font-black uppercase tracking-[.15em] text-[#99503b]">UII COMMUNITY · ASK, ANSWER, SHARE</p>
+       <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-[-.045em] text-[#163844] sm:text-5xl">Cộng đồng học hỏi, hỏi đáp & sáng tạo.</h1>
+       <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3d5960]">Hỏi như Quora, trao đổi với bạn học và giảng viên, bình chọn những chia sẻ hữu ích. Đồng thời khám phá dự án Design Thinking đã được duyệt. Mọi hoạt động diễn ra ngay trong UII.</p>
        <div className="mt-5 flex flex-wrap gap-2">
          <Link href="/studio" className={btn}><Users size={17}/> Vào nhóm và Studio <ArrowRight size={16}/></Link>
          <Link href="/learn" className="inline-flex min-h-11 items-center rounded-full border border-[#53716d] bg-white/80 px-4 text-sm font-black text-[#173445]">Quay lại khóa học</Link>
@@ -138,11 +139,11 @@ export default function CommunityPage(){
      </header>
      {!authReady&&<WorkspaceLoading label="Đang xác minh tài khoản…"/>}
      {authReady&&!session&&<section className="rounded-2xl border border-[#dce4d9] bg-white p-6">
-       <p className="text-sm leading-7">Đăng nhập để xem bài chia sẻ đã được duyệt và tham gia bình luận. Bạn vẫn có thể xem hai tình huống **minh họa** bên dưới.</p>
+       <p className="text-sm leading-7">Đăng nhập để xem bài chia sẻ đã được duyệt và tham gia bình luận. Bạn vẫn có thể xem hai tình huống minh họa bên dưới.</p>
        <Link href="/learn" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-sm font-bold text-white">Đăng nhập để tham gia <ArrowRight size={17}/></Link>
      </section>}
      {viewer&&<div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#dce6e0] bg-white p-4">
-       <div><p className="text-sm font-black">Chào {viewer.fullName}</p><p className="mt-1 text-xs text-[#5b7177]">Đây là khu trưng bày cộng đồng; trao đổi riêng trong nhóm nằm ở Studio.</p></div>
+       <div><p className="text-sm font-black">Chào {viewer.fullName}</p><p className="mt-1 text-xs text-[#5b7177]">Hỏi đáp chung nằm ngay bên dưới; trao đổi riêng của nhóm vẫn ở Studio.</p></div>
        <div className="flex flex-wrap gap-2">
          <button type="button" disabled={busy} onClick={()=>{void reload().catch(e=>setError(e instanceof Error?e.message:"Không tải được bài đăng."));}} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cbdcd6] px-4 text-xs font-black"><RefreshCcw size={16}/> Làm mới</button>
          {shareable.length>0&&<button type="button" aria-expanded={showPublish} onClick={()=>setShowPublish(x=>!x)} className={btn}><Plus size={16}/> Đăng dự án đã duyệt</button>}
@@ -162,6 +163,7 @@ export default function CommunityPage(){
      </form>}
      {error&&<p role="alert" className="rounded-xl border border-[#eab9b0] bg-[#fff2ec] p-4 text-sm text-[#933d31]">{error}</p>}
      {notice&&<p role="status" className="rounded-xl border border-[#cce8d4] bg-[#e9f6ed] p-4 text-sm text-[#215944]"><Check size={17} className="mr-2 inline"/>{notice}</p>}
+     {viewer&&<CommunityQaBoard token={token} viewer={viewer}/>}
      {viewer&&<section aria-labelledby="real-feed-heading">
        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
          <div><p className="text-xs font-black uppercase tracking-[.15em] text-[#aa4831]">PROJECT SHOWCASE · DỮ LIỆU THẬT</p>
