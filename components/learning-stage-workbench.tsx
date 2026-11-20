@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect,useState} from "react";
 import Link from "next/link";
 import {ArrowRight, Check, CircleHelp, Compass, ExternalLink, Lightbulb, Users} from "lucide-react";
 import {SAMPLE_TEAMS, STAGE_GUIDES, guideForStage, type ThinkingStage} from "@/lib/stage-experience";
@@ -8,8 +8,10 @@ import {DemoToolCanvas} from "@/components/demo-tool-canvas";
 
 export function SampleTeamGallery({stage,compact=false}:{stage:ThinkingStage;compact?:boolean}) {
   const [active,setActive]=useState(SAMPLE_TEAMS[0].id);
+  const [selectedStage,setSelectedStage]=useState<ThinkingStage>(stage);
+  useEffect(()=>{setSelectedStage(stage);},[stage]);
   const selected=SAMPLE_TEAMS.find(x=>x.id===active)??SAMPLE_TEAMS[0];
-  const current=guideForStage(stage);
+  const current=guideForStage(selectedStage);
   return <div className="rounded-[25px] border border-[#dce6dd] bg-white p-4 sm:p-5" data-testid="sample-team-gallery">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
@@ -30,13 +32,14 @@ export function SampleTeamGallery({stage,compact=false}:{stage:ThinkingStage;com
     <div className="mt-3 rounded-2xl border border-[#e2e9e0] bg-[#fafbf7] p-4">
       <p className="text-sm font-black text-[#143744]">{selected.problem}</p>
       {!compact&&<div className="mt-3 flex flex-wrap gap-2">{selected.members.map(m=><span key={m} className="rounded-full bg-white px-3 py-1.5 text-[11px] font-semibold text-[#4d6268]">{m}</span>)}</div>}
-      <div className="mt-4 grid grid-cols-5 gap-1.5" role="list" aria-label="Năm giai đoạn trong ví dụ nhóm">
-        {STAGE_GUIDES.map(item=><div key={item.id} role="listitem" title={item.title} className={"min-w-0 rounded-lg px-1 py-2 text-center text-[9px] font-black sm:text-[10px] "+(item.id===stage?"ring-2 ring-[#b85135]":"")} style={{backgroundColor:item.color}}>
+      <div className="mt-4 grid grid-cols-5 gap-1.5" role="group" aria-label="Chọn giai đoạn trong ví dụ nhóm">
+        {STAGE_GUIDES.map(item=><button key={item.id} type="button" aria-pressed={item.id===selectedStage} title={item.title} onClick={()=>setSelectedStage(item.id)}
+          className={"min-w-0 rounded-lg px-1 py-2 text-center text-[9px] font-black sm:text-[10px] focus-visible:outline-4 "+(item.id===selectedStage?"ring-2 ring-[#b85135]":"hover:ring-1 hover:ring-[#9cb8ae]")} style={{backgroundColor:item.color}}>
           {item.title}
-        </div>)}
+        </button>)}
       </div>
       <p className="mt-3 text-[11px] font-black uppercase tracking-wider text-[#ab4b34]">{current.title} · Đầu ra giai đoạn</p>
-      <p className="mt-1 text-sm leading-7 text-[#294652]">{selected.progress[stage]}</p>
+      <p className="mt-1 text-sm leading-7 text-[#294652]">{selected.progress[selectedStage]}</p>
       {!compact&&<p className="mt-2 text-xs leading-6 text-[#68787b]">{selected.share}</p>}
     </div>
     <p className="mt-3 text-xs leading-6 text-[#567078]">Để tạo dữ liệu thật: ghi danh → vào Studio → chọn challenge → tạo hoặc nhận lời mời nhóm → lưu hoạt động theo giai đoạn → nộp minh chứng.</p>
