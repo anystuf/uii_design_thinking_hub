@@ -414,10 +414,15 @@ model Submission {
 
 model Post {
   id          String         @id @default(uuid())
-  projectId   String
-  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  // Published project showcases have a projectId. Community questions do not.
+  projectId   String?
+  project     Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   authorId    String
   author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title       String?
+  topic       String?
+  // References a root Comment on this question; validated by the service.
+  acceptedCommentId String?
   caption     String?
   visibility  PostVisibility @default(COMMUNITY)
   comments    Comment[]
@@ -426,6 +431,7 @@ model Post {
   updatedAt   DateTime       @updatedAt
 
   @@unique([projectId])
+  @@index([topic, publishedAt])
 }
 
 model Comment {
