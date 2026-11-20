@@ -42,7 +42,7 @@ type UploadToken = { intentId: string; token: string; bucket: string; storageKey
 
 const modes: Mode[] = ['EMPATHIZE', 'DEFINE', 'IDEATE', 'PROTOTYPE', 'TEST'];
 const types = ['INTERVIEW','OBSERVATION','PERSONA','JOURNEY_MAP','AFFINITY_MAP','NEED_STATEMENT','IDEA','PROTOTYPE','TEST_RESULT','PHOTO','VIDEO','DOCUMENT','REFLECTION'];
-const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
+const panel = 'min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5';
 const input = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-offset-2 focus:outline-[#f37021]';
 const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50';
 const secondary = 'rounded-xl border px-4 py-2.5 text-sm font-semibold text-[#153b77] disabled:opacity-50';
@@ -242,7 +242,7 @@ export default function EvidenceStudioPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Minh chứng & phản hồi</h1>
