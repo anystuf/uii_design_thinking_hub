@@ -121,10 +121,10 @@ test('new lesson without exercise: empty HTTP 200 is treated as absence, not bro
   await expect(page.getByRole('button',{name:'Tạo bài tập'})).toBeVisible();
   await expect(page.getByText(/Unexpected end of JSON input/)).toHaveCount(0);
   expect(exerciseReads).toBeGreaterThan(0);
-  await expect(page.getByRole('button',{name:'Tắt con trỏ nét vẽ'})).toBeVisible();
+  await expect(page.getByTestId('creative-pointer-trail')).toHaveCount(1);
 });
 
-test('sketch pointer draws red mouse trail, can be switched off', async ({page}) => {
+test('red creative cursor works automatically and draws real pixels over the entire page', async ({page}) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
   await page.setViewportSize({width:900,height:680});
   await loginFixture(page,'teacher');
@@ -137,11 +137,29 @@ test('sketch pointer draws red mouse trail, can be switched off', async ({page})
   });
   await page.goto('/learn');
   const trail=page.getByTestId('creative-pointer-trail');
-  await expect(trail).toHaveAttribute('data-enabled','true');
+  await expect(trail).toHaveCount(1);
+  await expect(page.getByRole('button',{name:/con trỏ nét vẽ/i})).toHaveCount(0);
   await page.mouse.move(100,180);
-  await page.mouse.move(260,235, {steps:8});
-  await expect.poll(async()=>trail.locator('path').getAttribute('d'), {timeout:3000}).toMatch(/^M /);
-  await page.getByRole('button',{name:'Tắt con trỏ nét vẽ'}).click();
-  await expect(trail).toHaveAttribute('data-enabled','false');
-  await expect(trail.locator('path')).toHaveAttribute('d','');
+  await page.mouse.move(260,235, {steps:12});
+  await expect(trail).toHaveAttribute('data-active','true');
+  await expect.poll(async () => page.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]');
+    if (!canvas) return false;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    const ratio = canvas.width / innerWidth;
+    const pixel = ctx.getImageData(Math.floor(260 * ratio), Math.floor(235 * ratio), 1, 1).data;
+    return pixel[0] > 150 && pixel[1] < 125 && pixel[2] < 125 && pixel[3] > 100;
+  })).toBe(true);
+});
+
+test('creative cursor is disabled by operating-system reduced motion', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const trail = page.getByTestId('creative-pointer-trail');
+  await expect(trail).toHaveCount(1);
+  await page.mouse.move(100,120);
+  await page.mouse.move(350,200, {steps:8});
+  await expect(trail).toHaveAttribute('data-active','false');
 });
