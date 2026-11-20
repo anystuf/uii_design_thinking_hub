@@ -554,7 +554,7 @@ export default function LearningFoundationPage() {
                       <p className="mt-2 text-xs leading-6 text-[#4e696c]">Trao đổi riêng trong dự án nhóm; giảng viên xem và phản hồi theo quyền. Hoặc ghé cộng đồng để xem và góp ý các dự án đã duyệt.</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={"/studio?course="+encodeURIComponent(course.id)+"&mode=EMPATHIZE#project-discussion"}
+                      <Link href={"/studio?course="+encodeURIComponent(course.id)+"&mode="+(findKitLesson(currentLesson.title)?.mode||"EMPATHIZE")+"#project-discussion"}
                         className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#173445] px-4 text-xs font-black text-white">Trao đổi với giảng viên <ArrowRight size={16}/></Link>
                       <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#a8cbc0] bg-white px-4 text-xs font-black text-[#173445]">Xem cộng đồng</Link>
                     </div>
