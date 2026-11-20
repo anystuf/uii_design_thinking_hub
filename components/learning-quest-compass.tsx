@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { authenticatedApi as api } from "@/lib/authenticated-api";
 import { studioModeHref } from "@/lib/design-thinking-learning-kit";
+import { LearningStageWorkbench } from "@/components/learning-stage-workbench";
 
 type Mode = "EMPATHIZE" | "DEFINE" | "IDEATE" | "PROTOTYPE" | "TEST";
 export type FocusStep = "learn" | "practice" | "apply";
@@ -154,12 +155,14 @@ export function LearningQuestCompass({
           <p className="text-xs font-extrabold uppercase tracking-wide text-[#a12d26]">Con trỏ hành trình · Bạn ở đây</p>
           <p className="mt-1 text-sm font-extrabold">{current.name} — {current.vi}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{current.hint}</p>
-          <p className="mt-1 text-xs text-slate-500">Đây là điểm chú ý do bạn chọn, không phải cấp độ hay điểm số đánh giá.</p>
+          <p className="mt-1 text-xs text-slate-500">Bạn chọn bước tư duy đang thực hành. Công cụ, câu hỏi và đầu ra sẽ đổi theo giai đoạn; đây không phải xếp hạng điểm số.</p>
         </div>
         <Link href={studioModeHref(mode, courseId)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-3 text-sm font-bold text-[#153b77] hover:bg-blue-50">
-          Thực hành <ArrowRight size={16} aria-hidden="true"/>
+          Mở Studio & nhóm <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </div>
+
+      {(!focusMode || focusStep === "apply") && <LearningStageWorkbench stage={mode} courseId={courseId} focusMode={focusMode}/>}
 
       <section aria-label="Điểm nỗ lực dựa trên dữ liệu học tập" className={focusMode ? "hidden" : "rounded-2xl bg-[#092653] p-4 text-white sm:p-5"}>
         <div className="flex flex-wrap items-center justify-between gap-3">
