@@ -238,7 +238,11 @@ export default function ReviewPage() {
       <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Đánh giá bài nộp</h1>
+          <header className="rounded-[28px] border border-[#e5d6c9] bg-[#ffe3cd] p-6 sm:p-9">
+            <p className="text-xs font-black uppercase tracking-[.16em] text-[#823f2f]">LEARN · ASSESS · IMPROVE</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Đánh giá bài nộp.</h1>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Mỗi phản hồi là một cơ hội cải tiến. Chấm bài theo rubric và khuyến khích sinh viên thử lại.</p>
+          </header>
           <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
         </div>
         {busy && account && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</p>}
