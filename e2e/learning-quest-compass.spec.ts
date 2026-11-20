@@ -30,6 +30,8 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
   await page.getByRole('button',{name:/Design Thinking Foundations/}).click();
   await page.getByRole('button',{name:'Bắt đầu / tiếp tục học'}).click();
   await expect(page.getByRole('heading',{name:'La bàn học tập của bạn'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Tắt con trỏ nét vẽ'})).toBeVisible();
+  await expect(page.getByTestId('creative-pointer-trail')).toHaveAttribute('data-enabled','true');
   await expect(page.getByText('Điểm hành trình · XP')).toBeVisible();
   await expect(page.getByRole('progressbar',{name:'Tiến độ XP khả dụng trong khóa học'})).toHaveAttribute('aria-valuenow','60');
 
@@ -41,6 +43,7 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
 
   await page.getByRole('button',{name:'Chế độ tập trung'}).click();
   await expect(page.getByRole('button',{name:'Thoát chế độ tập trung'})).toBeVisible();
+  await expect(page.getByTestId('creative-pointer-trail')).toHaveAttribute('data-enabled','false');
   await expect(page.getByRole('heading',{name:'Nội dung bài học'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Luyện tập và bài tập'})).toBeHidden();
 
