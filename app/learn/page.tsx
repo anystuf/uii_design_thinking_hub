@@ -6,6 +6,8 @@ import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
 import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
+import { DesignThinkingLessonGuide } from '@/components/design-thinking-lesson-guide';
+import { DESIGN_THINKING_KIT } from '@/lib/design-thinking-learning-kit';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -172,6 +174,7 @@ export default function LearningFoundationPage() {
   function openLesson(lesson: Lesson) {
     if (!course) return;
     setActiveLessonId(lesson.id);
+    setFocusStep('learn');
     setLearningView('player');
     window.history.replaceState(window.history.state, '', '/learn?course=' + encodeURIComponent(course.id) + '&lesson=' + encodeURIComponent(lesson.id));
   }
@@ -246,6 +249,57 @@ export default function LearningFoundationPage() {
       setMessage('Đã tạo khóa học dạng nháp.');
       await selectCourse(created.id);
     } catch (err) { fail(err); } finally { setBusy(false); }
+  }
+
+  async function createGuidedStarterCourse() {
+    if (!canTeach || busy) return;
+    clearNotice(); setBusy(true);
+    let newCourse: Course | null = null;
+    let lessonsCreated = 0;
+    let quizzesCreated = 0;
+    try {
+      newCourse = await api<Course>('/courses', token, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: 'Design Thinking Foundations · Guided Studio',
+          description: 'Lộ trình thực hành 5 chế độ Design Thinking. Mỗi bài có kiến thức, nhiệm vụ thực tế, quiz và kết quả cần lưu vào Design Studio. Khóa học được tạo dạng nháp để giảng viên kiểm duyệt trước khi công bố.',
+          level: 'Foundation',
+        }),
+      });
+      const id = newCourse.id;
+      setCourses(items => [newCourse!, ...items]);
+      for (const [index, kit] of DESIGN_THINKING_KIT.entries()) {
+        const createdLesson = await api<Lesson>('/courses/' + id + '/lessons', token, {
+          method: 'POST',
+          body: JSON.stringify({
+            title: kit.title, content: kit.content,
+            contentType: 'WORKSHOP', orderIndex: index, isPublished: true,
+          }),
+        });
+        lessonsCreated += 1;
+        await api('/lessons/' + createdLesson.id + '/exercise', token, {
+          method: 'PUT',
+          body: JSON.stringify({
+            kind: 'QUIZ', title: 'Kiểm tra hiểu bài · ' + kit.mode,
+            instructions: 'Trả lời câu hỏi, xem giải thích và trở lại nhiệm vụ thực hành.',
+            items: [{
+              prompt: kit.quiz.prompt, options: [...kit.quiz.options],
+              correctIndex: kit.quiz.correctIndex,
+              explanation: kit.quiz.explanation, points: 1,
+            }],
+            passingScore: 70, maxAttempts: 3, published: true, dueAt: null,
+          }),
+        });
+        quizzesCreated += 1;
+      }
+      await selectCourse(id);
+      setMessage('Đã tạo khóa học nháp với 5 bài thực hành và 5 quiz. Vui lòng kiểm tra từng bài trước khi xuất bản khóa học.');
+    } catch (err) {
+      if (newCourse) {
+        await selectCourse(newCourse.id);
+        setError('Tạo khóa học chưa hoàn tất (' + lessonsCreated + '/5 bài, ' + quizzesCreated + '/5 quiz). Dữ liệu đã tạo vẫn được giữ trên máy chủ. Hãy kiểm tra khóa học nháp, không bấm tạo lại để tránh trùng. Chi tiết: ' + (err instanceof Error ? err.message : 'Không rõ lỗi.'));
+      } else fail(err);
+    } finally { setBusy(false); }
   }
 
   async function publishCourse() {
@@ -391,6 +445,11 @@ export default function LearningFoundationPage() {
               <label className="block text-sm font-semibold">Mô tả khóa học<textarea maxLength={1200} value={courseDescription} onChange={e => setCourseDescription(e.target.value)} rows={3} className="mt-2 w-full rounded-xl border px-3 py-2"/></label>
               <button disabled={busy} className="min-h-11 rounded-xl bg-[#153b77] px-5 font-bold text-white disabled:opacity-50">Tạo khóa học nháp</button>
             </form>
+            <div className="mt-4 space-y-2 border-t pt-4">
+              <h3 className="text-base font-extrabold">Bộ học liệu mẫu · Design Thinking Foundations</h3>
+              <p className="max-w-3xl text-sm leading-6 text-slate-600">Tạo một khóa học <strong>nháp</strong> gồm 5 bài theo Empathize, Define, Ideate, Prototype, Test; mỗi bài có bài đọc gốc, nhiệm vụ áp dụng và một quiz tự chấm. Các hoạt động sẽ lưu vào máy chủ khi giảng viên xác nhận tạo. Không tự động xuất bản khóa học.</p>
+              <button type="button" disabled={busy} onClick={() => void createGuidedStarterCourse()} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-4 py-3 text-sm font-extrabold text-[#153b77] hover:bg-blue-50 disabled:opacity-50"><Plus size={17} aria-hidden="true"/> Tạo khóa học mẫu 5 bài + quiz</button>
+            </div>
           </details>}
 
           {!course ? <section className="rounded-2xl border border-dashed bg-white p-10 text-center"><BookOpen size={34} className="mx-auto text-[#153b77]"/><h2 className="mt-3 text-xl font-extrabold">Chọn một khóa học</h2><p className="mt-2 text-sm text-slate-600">Xem giới thiệu, chương trình và ghi danh để bắt đầu.</p></section> : <>
@@ -458,12 +517,14 @@ export default function LearningFoundationPage() {
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && !(/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <a href={getSafeHttpUrl(currentLesson.videoUrl)!} target="_blank" rel="noreferrer" className="text-sm font-bold text-[#153b77] underline">Mở video trong tab mới</a>}
                   {currentLesson.content && <div className="rounded-xl bg-[#f8fafd] p-5"><h4 className="mb-3 font-bold">Nội dung bài học</h4><p className="whitespace-pre-wrap break-words text-base leading-8 text-slate-700">{currentLesson.content}</p></div>}
                   {getResourceLinks(currentLesson.content).length > 0 && <div><h4 className="mb-3 font-bold">Tài liệu tham khảo</h4><ul className="space-y-2">{getResourceLinks(currentLesson.content).map(link => <li key={link}><a className="break-all text-sm font-semibold text-[#153b77] underline" href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>}
+                  {focusMode && user.role === 'STUDENT' && <button type="button" onClick={() => setFocusStep('practice')} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Tôi đã học xong · Đến luyện tập <ArrowRight size={16} aria-hidden="true"/></button>}
                   </div>
                   <div id="quest-task-practice" role="region" aria-label="Luyện tập và nhận phản hồi" tabIndex={-1} className={focusMode && focusStep !== "practice" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5"}>
-                  <LessonPractice key={currentLesson.id} lessonId={currentLesson.id} courseId={course.id} token={token} canManage={canEditCourse} isEnrolled={isEnrolled}/>
+                  {(!focusMode || focusStep === 'practice' || canEditCourse) && <LessonPractice key={currentLesson.id} lessonId={currentLesson.id} courseId={course.id} token={token} canManage={canEditCourse} isEnrolled={isEnrolled}/>}
+                  {focusMode && focusStep === 'practice' && user.role === 'STUDENT' && <button type="button" onClick={() => setFocusStep('apply')} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Đến nhiệm vụ vận dụng <ArrowRight size={16} aria-hidden="true"/></button>}
                   </div>
                   <div id="quest-task-apply" role="region" aria-label="Vận dụng vào dự án" tabIndex={-1} className={focusMode && focusStep !== "apply" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5"}>
-                  <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5"><h4 className="flex items-center gap-2 font-bold"><Sparkles size={18} aria-hidden="true"/> Áp dụng kiến thức</h4><p className="mt-2 text-sm leading-7">Tìm một vấn đề thực tế, ghi nhận điều bạn quan sát và thử áp dụng phương pháp vừa học trong dự án.</p><Link href="/studio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#153b77] underline">Thực hành trong Design Studio <ArrowRight size={16}/></Link></div>
+                  <DesignThinkingLessonGuide key={currentLesson.id} title={currentLesson.title} courseId={course.id}/>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
                     <div className="flex flex-wrap gap-2">{selectedLessonIndex > 0 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex-1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold"><ArrowLeft size={16}/> Bài trước</button>}{selectedLessonIndex < lessons.length-1 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex+1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Bài tiếp theo <ArrowRight size={16}/></button>}</div>
@@ -475,6 +536,16 @@ export default function LearningFoundationPage() {
             {canEditCourse && <section id="lesson-editor" className="scroll-mt-5 rounded-[22px] border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
               <div className="mb-4"><p className="text-xs font-extrabold uppercase tracking-widest text-[#ad4007]">LECTURER WORKSPACE</p><h3 className="mt-1 text-xl font-extrabold">{editingLessonId ? 'Chỉnh sửa bài học' : 'Biên soạn bài học mới'}</h3><p className="mt-1 text-sm text-slate-600">Nội dung giảng dạy chỉ được chỉnh sửa bởi người có quyền quản lý khóa học.</p></div>
               <form onSubmit={event => void createLesson(event)} className="space-y-4">
+                <label htmlFor="lesson-starter-template" className="block text-sm font-semibold">Mẫu bài học Design Thinking (không bắt buộc)</label>
+                <select id="lesson-starter-template" defaultValue="" onChange={event => {
+                  const kit = DESIGN_THINKING_KIT.find(item => item.mode === event.target.value);
+                  if (!kit) return;
+                  setLessonTitle(kit.title); setLessonContent(kit.content); setLessonType('WORKSHOP'); setLessonVideoUrl('');
+                }} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm">
+                  <option value="">Bắt đầu từ trang trống</option>
+                  {DESIGN_THINKING_KIT.map(item => <option key={item.mode} value={item.mode}>{item.title}</option>)}
+                </select>
+                <p className="text-xs leading-5 text-slate-600">Chèn nội dung gốc vào trình biên soạn, có thể sửa trước khi lưu. Quiz riêng được tạo trong mục Luyện tập ở bài học.</p>
                 <label htmlFor="lesson-title" className="block text-sm font-semibold">Tiêu đề bài học</label>
                 <input id="lesson-title" required maxLength={160} value={lessonTitle} onChange={event => setLessonTitle(event.target.value)} className="min-h-11 w-full rounded-xl border px-3 text-base"/>
                 <label htmlFor="lesson-type" className="block text-sm font-semibold">Loại bài học</label>
