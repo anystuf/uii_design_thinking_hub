@@ -353,8 +353,8 @@ export function LiveHubDashboard() {
         )}
         {account && !loading && (
           <>
-            <section aria-label="Chào mừng và hành động chính" className="relative overflow-hidden rounded-[30px] bg-[#071d43] p-6 text-white shadow-[0_20px_70px_rgba(7,29,67,0.14)] sm:p-9">
-              <div className="pointer-events-none absolute -right-14 -top-24 h-80 w-80 rounded-full border-[42px] border-[#f37021]/20" aria-hidden="true" />
+            <section aria-label="Chào mừng và hành động chính" className="relative overflow-hidden rounded-[30px] bg-[#173445] p-6 text-white shadow-[0_20px_70px_rgba(7,29,67,0.14)] sm:p-9">
+              <div className="pointer-events-none absolute -right-14 -top-24 h-80 w-80 rounded-full border-[42px] border-[#a6e9ee]/25" aria-hidden="true" />
               <div className="relative flex flex-wrap items-end justify-between gap-6">
                 <div className="max-w-2xl">
                   <p className="mb-2 text-sm font-semibold text-slate-200">Xin chào, {account.fullName}</p>
