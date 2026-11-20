@@ -547,6 +547,18 @@ export default function LearningFoundationPage() {
                   </div>
                   <div id="quest-task-apply" role="region" aria-label="Vận dụng vào dự án" tabIndex={-1} className={focusMode && focusStep !== "apply" && user.role === "STUDENT" ? "hidden" : "scroll-mt-5"}>
                   <DesignThinkingLessonGuide key={currentLesson.id} title={currentLesson.title} courseId={course.id}/>
+                  <div className="mt-4 grid gap-3 rounded-[22px] border border-[#cbded1] bg-[#eaf5e7] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[.13em] text-[#a64c35]">LEARN TOGETHER · PROJECT CONVERSATION</p>
+                      <h4 className="mt-1 text-lg font-black text-[#173445]">Học cùng nhóm. Hỏi giảng viên khi cần.</h4>
+                      <p className="mt-2 text-xs leading-6 text-[#4e696c]">Trao đổi riêng trong dự án nhóm; giảng viên xem và phản hồi theo quyền. Hoặc ghé cộng đồng để xem và góp ý các dự án đã duyệt.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link href={"/studio?course="+encodeURIComponent(course.id)+"&mode=EMPATHIZE#project-discussion"}
+                        className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#173445] px-4 text-xs font-black text-white">Trao đổi với giảng viên <ArrowRight size={16}/></Link>
+                      <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#a8cbc0] bg-white px-4 text-xs font-black text-[#173445]">Xem cộng đồng</Link>
+                    </div>
+                  </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
                     <div className="flex flex-wrap gap-2">{selectedLessonIndex > 0 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex-1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold"><ArrowLeft size={16}/> Bài trước</button>}{selectedLessonIndex < lessons.length-1 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex+1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Bài tiếp theo <ArrowRight size={16}/></button>}</div>
