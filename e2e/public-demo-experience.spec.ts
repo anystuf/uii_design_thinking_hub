@@ -41,7 +41,7 @@ test("public demo offers usable tools and shows truthful no-persistence feedback
   await page.goto("/demo?tool=Crazy%208s#tools");
   await expect(page.getByRole("heading",{name:"10 công cụ thực hành"})).toBeVisible();
   await expect(page.getByRole("heading",{name:"Crazy 8s"})).toBeVisible();
-  await page.getByRole("textbox",{name:/Thử viết một ý tưởng/}).fill("Một bảng hướng dẫn tốt hơn cho sinh viên.");
+  await page.getByTestId("demo-structured-tool").getByRole("textbox").first().fill("Một bảng hướng dẫn tốt hơn cho sinh viên.");
   await page.getByRole("button",{name:"Đã thử công cụ"}).click();
   await expect(page.getByRole("status").filter({hasText:/không được gửi lên máy chủ/})).toBeVisible();
 });
