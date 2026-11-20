@@ -136,7 +136,7 @@ export function WorkspaceChatbot() {
               availability==="loading"?"Đang kiểm tra trạng thái trợ lý…":
               availability==="configured"?<><Sparkles size={13}/> Đã cấu hình Gemini · chưa thử kết nối</>:
               availability==="degraded"?<><BookOpen size={13}/> Gemini chưa phản hồi · đang dùng hướng dẫn dự phòng</>:
-              <><BookOpen size={13}/> Hướng dẫn từ kho kiến thức UII</>
+              <><BookOpen size={13}/> Hướng dẫn từ kho kiến thức UII</>}
           </p>
         </div>
         <button type="button" className="grid size-10 place-items-center rounded-lg hover:bg-white/10" aria-label="Đóng cửa sổ chatbot" onClick={()=>setOpen(false)}><X size={18} aria-hidden="true"/></button>
