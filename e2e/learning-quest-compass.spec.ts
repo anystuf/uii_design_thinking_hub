@@ -48,7 +48,9 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
   await expect(page.getByRole('heading',{name:'Nội dung bài học'})).toBeHidden();
 
   await page.getByRole('button',{name:/3. Vận dụng/}).click();
-  await expect(page.getByRole('link',{name:/Thực hành trong Design Studio/})).toBeVisible();
+  const studioLink=page.getByRole('link',{name:/Mở đúng chế độ EMPATHIZE trong Studio/});
+  await expect(studioLink).toBeVisible();
+  await expect(studioLink).toHaveAttribute('href', '/studio?mode=EMPATHIZE&course=course');
   await page.getByRole('button',{name:'Thoát chế độ tập trung'}).click();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('quest-compass-mobile-320.png'), fullPage:true});
