@@ -382,10 +382,11 @@ export default function LearningFoundationPage() {
         {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
         {session && !user && error && !busy && <button type="button" onClick={() => setReload(n => n + 1)} className="min-h-11 rounded-xl border bg-white px-4 font-semibold">Thử lại</button>}
         {session && user && <>
-          <section className="flex flex-wrap items-end justify-between gap-4">
+          <section className="relative flex flex-wrap items-end justify-between gap-4 overflow-hidden rounded-[30px] border border-[#b1e0e8] bg-[#bdeaf4] p-6 sm:p-9">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[0.17em] text-[#b94708]">UII · LEARNING EXPERIENCE</p>
-              <h1 className="mt-1 text-3xl font-extrabold tracking-tight sm:text-4xl">Không gian khóa học</h1>
+              <h1 className="mt-2 text-3xl font-black tracking-[-.05em] sm:text-4xl">Không gian khóa học</h1>
+              <p className="mt-2 text-2xl font-black leading-tight tracking-tight text-[#b5362a]">Try, learn, try again.</p>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{canTeach ? 'Thiết kế và quản lý những trải nghiệm học tập thực hành.' : 'Khám phá kiến thức, học theo tiến độ riêng và áp dụng vào dự án thực tế.'}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
