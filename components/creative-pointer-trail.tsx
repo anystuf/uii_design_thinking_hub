@@ -4,9 +4,8 @@ import { useEffect, useRef } from "react";
 
 type InkPoint = { x: number; y: number; time: number };
 
-const INK_HOLD_MS = 1800;
-const INK_FADE_MS = 900;
-const MAX_POINTS = 180;
+const INK_LIFETIME_MS = 860;
+const MAX_POINTS = 95;
 const PAUSE_BETWEEN_STROKES_MS = 450;
 
 /**
@@ -31,6 +30,7 @@ export function CreativePointerTrail() {
     let width = 1;
     let height = 1;
     let lastMove = 0;
+    let staticClear: ReturnType<typeof setTimeout> | undefined;
 
     const disabled = () =>
       document.documentElement.dataset.uiiFocusMode === "true" ||
@@ -38,6 +38,8 @@ export function CreativePointerTrail() {
 
     const clear = () => {
       points.length = 0;
+      if (staticClear) clearTimeout(staticClear);
+      staticClear = undefined;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
       context.clearRect(0, 0, width, height);
@@ -68,32 +70,33 @@ export function CreativePointerTrail() {
       }
 
       const latest = points[points.length - 1];
-      const age = Math.max(0, now - latest.time);
       const reduced = motionPreference.matches;
-      if (!reduced && age > INK_HOLD_MS + INK_FADE_MS) {
+      const age = Math.max(0, now - latest.time);
+      if (!reduced && age > INK_LIFETIME_MS) {
         clear();
         return;
       }
       context.save();
-      context.globalAlpha = reduced ? 1 : Math.max(0, Math.min(1,
-        (INK_HOLD_MS + INK_FADE_MS - age) / INK_FADE_MS));
       context.strokeStyle = "#eb302b";
       context.lineCap = "round";
       context.lineJoin = "round";
-      context.lineWidth = 5;
-      context.beginPath();
-      context.moveTo(points[0].x, points[0].y);
+      context.lineWidth = 2.6;
+      // Each tiny segment independently fades according to its AGE and
+      // position in the stroke. This avoids a heavy opaque line over text,
+      // eliminates the 1.8-second hold and makes the tail translucent.
       for (let i = 1; i < points.length; i++) {
         const previous = points[i - 1];
         const current = points[i];
-        context.quadraticCurveTo(
-          previous.x, previous.y,
-          (previous.x + current.x) / 2,
-          (previous.y + current.y) / 2,
-        );
+        const freshness = reduced ? 1 : Math.max(0, 1 - (now - current.time) / INK_LIFETIME_MS);
+        const tail = 0.34 + 0.66 * i / (points.length - 1);
+        const alpha = (reduced ? tail : freshness * freshness * tail) * 0.83;
+        if (alpha < 0.015) continue;
+        context.globalAlpha = alpha;
+        context.beginPath();
+        context.moveTo(previous.x, previous.y);
+        context.lineTo(current.x, current.y);
+        context.stroke();
       }
-      context.lineTo(latest.x, latest.y);
-      context.stroke();
       context.restore();
 
       // Keep the actual stroke as the only UI, instead of a standalone dot.
@@ -124,7 +127,11 @@ export function CreativePointerTrail() {
       if (motionPreference.matches) {
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
+        if (staticClear) clearTimeout(staticClear);
         paint(now);
+        // Reduced Motion skips fade animation, but never leaves static ink
+        // covering the page indefinitely.
+        staticClear = setTimeout(clear, 700);
       } else if (!raf) {
         raf = requestAnimationFrame(paint);
       }
@@ -134,7 +141,8 @@ export function CreativePointerTrail() {
       if (e.pointerType === "mouse" || e.pointerType === "pen")
         record(e.clientX, e.clientY);
     };
-    const onMouseMove = (e: MouseEvent) => record(e.clientX, e.clientY);
+    // PointerEvent is supported in all target browsers. Avoid double recording
+    // the same movement as both pointermove and mousemove.
     const onPreferenceChange = () => {
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
@@ -144,7 +152,6 @@ export function CreativePointerTrail() {
 
     resize();
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", clear, { passive: true });
     window.addEventListener("blur", clear);
@@ -153,7 +160,6 @@ export function CreativePointerTrail() {
     motionPreference.addEventListener("change", onPreferenceChange);
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", clear);
       window.removeEventListener("blur", clear);
