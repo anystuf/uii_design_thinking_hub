@@ -1,0 +1,21 @@
+name: Staging API compatibility smoke
+
+on:
+  pull_request:
+    branches: ['feat/practice-assignment-chatbot-20261120']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staging-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public staging health, authentication and preview CORS
+        run: node scripts/staging-api-smoke.mjs
