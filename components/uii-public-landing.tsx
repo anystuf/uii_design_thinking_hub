@@ -41,7 +41,7 @@ export function UIIPublicLanding() {
       <header className="sticky top-0 z-40 border-b border-[#dbe1da] bg-[#faf8f1]/95 backdrop-blur-xl">
         <div className="mx-auto flex min-h-[78px] max-w-[1500px] items-center justify-between gap-3 px-5 sm:px-9 xl:px-14">
           <Link href="/" aria-label="UII Design Thinking Hub — Trang chủ" className="inline-flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#152d3e] text-[15px] font-black text-white">UII<span className="absolute ml-7 mt-6 size-2 rounded-full bg-[#ee5644]" aria-hidden="true"/></span>
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#152d3e] text-[15px] font-black text-white">UII</span>
             <span className="text-[13px] font-black leading-tight tracking-tight sm:text-[15px]">Design Thinking<br/>Hub</span>
           </Link>
           <nav aria-label="Điều hướng trang chủ" className="hidden items-center gap-6 text-[13px] font-bold text-[#354d55] xl:flex">
