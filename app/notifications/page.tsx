@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceLoading } from '@/components/workspace-loading';
+import type { WorkspaceRole } from '@/components/workspace-guide';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { ArrowLeft, Bell, CheckCircle2, LoaderCircle } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { authenticatedApi } from '@/lib/authenticated-api';
+import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Notice = {
@@ -21,6 +23,7 @@ async function api<T>(token: string, path: string, init?: RequestInit): Promise<
 
 export default function NotificationsPage() {
   const [session, setSession] = useState<Session | null>(null);
+  const [account, setAccount] = useState<{token: string; role: WorkspaceRole} | null>(null);
   const [ready, setReady] = useState(false);
   const [notices, setNotices] = useState<Notice[]>([]);
   const [busy, setBusy] = useState(false);
@@ -48,6 +51,9 @@ export default function NotificationsPage() {
     if (!token) { setNotices([]); setBusy(false); return; }
     let active = true;
     setBusy(true);
+    void workspaceProfile<{role: WorkspaceRole}>(token, reload > 0)
+      .then(user => { if (active) setAccount({token, role: user.role}); })
+      .catch(() => {});
     void api<Notice[]>(token, '/notifications')
       .then((list) => { if (active) { setNotices(list); setError(''); } })
       .catch((err: unknown) => { if (active) setError(err instanceof Error ? err.message : 'Request failed.'); })
@@ -67,11 +73,12 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Thông báo" />
+      <WorkspaceNav title="Thông báo" role={account?.token === token ? account.role : undefined} guest={ready && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-5 py-8">
+        <h1 className="text-2xl font-semibold tracking-tight">Thông báo</h1>
         <p className="text-sm text-slate-600">Theo dõi hạn nộp và phản hồi dành cho bạn.</p>
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
-        {busy && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={15}/> Đang xử lý…</p>}
+        {!ready ? <WorkspaceLoading label="Đang kiểm tra phiên đăng nhập…"/> : busy && <WorkspaceLoading label="Đang tải thông báo…"/>}
         {ready && !session && <div className="rounded-xl bg-white p-5">Bạn cần <Link className="font-bold underline" href="/learn">đăng nhập</Link>.</div>}
         {session && (
           <section className="space-y-3">
@@ -83,7 +90,7 @@ export default function NotificationsPage() {
                   <p className="mt-2 text-xs text-slate-600">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
                   <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : '/studio'}
                     className="mt-3 inline-block text-sm font-bold text-[#153b77] underline">
-                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp / feedback' : 'Xem challenge'}
+                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp và phản hồi' : 'Xem thử thách'}
                   </Link>
                 </div>
                 {!notice.readAt ?

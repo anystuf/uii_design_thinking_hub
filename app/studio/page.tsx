@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { authenticatedApi } from '@/lib/authenticated-api';
+import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR';
@@ -126,19 +127,17 @@ export default function DesignStudioPage() {
       setBusy(true);
       try {
         const [me, list] = await Promise.all([
-          request<User>(token, '/auth/me'),
+          workspaceProfile<User>(token),
           request<Course[]>(token, '/courses'),
         ]);
-        const enrolled = me.role === 'STUDENT'
-          ? await request<Enrollment[]>(token, '/courses/my-enrollments')
-          : null;
-        const options = enrolled ? enrolled.map((e) => e.course) : list;
-        const [availableTemplates, ownTeams, pendingInvitations] = await Promise.all([
+        const [enrolled, availableTemplates, ownTeams, pendingInvitations] = await Promise.all([
+          me.role === 'STUDENT' ? request<Enrollment[]>(token, '/courses/my-enrollments') : Promise.resolve(null),
           request<Template[]>(token, '/activity-templates'),
           me.role === 'STUDENT' ? request<Team[]>(token, '/teams/my') : Promise.resolve([]),
           me.role === 'STUDENT' ? request<Invitation[]>(token, '/team-invitations/my') : Promise.resolve([]),
         ]);
         if (!active) return;
+        const options = enrolled ? enrolled.map((e) => e.course) : list;
         setUser(me); setCourses(options); setTemplates(availableTemplates);
         setMyTeams(ownTeams); setInvitations(pendingInvitations);
         setCourseId((prior) => options.some((c) => c.id === prior) ? prior : options[0]?.id ?? '');
@@ -337,16 +336,17 @@ export default function DesignStudioPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Không gian dự án" role={user?.role} />
+      <WorkspaceNav title="Không gian dự án" role={user?.role} guest={authReady && !session} />
 
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-6 px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Thực hành cùng nhóm</p>
-            <h2 className="text-3xl font-extrabold">Challenge-Based Learning</h2>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Dự án</h1>
             <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để bắt đầu'}</p>
           </div>
-          {busy && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Đang xử lý…</span>}
+          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Đang lưu hoặc tải thay đổi…</span>}
         </div>
+        {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</p>}
         {!authReady && <p>Đang kiểm tra đăng nhập…</p>}
@@ -380,7 +380,7 @@ export default function DesignStudioPage() {
                     {!courses.length && <option value="">Chưa ghi danh khóa học</option>}
                     {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                   </select>
-                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-600">Hãy <Link href="/learn" className="underline">ghi danh khóa học</Link> trước khi tham gia challenge.</p>}
+                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-600">Hãy <Link href="/learn" className="underline">ghi danh khóa học</Link> trước khi tham gia thử thách.</p>}
                 </section>
                 <section className={card}>
                   <h3 className="mb-3 flex items-center gap-2 font-bold"><Lightbulb size={18}/> Design Challenges</h3>
@@ -408,7 +408,7 @@ export default function DesignStudioPage() {
               <div className="min-w-0 space-y-5">
                 {!challenge ? <section className={card + ' py-16 text-center'}>
                   <Lightbulb className="mx-auto mb-3 text-[#ad4007]" size={35}/>
-                  <h3 className="text-xl font-bold">Chọn một Design Challenge</h3>
+                  <h3 className="text-xl font-bold">Chọn một thử thách</h3>
                   <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
                 </section> : (
                   <>
@@ -501,7 +501,7 @@ export default function DesignStudioPage() {
                         </section>
 
                         <section className={card}>
-                          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Design Thinking modes">
+                          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Hoạt động thiết kếs">
                             {MODES.map((item) => (
                               <button key={item.id} type="button" role="tab" aria-selected={mode === item.id}
                                 onClick={() => selectMode(item.id)}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { authenticatedApi } from '@/lib/authenticated-api';
+import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
@@ -101,7 +102,7 @@ export default function EvidenceStudioPage() {
     void (async () => {
       setBusy(true);
       try {
-        const account = await api<User>(token, '/auth/me');
+        const account = await workspaceProfile<User>(token);
         const list = account.role === 'STUDENT'
           ? await api<Project[]>(token, '/teams/my')
           : await api<Project[]>(token, '/projects');
@@ -240,35 +241,36 @@ export default function EvidenceStudioPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} />
+      <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Lưu lại hành trình thiết kế</p>
-            <h2 className="text-3xl font-extrabold">Evidence-Centered Design</h2>
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Minh chứng & phản hồi</h1>
             <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
           </div>
-          {busy && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</span>}
+          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</span>}
         </div>
+        {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{notice}</p>}
         {!authReady && <p>Đang kiểm tra phiên…</p>}
-        {authReady && !session && <div className={panel}>Cần đăng nhập trước: <Link className="font-bold underline" href="/learn">Learning Foundation</Link>.</div>}
+        {authReady && !session && <div className={panel}>Cần đăng nhập trước: <Link className="font-bold underline" href="/learn">trang đăng nhập</Link>.</div>}
         {session && user && (
           <>
             <section className={panel}>
-              <label className="mb-2 block text-sm font-bold" htmlFor="project">Project workspace</label>
+              <label className="mb-2 block text-sm font-bold" htmlFor="project">Chọn dự án</label>
               <select id="project" className={input} value={project?.id ?? ''} onChange={(event) => selectProject(event.target.value)}>
-                {!projects.length && <option value="">Chưa có project</option>}
+                {!projects.length && <option value="">Chưa có dự án</option>}
                 {projects.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
               </select>
-              {!projects.length && <p className="mt-3 text-sm text-slate-600">Tạo hoặc tham gia nhóm trong <Link className="underline" href="/studio">Design Studio</Link> trước.</p>}
+              {!projects.length && <p className="mt-3 text-sm text-slate-600">Tạo hoặc tham gia nhóm trong <Link className="underline" href="/studio">Dự án</Link> trước.</p>}
             </section>
             {project && (
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_1fr]">
                 <div className="space-y-5">
                   {canWrite && <section id="evidence-editor" className={panel + ' space-y-4'}>
                     <div className="flex items-center gap-2"><FileUp className="text-[#153b77]" size={22}/>
-                      <h3 className="text-xl font-bold">{newVersionOf ? 'Tạo evidence version mới' : 'Tạo evidence'}</h3></div>
+                      <h3 className="text-xl font-bold">{newVersionOf ? 'Tạo phiên bản minh chứng' : 'Thêm minh chứng'}</h3></div>
                     {newVersionOf && <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#eef3fc] p-3 text-sm">
                       <span>Chỉnh sửa: <strong>{newVersionOf.title}</strong> (v{newVersionOf.activeVersion})</span>
                       <button type="button" className={secondary} onClick={() => {
@@ -277,7 +279,7 @@ export default function EvidenceStudioPage() {
                       }}>Hủy</button>
                     </div>}
                     <form onSubmit={(event) => void submitEvidence(event)} className="space-y-3">
-                      <label className="block text-sm font-semibold">Design Thinking mode
+                      <label className="block text-sm font-semibold">Hoạt động thiết kế
                         <select className={input + ' mt-2'} disabled={!!newVersionOf} value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
                           {modes.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>

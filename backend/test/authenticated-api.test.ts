@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { authenticatedApi } from '../../lib/authenticated-api';
+import { authenticatedApi, clearWorkspaceProfile, workspaceProfile } from '../../lib/authenticated-api';
 
 test('client request verifies Bearer identity and preserves JSON mutations', async () => {
   const previous = globalThis.fetch;
@@ -72,6 +72,29 @@ test('client forwards cancellation to the network request', async () => {
     caller.abort();
     await assert.rejects(request, { name: 'AbortError' });
   } finally {
+    globalThis.fetch = previous;
+  }
+});
+
+test('navigation shares profile reads but a different login always fetches its own profile', async () => {
+  const previous = globalThis.fetch;
+  const seen: string[] = [];
+  try {
+    globalThis.fetch = async (_url, init) => {
+      const token = new Headers(init?.headers).get('Authorization') ?? '';
+      seen.push(token);
+      return Response.json({ role: token === 'Bearer first' ? 'STUDENT' : 'LECTURER' });
+    };
+    const first = workspaceProfile('first');
+    assert.equal(workspaceProfile('first'), first);
+    assert.deepEqual(await first, { role: 'STUDENT' });
+    assert.equal(workspaceProfile('first'), first);
+    assert.deepEqual(await workspaceProfile('second'), { role: 'LECTURER' });
+    clearWorkspaceProfile();
+    assert.notEqual(workspaceProfile('first'), first);
+    assert.deepEqual(seen, ['Bearer first', 'Bearer second', 'Bearer first']);
+  } finally {
+    clearWorkspaceProfile();
     globalThis.fetch = previous;
   }
 });

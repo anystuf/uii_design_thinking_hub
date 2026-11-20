@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowRight, BookOpen, RefreshCw } from "lucide-react";
+import { ArrowRight, BookOpen } from "lucide-react";
+import { WorkspaceLoading } from "@/components/workspace-loading";
 import { WorkspaceNav } from "@/components/workspace-nav";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { authenticatedApi as api } from "@/lib/authenticated-api";
+import { authenticatedApi as api, workspaceProfile, WorkspaceApiError } from "@/lib/authenticated-api";
 import { withAuthDeadline } from "@/lib/auth-timeout";
 
 type Role = "STUDENT" | "LECTURER" | "ADMIN" | "MENTOR";
@@ -152,13 +153,13 @@ export function LiveHubDashboard() {
   }, []);
 
   const loadDashboard = useCallback(
-    async (token: string, alive: () => boolean) => {
+    async (token: string, alive: () => boolean, refresh: boolean) => {
       setLoading(true);
       setError("");
       setPartialError("");
       try {
         // Roles come from the trusted API; no client-selectable role switch.
-        const me = await api<Account>("/auth/me", token);
+        const me = await workspaceProfile<Account>(token, refresh);
         if (!alive()) return;
         setAccount(me);
         const reviewer = me.role === "ADMIN" || me.role === "LECTURER";
@@ -195,19 +196,36 @@ export function LiveHubDashboard() {
           queueResult,
           milestonesResult,
         ].filter((result) => result.status === "rejected").length;
+        const mostRecent = enrollments?.find(item => item.progress?.nextLesson) ?? enrollments?.[0];
+        const [legacyProgress, legacyMilestones] = await Promise.allSettled([
+          mostRecent && !mostRecent.progress
+            ? api<Progress>("/courses/" + encodeURIComponent(mostRecent.courseId) + "/my-progress", token)
+            : Promise.resolve(null),
+          milestonesResult.status === "rejected" && milestonesResult.reason instanceof WorkspaceApiError && milestonesResult.reason.status === 404 && projects
+            ? Promise.all(projects.filter(project => project.challengeId).map(project =>
+                api<{ challenge?: { milestones: Milestone[] } }>("/teams/" + encodeURIComponent(project.id), token),
+              )).then(teams => [...new Map(teams.flatMap(team => team.challenge?.milestones ?? [])
+                .filter(item => item.dueAt).map(item => [item.id, item])).values()]
+                .sort((a, b) => Date.parse(a.dueAt!) - Date.parse(b.dueAt!)))
+            : Promise.resolve(null),
+        ]);
+        if (!alive()) return;
+        const milestones = valueOf(milestonesResult) ?? valueOf(legacyMilestones);
+        const failureCount = failed - (milestonesResult.status === "rejected" && milestones !== null ? 1 : 0)
+          + (legacyProgress.status === "rejected" ? 1 : 0);
         setData({
           courses,
           projects,
           notifications,
           enrollments,
           queue,
-          progress: (enrollments?.find(item => item.progress?.nextLesson) ?? enrollments?.[0])?.progress ?? null,
-          milestones: valueOf(milestonesResult),
+          progress: mostRecent?.progress ?? valueOf(legacyProgress),
+          milestones,
         });
-        if (failed)
+        if (failureCount)
           setPartialError(
             "Không thể tải " +
-              failed +
+              failureCount +
               " nguồn dữ liệu. Một số chỉ số chưa sẵn sàng; hãy thử tải lại.",
           );
 
@@ -235,7 +253,7 @@ export function LiveHubDashboard() {
       return;
     }
     let alive = true;
-    void loadDashboard(token, () => alive);
+    void loadDashboard(token, () => alive, reload > 0);
     return () => {
       alive = false;
     };
@@ -271,11 +289,12 @@ export function LiveHubDashboard() {
     <div className="min-h-screen bg-slate-50 text-[#12284a]">
       <WorkspaceNav
         title={title}
+        guest={authReady && !session}
         role={account?.role}
         onSignOut={account ? () => void signOut() : undefined}
       />
       <main
-        id="main-content"
+        id="main-content" tabIndex={-1}
         className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6"
       >
         {error && (
@@ -306,20 +325,8 @@ export function LiveHubDashboard() {
             </button>
           </div>
         )}
-        {(!authReady || loading) && (
-          <div
-            role="status"
-            className="space-y-3 rounded-2xl border bg-white p-6"
-          >
-            <p className="flex items-center gap-2">
-              <RefreshCw size={18} className="animate-spin" />
-              Đang tải không gian của bạn…
-            </p>
-            <div
-              aria-hidden="true"
-              className="h-24 animate-pulse rounded-xl bg-slate-100"
-            />
-          </div>
+        {(!authReady || loading || (session && !account && !error)) && (
+          <WorkspaceLoading label={!authReady ? "Đang kiểm tra phiên đăng nhập…" : !account ? "Đang xác minh tài khoản…" : "Đang tải không gian học tập…"}/>
         )}
         {authReady && !session && (
           <Panel title="Chào mừng bạn">
@@ -329,7 +336,7 @@ export function LiveHubDashboard() {
             <Action href="/learn">Đăng nhập</Action>
           </Panel>
         )}
-        {session && !loading && !account && (
+        {session && !loading && !account && error && (
           <Panel title="Chưa tải được hồ sơ">
             <p className="mb-4">
               Phiên đăng nhập đã được nhận. Hãy thử tải lại để xác minh quyền
@@ -346,12 +353,13 @@ export function LiveHubDashboard() {
         {account && !loading && (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
+              <h1 className="w-full text-2xl font-semibold tracking-tight">{title}</h1>
               <div>
                 <p className="text-sm text-slate-600">
                   Xin chào, {account.fullName}
                 </p>
                 <p className="mt-1 text-sm">
-                  {roleName(account.role)} · Chọn công việc tiếp theo của bạn.
+                  {roleName(account.role)}
                 </p>
               </div>
               <button

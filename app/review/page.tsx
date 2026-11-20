@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -9,7 +10,7 @@ import {
   LoaderCircle, Plus, Send, ShieldCheck,
 } from 'lucide-react';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { authenticatedApi } from '@/lib/authenticated-api';
+import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
@@ -99,7 +100,7 @@ export default function ReviewPage() {
       setBusy(true);
       try {
         const [me, list] = await Promise.all([
-          api<User>(token, '/auth/me'), api<Course[]>(token, '/courses'),
+          workspaceProfile<User>(token), api<Course[]>(token, '/courses'),
         ]);
         if (!active) return;
         setAccount(me); setCourses(list);
@@ -234,14 +235,14 @@ export default function ReviewPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} />
+      <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
         <div>
-          <p className="mb-1 text-xs font-bold uppercase tracking-widest text-[#ad4007]">Phản hồi giúp nhóm tiến bộ</p>
-          <h2 className="text-3xl font-extrabold">Review & Rubric Assessment</h2>
+          <h1 className="text-2xl font-semibold tracking-tight">Đánh giá bài nộp</h1>
           <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
         </div>
-        {busy && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang xử lý…</p>}
+        {busy && account && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</p>}
+        {session && !account && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</p>}
         {authReady && !session && <section className={panel}>Bạn cần <Link href="/learn" className="font-bold underline">đăng nhập</Link> trước.</section>}
@@ -259,7 +260,7 @@ export default function ReviewPage() {
                 </select>
               </section>
               <section className={panel + ' space-y-3'}>
-                <h3 className="text-lg font-bold">Rubric Library</h3>
+                <h3 className="text-lg font-bold">Bộ tiêu chí chấm</h3>
                 {rubrics.map((r) => (
                   <div key={r.id} className="rounded-xl border p-3">
                     <h4 className="font-bold">{r.title}</h4>
@@ -284,7 +285,7 @@ export default function ReviewPage() {
                 </form>}
               </section>
               <section className={panel}>
-                <h3 className="mb-3 text-lg font-bold">Pending Reviews ({queue.length})</h3>
+                <h3 className="mb-3 text-lg font-bold">Bài chờ đánh giá ({queue.length})</h3>
                 <div className="space-y-2">
                   {queue.map((item) => (
                     <button key={item.id} onClick={() => void selectSubmission(item)}
@@ -293,7 +294,7 @@ export default function ReviewPage() {
                       <span className="mt-1 block text-xs text-slate-600">{item.submittedBy.fullName} · {new Date(item.submittedAt).toLocaleString('vi-VN')}</span>
                     </button>
                   ))}
-                  {!queue.length && <p className="text-sm text-slate-600">Không có submission nào đang chờ đánh giá.</p>}
+                  {!queue.length && <p className="text-sm text-slate-600">Không có bài nộp nào đang chờ đánh giá.</p>}
                 </div>
               </section>
             </aside>
@@ -398,7 +399,7 @@ export default function ReviewPage() {
               ) : (
                 <section className={panel + ' py-16 text-center'}>
                   <ShieldCheck className="mx-auto mb-4 text-[#153b77]" size={32}/>
-                  <h3 className="text-xl font-bold">Chọn submission cần đánh giá</h3>
+                  <h3 className="text-xl font-bold">Chọn bài nộp để đánh giá</h3>
                   <p className="mt-2 text-sm text-slate-600">Rubric công bố sẽ được gắn với đúng phiên bản bài nộp, không ảnh hưởng lịch sử.</p>
                 </section>
               )}

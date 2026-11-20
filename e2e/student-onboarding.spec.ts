@@ -25,6 +25,7 @@ test('first-time student discovers a course and sees the enrollment action at 32
   await expect(page.getByText('Không có khóa học phù hợp. Hãy thử từ khóa khác.')).toBeVisible();
   await page.getByLabel('Tìm khóa học').fill('Design Thinking');
   await page.getByRole('button', { name: /Design Thinking Foundations/ }).click();
-  await expect(page.getByRole('button', { name: 'Ghi danh khóa học' })).toBeVisible();
+  await expect(page.getByRole('heading', {name: 'Design Thinking Foundations', exact: true})).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Ghi danh khóa học' })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

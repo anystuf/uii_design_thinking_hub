@@ -57,6 +57,15 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
       await expect(
         page.getByRole("link", { name: "Mở quản trị người dùng" }),
       ).toHaveAttribute("href", "/admin");
+    await page.getByRole("button", {name:"Trợ giúp", exact:true}).filter({visible:true}).click();
+    const guide = page.getByRole("dialog", {name:"Hướng dẫn sử dụng"});
+    const question = role === "ADMIN" ? "Kiểm tra tài khoản và quyền ở đâu?" :
+      role === "LECTURER" ? "Chấm bài và gửi phản hồi thế nào?" : "Nộp bài và đọc phản hồi ở đâu?";
+    await guide.getByRole("button", {name:question, exact:true}).click();
+    await expect(guide.getByRole("link")).toHaveAttribute("href", role === "ADMIN" ? "/admin" : role === "LECTURER" ? "/review" : "/evidence");
+    if (role !== "ADMIN") await expect(guide.getByRole("button", {name:"Kiểm tra tài khoản và quyền ở đâu?"})).toHaveCount(0);
+    await page.keyboard.press("Escape");
+    await expect(guide).not.toBeVisible();
     expect(profileRequests).toBe(1);
     for (const width of [320, 360, 375, 390, 430, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 900 });

@@ -13,6 +13,7 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'local-layout-check',
+      NEXT_PUBLIC_GOOGLE_SIGN_IN: 'true',
       NEXT_PUBLIC_API_URL: 'http://localhost:4000',
     },
   },

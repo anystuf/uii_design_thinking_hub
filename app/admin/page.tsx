@@ -60,6 +60,7 @@ export default function AdminPage() {
     <WorkspaceNav title="Quản trị" role={account?.role} />
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
       {loading && <p role="status">Đang kiểm tra quyền quản trị…</p>}
+      <h1 className="text-2xl font-semibold tracking-tight">Quản trị</h1>
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{error}<button className="ml-3 min-h-11 underline" onClick={() => setReload((value) => value + 1)}>Thử lại</button></div>}
       {!loading && !account && !error && <p>Đăng nhập để tiếp tục. <Link href="/learn" className="underline">Đăng nhập</Link></p>}
       {account && account.role !== 'ADMIN' && <p role="alert">Trang này dành cho quản trị viên. <Link href="/dashboard" className="underline">Về tổng quan</Link></p>}

@@ -1,17 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { LearningAuthForm } from '@/components/learning-auth-form';
+import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
   ArrowLeft, BookOpen, CheckCircle2, ChevronRight, GraduationCap, LogOut,
-  Plus, RefreshCw, ShieldCheck, Users, AlertCircle, Layers3,
+  Plus, RefreshCw, Users, AlertCircle, Layers3,
 } from 'lucide-react';
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
-import { authenticatedApi as api } from '@/lib/authenticated-api';
-import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
+import { authenticatedApi as api, workspaceProfile } from '@/lib/authenticated-api';
+import { withAuthDeadline } from '@/lib/auth-timeout';
 import { getResourceLinks, getSafeHttpUrl, getYouTubeEmbedUrl } from '@/lib/learning-media';
 
 type AppUser = { id: string; email: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
@@ -42,13 +44,8 @@ export default function LearningFoundationPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [busy, setBusy] = useState(false);
-  const [authBusy, setAuthBusy] = useState(false);
-  const [authTimedOut, setAuthTimedOut] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [authEmail, setAuthEmail] = useState('');
-  const [authPassword, setAuthPassword] = useState('');
-  const [signUp, setSignUp] = useState(false);
   const [courseTitle, setCourseTitle] = useState('');
   const [courseDescription, setCourseDescription] = useState('');
   const [lessonTitle, setLessonTitle] = useState('');
@@ -58,6 +55,15 @@ export default function LearningFoundationPage() {
   const [lessonType, setLessonType] = useState<NonNullable<Lesson['contentType']>>('ARTICLE');
   const [lessonPublished, setLessonPublished] = useState(true);
   const [reload, setReload] = useState(0);
+  const focusCourse = useRef<string | null>(null);
+  const courseHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (focusCourse.current && course?.id === focusCourse.current) {
+      courseHeading.current?.focus({ preventScroll: true });
+      courseHeading.current?.scrollIntoView({ block: 'start' });
+      focusCourse.current = null;
+    }
+  }, [course]);
   const [courseSearch, setCourseSearch] = useState('');
   const [catalogView, setCatalogView] = useState<'all' | 'enrolled'>('all');
 
@@ -94,18 +100,16 @@ export default function LearningFoundationPage() {
       setBusy(true);
       try {
         const token = session!.access_token;
-        const me = await api<AppUser>('/auth/me', token);
+        const me = await workspaceProfile<AppUser>(token, reload > 0);
         if (!active) return;
         setUser(me);
-        const list = await api<Course[]>('/courses', token);
+        const [list, currentEnrollments] = await Promise.all([
+          api<Course[]>('/courses', token),
+          me.role === 'STUDENT' ? api<Enrollment[]>('/courses/my-enrollments', token) : Promise.resolve([]),
+        ]);
         if (!active) return;
         setCourses(list);
-        let currentEnrollments: Enrollment[] = [];
-        if (me.role === 'STUDENT') {
-          const enrolled = await api<Enrollment[]>('/courses/my-enrollments', token);
-          currentEnrollments = enrolled;
-          if (active) setEnrollments(enrolled);
-        }
+        setEnrollments(currentEnrollments);
         if (!active) return;
         const requestedCourse = new URLSearchParams(window.location.search).get('course');
         if (requestedCourse && list.some(item => item.id === requestedCourse)) {
@@ -159,46 +163,23 @@ export default function LearningFoundationPage() {
     } catch (err) { fail(err); } finally { setBusy(false); }
   }
 
-  async function signInOrUp(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (authBusy || authTimedOut) return;
-    clearNotice(); setAuthBusy(true);
-    try {
-      const auth = getSupabaseBrowserClient().auth;
-      if (signUp) {
-        const result = await withAuthDeadline(() => auth.signUp({ email: authEmail, password: authPassword }));
-        if (result.error) throw result.error;
-        setMessage('Account registered. Check your email for a confirmation link if required.');
-      } else {
-        const result = await withAuthDeadline(() => auth.signInWithPassword({ email: authEmail, password: authPassword }));
-        if (result.error) throw result.error;
-      }
-    } catch (err) {
-      if (err instanceof AuthTimeoutError || (err instanceof Error && err.message.includes('Đăng nhập chưa được xác nhận'))) {
-        setAuthTimedOut(true);
-        setError('Chưa xác nhận được đăng nhập hoặc đăng ký trong thời gian cho phép. Hãy tải lại trang để kiểm tra phiên hiện tại trước khi thử lại. Nếu vừa đăng ký, hãy kiểm tra email xác nhận.');
-      } else { fail(err); }
-    } finally { setAuthBusy(false); }
-  }
-
-  async function selectCourse(id: string, userOverride?: AppUser, enrollmentOverride?: Enrollment[]) {
+  async function selectCourse(id: string, userOverride?: AppUser, enrollmentOverride?: Enrollment[], moveFocus = false) {
     clearNotice(); setBusy(true);
     setEditingLessonId(null);
     setLessonTitle(''); setLessonContent(''); setLessonVideoUrl(''); setLessonType('ARTICLE');
+    const currentUser = userOverride ?? user;
+    const joined = (enrollmentOverride ?? enrollments).some(item => item.courseId === id);
+    const path = '/courses/' + encodeURIComponent(id);
     try {
-      const selected = await api<Course>('/courses/' + id, token);
+      const [selected, list, nextProgress] = await Promise.all([
+        api<Course>(path, token),
+        currentUser && (currentUser.role !== 'STUDENT' || joined) ? api<Lesson[]>(path + '/lessons', token) : Promise.resolve([]),
+        currentUser?.role === 'STUDENT' && joined ? api<Progress>(path + '/my-progress', token) : Promise.resolve(null),
+      ]);
+      if (moveFocus) focusCourse.current = id;
       setCourse(selected);
-      const currentUser = userOverride ?? user;
-      const joined = (enrollmentOverride ?? enrollments).some((item) => item.courseId === id);
-      if (currentUser?.role !== 'STUDENT' || joined) {
-        const list = await api<Lesson[]>('/courses/' + id + '/lessons', token);
-        setLessons(list);
-        if (currentUser?.role === 'STUDENT') {
-          setProgress(await api<Progress>('/courses/' + id + '/my-progress', token));
-        } else setProgress(null);
-      } else {
-        setLessons([]); setProgress(null);
-      }
+      setLessons(list);
+      setProgress(nextProgress);
     } catch (err) { fail(err); } finally { setBusy(false); }
   }
 
@@ -284,41 +265,24 @@ export default function LearningFoundationPage() {
 
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Khóa học" role={user?.role} onSignOut={session ? () => void getSupabaseBrowserClient().auth.signOut() : undefined} />
+      <WorkspaceNav title="Khóa học" role={user?.role} guest={!session} onSignOut={session ? () => void getSupabaseBrowserClient().auth.signOut() : undefined} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
         {error && <div role="alert" className="flex gap-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><AlertCircle size={18} className="shrink-0"/>{error}</div>}
         {message && <div role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</div>}
-        {!authReady && <p>Đang kiểm tra phiên đăng nhập…</p>}
-        {authReady && !session && (
-          <div className="mx-auto max-w-md rounded-3xl border border-[#e6ebf2] bg-white p-8 shadow-sm">
-            <div className="mb-5 flex items-center gap-2 text-[#153b77]"><ShieldCheck size={24}/><h2 className="text-2xl font-bold">{signUp ? 'Đăng ký' : 'Đăng nhập'}</h2></div>
-            <p className="mb-6 text-sm text-slate-600">Đăng nhập để học, lưu tiến độ và làm dự án cùng nhóm.</p>
-            <form onSubmit={(event) => void signInOrUp(event)} className="space-y-4">
-              <label className="block text-sm font-semibold">Email
-                <input required type="email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="mt-2 w-full rounded-xl border px-3 py-3" placeholder="student@example.edu"/>
-              </label>
-              <label className="block text-sm font-semibold">Mật khẩu
-                <input required minLength={6} type="password" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="mt-2 w-full rounded-xl border px-3 py-3"/>
-              </label>
-              <button disabled={authBusy || authTimedOut} className="w-full rounded-xl bg-[#153b77] px-4 py-3 font-semibold text-white disabled:opacity-50">{authBusy ? 'Đang xác thực tài khoản…' : (signUp ? 'Tạo tài khoản' : 'Đăng nhập')}</button>
-              {authTimedOut && <button type="button" onClick={() => window.location.reload()} className="w-full rounded-xl border px-4 py-3 font-semibold">Tải lại trang để thử lại</button>}
-            </form>
-            <button type="button" className="mt-4 text-sm font-semibold text-[#153b77] underline" onClick={() => setSignUp((value) => !value)}>{signUp ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký'}</button>
-          </div>
-        )}
-        {session && (
+        {!authReady && <WorkspaceLoading label="Đang kiểm tra phiên đăng nhập…"/>}
+        {authReady && !session && <LearningAuthForm />}
+        {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
+        {session && !user && error && !busy && <button type="button" onClick={() => setReload(n => n + 1)} className="min-h-11 rounded-md border bg-white px-4 font-semibold">Thử lại</button>}
+        {session && user && (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><p className="text-sm font-semibold uppercase tracking-widest text-[#ad4007]">{user ? { STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên', MENTOR: 'Mentor' }[user.role] : 'Đang tải tài khoản'}</p>
-                <h2 className="text-3xl font-extrabold">Xin chào, {user?.fullName ?? 'Learner'}</h2>
-                <p className="mt-1 text-sm text-slate-600">{user?.email}</p>
-              </div>
-
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h1 className="text-2xl font-semibold tracking-tight">Khóa học</h1>
+              <p className="text-sm text-slate-600">{{ STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên', MENTOR: 'Cố vấn' }[user.role]}</p>
             </div>
             {user?.role === 'STUDENT' && !busy && <section className="rounded-2xl border border-blue-100 bg-white p-5 sm:p-7" aria-labelledby="learning-path-title">
               <h3 id="learning-path-title" className="text-xl font-bold">{enrollments.length ? 'Tiếp tục hành trình của bạn' : 'Bắt đầu hành trình Design Thinking'}</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Chọn một khóa học, học qua video và hoạt động, rồi áp dụng cùng nhóm vào một thử thách thực tế.</p>
-              <ol className="mt-4 grid gap-2 sm:gap-4 sm:grid-cols-3">
+              <ol className="mt-4 hidden gap-4 sm:grid sm:grid-cols-3">
                 <li className="flex items-center gap-3 rounded-xl bg-blue-50 p-3 sm:block sm:p-4"><BookOpen aria-hidden="true" className="shrink-0 text-[#153b77] sm:mb-2" size={22}/><p className="font-bold">Chọn khóa học</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Ghi danh để lưu tiến độ và mở nội dung học.</p></li>
                 <li className="flex items-center gap-3 rounded-xl bg-orange-50 p-3 sm:block sm:p-4"><Layers3 aria-hidden="true" className="shrink-0 text-[#ad4007] sm:mb-2" size={22}/><p className="font-bold">Học và thực hành</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Hoàn thành bài học và thử các phương pháp thiết kế.</p></li>
                 <li className="flex items-center gap-3 rounded-xl bg-emerald-50 p-3 sm:block sm:p-4"><Users aria-hidden="true" className="shrink-0 text-emerald-800 sm:mb-2" size={22}/><p className="font-bold">Làm dự án cùng nhóm</p><p className="mt-1 hidden text-sm text-slate-600 sm:block">Lưu minh chứng, nộp bài và cải tiến từ phản hồi.</p></li>
@@ -330,7 +294,7 @@ export default function LearningFoundationPage() {
                 <div id="course-catalog" className="scroll-mt-4 rounded-2xl border bg-white p-5 shadow-sm">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="flex items-center gap-2 font-bold"><BookOpen size={18}/> Khóa học</h3>
-                    <button type="button" title="Tải lại" disabled={busy} onClick={() => void refreshData()}><RefreshCw size={17}/></button>
+                    <button type="button" title="Tải lại" aria-label="Tải lại khóa học" className="grid size-11 place-items-center rounded-md hover:bg-slate-50" disabled={busy} onClick={() => void refreshData()}><RefreshCw size={17}/></button>
                   </div>
                   <label htmlFor="course-search" className="mb-2 block text-sm font-semibold">Tìm khóa học</label>
                   <input id="course-search" type="search" value={courseSearch} onChange={(event) => setCourseSearch(event.target.value)} placeholder="Tên khóa học" className="mb-4 w-full rounded-xl border border-slate-300 px-3 py-3 text-base" />
@@ -340,7 +304,7 @@ export default function LearningFoundationPage() {
                   </div>}
                   <div className="space-y-2">
                     {visibleCourses.map((item) => (
-                      <button key={item.id} type="button" onClick={() => void selectCourse(item.id)} className={'w-full rounded-xl border p-4 text-left transition hover:border-[#153b77] ' + (course?.id === item.id ? 'border-[#153b77] bg-[#eef3fa]' : 'bg-white')}>
+                      <button key={item.id} type="button" disabled={busy} onClick={() => void selectCourse(item.id, undefined, undefined, true)} className={'w-full rounded-xl border p-4 text-left transition hover:border-[#153b77] ' + (course?.id === item.id ? 'border-[#153b77] bg-[#eef3fa]' : 'bg-white')}>
                         <div className="flex items-start justify-between gap-2"><span className="font-bold">{item.title}</span><ChevronRight size={16} className="shrink-0"/></div>
                         <p className="mt-2 text-xs text-slate-600">{item.level} · {{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[item.status]}</p>
                         {enrollments.some((e) => e.courseId === item.id) && <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-green-700"><CheckCircle2 size={13}/> Đã ghi danh</span>}
@@ -366,11 +330,11 @@ export default function LearningFoundationPage() {
                         <span className="rounded-full bg-[#edf2fb] px-3 py-1 text-xs font-bold text-[#153b77]">{{ DRAFT: 'Bản nháp', PUBLISHED: 'Đang mở', ARCHIVED: 'Lưu trữ' }[course.status]}</span>
                         {canEditCourse && course.status === 'DRAFT' && <button disabled={busy} type="button" onClick={() => void publishCourse()} className="rounded-full bg-[#b94708] px-4 py-2 text-xs font-bold text-white">Xuất bản khóa học</button>}
                       </div>
-                      <h3 className="text-2xl font-extrabold">{course.title}</h3>
+                      <h3 ref={courseHeading} tabIndex={-1} className="scroll-mt-4 text-xl font-semibold">{course.title}</h3>
                       <p className="mt-2 text-sm text-slate-600">{course.description || 'Chưa có mô tả khóa học.'}</p>
                       {user?.role === 'STUDENT' && !isEnrolled && <button disabled={busy} type="button" onClick={() => void enroll()} className="mt-5 flex items-center gap-2 rounded-xl bg-[#153b77] px-5 py-3 text-sm font-bold text-white"><Users size={17}/> Ghi danh khóa học</button>}
                       {progress && <div className="mt-6">
-                        <div className="mb-2 flex justify-between text-sm font-bold"><span>Learning progress</span><span>{progress.completedLessons}/{progress.totalLessons} · {progress.percent}%</span></div>
+                        <div className="mb-2 flex justify-between text-sm font-bold"><span>Tiến độ học</span><span>{progress.completedLessons}/{progress.totalLessons} · {progress.percent}%</span></div>
                         <div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent} className="h-3 overflow-hidden rounded-full bg-slate-100"><div style={{ width: progress.percent + '%' }} className="h-full rounded-full bg-[#b94708]"/></div>
                       </div>}
                     </div>
@@ -382,7 +346,7 @@ export default function LearningFoundationPage() {
                             <summary className="min-h-11 cursor-pointer font-bold">{index + 1}. {lesson.title}{completed.has(lesson.id) ? ' · Đã hoàn thành' : ''}</summary>
                             <div className="flex flex-wrap justify-between gap-3">
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-[#ad4007]">LESSON {index+1}</p>
+                                <p className="text-xs font-semibold text-[#ad4007]">Bài {index+1}</p>
                                 <h4 className="mt-1 font-bold">{lesson.title}</h4>
                                 {lesson.description && <p className="mt-2 text-sm text-slate-600">{lesson.description}</p>}
                                 {getYouTubeEmbedUrl(lesson.videoUrl) && <div className="mt-4 aspect-video overflow-hidden rounded-xl bg-slate-900"><iframe className="h-full w-full" src={getYouTubeEmbedUrl(lesson.videoUrl)!} title={lesson.title} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>}

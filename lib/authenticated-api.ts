@@ -2,6 +2,44 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const REQUEST_TIMEOUT_MS = 25000;
 // Render Free web services spin down after inactivity and can take about a minute to wake.
 const PROFILE_WAKE_TIMEOUT_MS = 75000;
+let lastWarmup = 0;
+let profile: { token: string; expiresAt: number; request: Promise<unknown> } | undefined;
+
+/** Start the staging service while the user enters credentials. */
+export function warmWorkspaceApi() {
+  if (typeof window === 'undefined' || !process.env.NEXT_PUBLIC_API_URL ||
+      Date.now() - lastWarmup < 60000) return;
+  lastWarmup = Date.now();
+  void fetch(API_URL + '/health', { cache: 'no-store', signal: AbortSignal.timeout(PROFILE_WAKE_TIMEOUT_MS) })
+    .then(response => response.body?.cancel())
+    .catch(() => {});
+}
+
+export function clearWorkspaceProfile() {
+  profile = undefined;
+}
+
+/** The API remains responsible for authorizing each data request. */
+export function workspaceProfile<T>(token: string, refresh = false): Promise<T> {
+  if (!refresh && profile?.token === token && profile.expiresAt > Date.now()) {
+    return profile.request as Promise<T>;
+  }
+  const entry = {
+    token,
+    expiresAt: Infinity,
+    request: authenticatedApi<T>('/auth/me', token),
+  };
+  profile = entry;
+  void entry.request.then(
+    () => { entry.expiresAt = Date.now() + 15000; },
+    () => { if (profile === entry) clearWorkspaceProfile(); },
+  );
+  return entry.request;
+}
+
+export class WorkspaceApiError extends Error {
+  constructor(public readonly status: number, message: string) { super(message); }
+}
 
 /** A bounded request; successful Supabase sign-in alone does not verify an app role. */
 export async function authenticatedApi<T>(path: string, token: string, init?: RequestInit): Promise<T> {
@@ -30,16 +68,17 @@ export async function authenticatedApi<T>(path: string, token: string, init?: Re
       });
     } while (Date.now() < deadline);
     if (!response.ok) {
+      if (response.status === 401 && profile?.token === token) clearWorkspaceProfile();
       const requestId = response.headers.get('X-Request-Id');
       // Do not surface raw upstream errors that could contain personal data or connection details.
-      throw new Error(`HTTP ${response.status}${requestId ? ` · Request ${requestId}` : ''}. Không tải được dữ liệu. Hãy thử lại.`);
+      throw new WorkspaceApiError(response.status, `Không tải được dữ liệu (HTTP ${response.status}). Hãy thử lại.${requestId ? ` Mã yêu cầu: ${requestId}` : ''}`);
     }
     return await response.json() as T;
   } catch (error) {
     if (controller.signal.aborted && !init?.signal?.aborted) {
       throw new Error(isProfileLookup
-        ? 'API chưa khởi động sau 75 giây. Hồ sơ chưa được xác minh; hãy thử tải lại.'
-        : 'API chưa phản hồi trong 25 giây. Hồ sơ chưa được xác minh. Hãy thử tải lại.');
+        ? 'Máy chủ chưa xác minh được tài khoản. Hãy thử lại.'
+        : 'Máy chủ phản hồi chậm. Hãy thử lại.');
     }
     throw error;
   } finally {
