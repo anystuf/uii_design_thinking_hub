@@ -39,6 +39,7 @@ export function LessonPractice({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState(false);
+  const [ungradedChoice, setUngradedChoice] = useState<number | null>(null);
   const [kind, setKind] = useState<Kind>("QUIZ");
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -187,9 +188,29 @@ export function LessonPractice({
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}
       <button type="button" onClick={() => setReload(n => n + 1)} className="ml-2 font-bold underline">Thử lại</button></div>}
     {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
-    {!loading && !exercise && !editing && <div className="rounded-xl border border-dashed p-5 text-sm text-slate-600">
-      {canManage ? "Chưa có bài tập cho bài học này. Chọn Tạo bài tập để thêm quiz hoặc bài thực hành." :
-        "Giảng viên chưa công bố bài tập cho bài học này."}
+    {!loading && !exercise && !editing && <div className="rounded-2xl border border-[#d3e6d5] bg-[#f5fbf4] p-5 text-sm">
+      {canManage ? <p className="text-[#4d6570]">Chưa có bài tập được công bố. Giảng viên có thể dùng nút Tạo bài tập để thêm quiz và bài thực hành được lưu vào LMS.</p> :
+        <div className="space-y-4">
+          <div><p className="text-[11px] font-black uppercase tracking-[.12em] text-[#a54733]">TRY · REFLECT · TRY AGAIN</p>
+            <h4 className="mt-1 text-lg font-black text-[#173445]">Thử nhanh trước khi làm bài chính thức</h4>
+            <p className="mt-1 text-xs leading-6 text-[#546e71]">Giảng viên chưa công bố bài chấm điểm cho bài học này. Câu hỏi tự kiểm tra sau đây không tính điểm, không ghi vào LMS và không thay thế bài được giao.</p>
+          </div>
+          <fieldset className="space-y-2">
+            <legend className="mb-2 font-bold text-[#173445]">Khi bắt đầu giải quyết một vấn đề trong trường, nhóm nên làm gì trước?</legend>
+            {["Vội dựng ứng dụng vì nhóm thấy ý tưởng hay", "Quan sát, phỏng vấn và tìm hiểu trải nghiệm người dùng thật", "Dựa hoàn toàn vào dự đoán của nhóm"].map((option,i)=>
+              <label key={option} className={"flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border bg-white p-3 text-sm leading-6 "+(ungradedChoice===i?"border-[#b95237] ring-1 ring-[#e4a28b]":"border-[#d7e4db]")}>
+                <input type="radio" name="uii-self-check" checked={ungradedChoice===i} onChange={()=>setUngradedChoice(i)} className="mt-1.5"/>
+                <span>{option}</span>
+              </label>)}
+          </fieldset>
+          {ungradedChoice!==null&&<p role="status" className={"rounded-xl p-3 text-sm leading-6 "+(ungradedChoice===1?"bg-[#d7f0df] text-[#22553b]":"bg-[#ffe7d7] text-[#7f4130]")}>
+            {ungradedChoice===1?"Đúng! Empathize bắt đầu bằng hiểu người dùng, không phải nghĩ ra giải pháp. Hãy dùng công cụ ở La bàn để ghi lại quan sát.":"Chưa chính xác. Design Thinking yêu cầu bạn thu thập bằng chứng về nhu cầu thật trước khi quyết định giải pháp."}
+          </p>}
+          <div className="flex flex-wrap items-center gap-3">
+            <a href="#quest-compass-title" className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white">Chọn công cụ trong La bàn</a>
+            <button type="button" onClick={()=>setUngradedChoice(null)} className="inline-flex min-h-11 items-center rounded-full border border-[#b9d2c8] bg-white px-4 text-xs font-black text-[#173445]">Thử lại</button>
+          </div>
+        </div>}
     </div>}
     {!loading && canManage && editing && <form onSubmit={event => void save(event)} className="space-y-5 rounded-2xl bg-slate-50 p-4 sm:p-6">
       <div className="rounded-xl border border-[#f3d0b5] bg-[#fff7ec] p-4">
