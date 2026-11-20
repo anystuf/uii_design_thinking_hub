@@ -19,7 +19,7 @@ const modes = [
 ] as const;
 
 function Eyebrow({children,dark=false}:{children:React.ReactNode;dark?:boolean}) {
-  return <p className={"text-[11px] font-black uppercase tracking-[0.19em] "+(dark?"text-[#b5471e]":"text-[#f16d38]")}>{children}</p>;
+  return <p className={"text-[11px] font-black uppercase tracking-[0.19em] "+(dark?"text-[#7a2d13]":"text-[#ffc88c]")}>{children}</p>;
 }
 function SectionTitle({eyebrow,title,desc}:{eyebrow:string;title:string;desc:string}) {
   return <div className="max-w-[800px] space-y-4">
@@ -74,12 +74,12 @@ export function UIIPublicLanding() {
               <h1 id="homepage-hero" className="mt-5 max-w-[810px] font-[family-name:var(--font-sans-ui)] text-[clamp(3.35rem,6.4vw,6.7rem)] font-black leading-[0.97] tracking-[-0.073em]">
                 Ideas come <span className="relative inline-block">alive
                   <svg className="absolute -bottom-4 left-0 w-full text-[#e84636]" viewBox="0 0 430 32" fill="none" aria-hidden="true"><path d="M8 17C77 5 148 28 226 14S347 7 422 17" stroke="currentColor" strokeWidth="8" strokeLinecap="round"/></svg>
-                </span><br/>when we <span className="text-[#ee503d]">make.</span>
+                </span><br/>when we <span className="text-[#a82b21]">make.</span>
               </h1>
               <p className="mt-11 max-w-[590px] text-xl font-bold leading-8 sm:text-[24px] sm:leading-9">Học Design Thinking bằng cách bắt tay vào làm.</p>
               <p className="mt-4 max-w-[550px] text-[15px] leading-8 text-[#30545c]">Khám phá bài học, phỏng vấn người dùng, phát triển ý tưởng, tạo nguyên mẫu và thử nghiệm. Một không gian sáng tạo dành cho sinh viên, giảng viên và những người muốn tạo tác động tích cực.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/demo" className="inline-flex min-h-12 items-center gap-3 rounded-full bg-[#f1533f] px-7 py-3 text-sm font-black text-white shadow-[0_8px_0_#d63a2b] transition hover:-translate-y-0.5 hover:bg-[#d6402e]">Trải nghiệm bài học <ArrowRight size={18}/></Link>
+                <Link href="/demo" className="inline-flex min-h-12 items-center gap-3 rounded-full bg-[#ba3024] px-7 py-3 text-sm font-black text-white shadow-[0_8px_0_#d63a2b] transition hover:-translate-y-0.5 hover:bg-[#94251e]">Trải nghiệm bài học <ArrowRight size={18}/></Link>
                 <Link href="/learn" className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-[#163445] bg-white px-7 py-3 text-sm font-extrabold text-[#163445] hover:bg-[#faf8f1]">Khám phá khóa học <BookOpen size={17}/></Link>
               </div>
               <div className="mt-11 flex flex-wrap items-center gap-3">
@@ -119,7 +119,7 @@ export function UIIPublicLanding() {
                   <div className="my-7 grid size-14 place-items-center rounded-full border-2 border-[#1b3640]/30 bg-white/50"><Icon size={26} aria-hidden="true"/></div>
                   <h3 className="text-2xl font-black tracking-tight">{mode.name}</h3>
                   <p className="mt-1 text-xs font-bold">{mode.vi}</p>
-                  <p className="mt-4 text-xs italic text-[#506169]">{mode.phrase}</p>
+                  <p className="mt-4 text-xs italic text-[#34464e]">{mode.phrase}</p>
                   {i===2 && <svg aria-hidden="true" className="pointer-events-none absolute -right-2 bottom-5 h-20 w-20 text-[#e95742]/65" viewBox="0 0 90 90" fill="none"><path d="M10 63Q0 12 45 24T70 75Q35 85 10 63" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg>}
                 </Link>;
               })}
@@ -145,7 +145,7 @@ export function UIIPublicLanding() {
                   <span className="absolute right-4 top-4 rounded-full bg-[#182e3d]/90 px-3 py-2 text-[11px] font-bold text-white">DEMO</span>
                 </div>
                 <div className="space-y-4 p-6">
-                  <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-widest text-[#d35333]"><span>COURSE {String(index+1).padStart(2,"0")}</span><span>{course.duration}</span></div>
+                  <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-widest text-[#954020]"><span>COURSE {String(index+1).padStart(2,"0")}</span><span>{course.duration}</span></div>
                   <h3 className="text-2xl font-black leading-tight tracking-tight">{course.title}</h3>
                   <p className="min-h-16 text-sm leading-7 text-[#4d6268]">{course.summary}</p>
                   <div className="flex flex-wrap gap-2">{course.skills.slice(0,2).map(skill=><span key={skill} className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold text-[#405960]">{skill}</span>)}</div>
@@ -170,7 +170,7 @@ export function UIIPublicLanding() {
             </div>
             <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {DEMO_TOOLS.map((tool,i)=><Link href={"/demo?tool="+encodeURIComponent(tool.name)+"#tools"} key={tool.name} className="group flex min-h-[190px] flex-col rounded-[22px] border border-[#e9cdbb] bg-white/85 p-5 transition hover:-translate-y-1 hover:bg-white hover:shadow-lg">
-                <div className="flex items-start justify-between"><span className="text-xs font-black text-[#cc512e]">{String(i+1).padStart(2,"0")} / {tool.kind}</span><ArrowUpRight size={17} className="transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div>
+                <div className="flex items-start justify-between"><span className="text-xs font-black text-[#8e341e]">{String(i+1).padStart(2,"0")} / {tool.kind}</span><ArrowUpRight size={17} className="transition group-hover:translate-x-1 group-hover:-translate-y-1"/></div>
                 <h3 className="mt-5 text-lg font-black">{tool.name}</h3>
                 <p className="mt-2 flex-1 text-xs leading-6 text-[#54616b]">{tool.intro}</p>
                 <p className="mt-4 border-t border-[#e5d7ce] pt-3 text-[11px] font-extrabold text-[#aa4928]">{tool.mode} · {tool.minutes} phút</p>
