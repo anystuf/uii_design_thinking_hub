@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Bot, MessageCircle, Send, X } from "lucide-react";
 import type { WorkspaceRole } from "./workspace-guide";
+import { DESIGN_THINKING_KIT, studioModeHref } from "@/lib/design-thinking-learning-kit";
 
 type Reply = { text: string; href?: string; action?: string };
 type Message = Reply & { id: number; from: "bot" | "user" };
 
 const roleQuestions: Record<WorkspaceRole | "GUEST", string[]> = {
   GUEST: ["Làm sao để đăng nhập?", "Tôi muốn tìm khóa học"],
-  STUDENT: ["Làm sao để ghi danh khóa học?", "Tôi làm quiz ở đâu?", "Nộp bài dự án thế nào?", "Xem phản hồi của giảng viên"],
+  STUDENT: ["Bị mắc kẹt, cho tôi gợi ý", "Chế độ tập trung ở đâu?", "Tôi làm quiz ở đâu?", "Nộp bài dự án thế nào?"],
   LECTURER: ["Tạo bài quiz thế nào?", "Chấm bài tự luận ở đâu?", "Tạo khóa học mới"],
   ADMIN: ["Quản lý tài khoản", "Tạo bài tập cho khóa học", "Xem bài chờ chấm"],
   MENTOR: ["Tôi xem dự án ở đâu?", "Làm sao để bắt đầu?"],
@@ -21,6 +22,37 @@ export function respondToGuide(message: string, role?: WorkspaceRole, path = "/d
   const q = strip(message);
   const student = role === "STUDENT";
   const teacher = role === "LECTURER" || role === "ADMIN";
+  if (/tap trung|focus mode|adhd|mat tap trung/.test(q)) {
+    return {
+      text: "Ở Course Player, chọn một bài học rồi bật Chế độ tập trung trong La bàn học tập. Bạn sẽ thấy từng nhiệm vụ Learn → Practice → Apply. Bạn có thể chuyển bước hoặc thoát bất kỳ lúc nào; không có đồng hồ hay streak bắt buộc.",
+      href: path.startsWith("/learn?course=") ? path : "/learn",
+      action: "Trở lại bài học",
+    };
+  }
+  const requestedMode = DESIGN_THINKING_KIT.find(kit =>
+    new RegExp("\\b" + kit.mode.toLowerCase() + "\\b").test(q)
+    || (kit.mode === "EMPATHIZE" && /thau hieu|phong van|empathy map/.test(q))
+    || (kit.mode === "DEFINE" && /xac dinh van de|how might we|pov/.test(q))
+    || (kit.mode === "IDEATE" && /brainstorm|y tuong/.test(q))
+    || (kit.mode === "PROTOTYPE" && /tao mau|nguyen mau/.test(q))
+    || (kit.mode === "TEST" && /kiem thu nguyen mau|test nguoi dung/.test(q))
+  );
+  if (requestedMode) {
+    let courseId = "";
+    try { courseId = new URL("https://uii.local" + path).searchParams.get("course") ?? ""; } catch { /* optional */ }
+    return {
+      text: requestedMode.objective + "\nNhiệm vụ: " + requestedMode.mission + "\nĐầu ra: " + requestedMode.deliverable + "\nGợi ý nhỏ: " + requestedMode.hints[0],
+      href: courseId ? studioModeHref(requestedMode.mode, courseId) : "/studio?mode=" + requestedMode.mode,
+      action: "Đến " + requestedMode.mode + " trong Studio",
+    };
+  }
+  if (/goi y|bi ket|khong biet|buoc tiep theo|where next/.test(q)) {
+    return {
+      text: "Hãy chọn một việc nhỏ: (1) xem nội dung của bài, (2) làm câu tự kiểm tra hoặc quiz, (3) chọn một nhiệm vụ áp dụng và lưu vào Design Studio. Trong Course Player bạn có thể bật Chế độ tập trung để chỉ thấy một việc mỗi lần. Nếu vẫn bị kẹt, hỏi cụ thể về Empathize / Define / Ideate / Prototype / Test để nhận gợi ý cho đúng bước.",
+      href: path.startsWith("/learn?course=") ? path : "/learn",
+      action: "Quay lại bài học",
+    };
+  }
   if (/dang nhap|mat khau|sign in|dang ky|google/.test(q)) {
     return { text: "Mở Khóa học và chọn Đăng nhập hoặc Đăng ký. Nếu dùng Google, nhà trường cần bật Google OAuth trong Supabase. Bạn không cần gửi mật khẩu cho trợ lý.", href: "/learn", action: "Mở trang đăng nhập" };
   }
@@ -80,7 +112,8 @@ export function WorkspaceChatbot({ role, pathname = "/dashboard" }: {role?: Work
   function send(text: string) {
     const trimmed = text.trim().slice(0, 350);
     if (!trimmed) return;
-    const answer = respondToGuide(trimmed, role, pathname);
+    const contextPath = pathname === "/learn" ? pathname + window.location.search : pathname;
+    const answer = respondToGuide(trimmed, role, contextPath);
     setMessages(current => {
       const id = (current[current.length - 1]?.id ?? 0) + 1;
       return [...current.slice(-19), { id, from: "user" as const, text: trimmed }, { id: id + 1, from: "bot" as const, ...answer }];
@@ -129,7 +162,7 @@ export function WorkspaceChatbot({ role, pathname = "/dashboard" }: {role?: Work
           <button type="submit" aria-label="Gửi câu hỏi" disabled={!question.trim()}
             className="grid size-11 shrink-0 place-items-center rounded-xl bg-[#153b77] text-white disabled:opacity-40"><Send size={18}/></button>
         </form>
-        <p className="mt-2 text-[11px] leading-4 text-slate-500">Chatbot kịch bản, không dùng AI tạo sinh. Không nhập mật khẩu hay dữ liệu cá nhân nhạy cảm.</p>
+        <p className="mt-2 text-[11px] leading-4 text-slate-500">Trợ lý hướng dẫn theo kiến thức mẫu và quy tắc xác định, không phải AI tạo sinh. Không nhập mật khẩu hay dữ liệu cá nhân nhạy cảm.</p>
       </div>
     </section>}
   </>;
