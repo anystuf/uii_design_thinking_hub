@@ -68,7 +68,7 @@ test('lecturer creates and publishes a quiz with private correct answer and expl
     if(path==='/courses')data=[course];
     if(path==='/courses/course')data=course;
     if(path==='/courses/course/lessons')data=[lesson];
-    if(path==='/lessons/lesson-a/exercise' && route.request().method()==='GET')data=null;
+    if(path==='/lessons/lesson-a/exercise' && route.request().method()==='GET')data=saved ? {...saved,id:'new-exercise',lessonId:'lesson-a',publishedAt:'2026-11-20T00:00:00Z',dueAt:null} : null;
     if(path==='/lessons/lesson-a/exercise' && route.request().method()==='PUT'){
       saved=route.request().postDataJSON();
       data={...(saved as object),id:'new-exercise',lessonId:'lesson-a',publishedAt:'2026-11-20T00:00:00Z',dueAt:null};
