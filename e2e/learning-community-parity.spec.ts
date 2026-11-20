@@ -39,7 +39,7 @@ test("community shows real-vs-demo boundary without exposing protected content t
  test.skip(!!process.env.E2E_BASE_URL,"Local preview fixture only");
  await page.setViewportSize({width:375,height:812});
  await page.goto("/community");
- await expect(page.getByRole("heading",{name:/Ý tưởng tốt hơn khi được chia sẻ/})).toBeVisible();
+ await expect(page.getByRole("heading",{name:/Cộng đồng học hỏi, hỏi đáp & sáng tạo/})).toBeVisible();
  await expect(page.getByTestId("sample-team-gallery")).toBeVisible();
  await expect(page.getByRole("button",{name:/Nhóm Mây Xanh/})).toBeVisible();
  await expect(page.getByRole("button",{name:/Nhóm Hạt Giống/})).toBeVisible();
