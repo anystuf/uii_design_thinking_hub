@@ -399,7 +399,7 @@ export function LiveHubDashboard() {
                   { href: account.role === "STUDENT" ? "/notifications" : "/review", title: student ? "Phản hồi" : "Đánh giá & phản hồi", subtitle: "Học từ nhận xét và cải tiến sản phẩm.", icon: RotateCcw, tint: "bg-emerald-50 text-emerald-700", number: "04" },
                 ].map(({ href, title, subtitle, icon: Icon, tint, number }) => (
                   <Link key={href} href={href} className="group flex min-h-[176px] flex-col justify-between rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_6px_28px_rgba(20,42,78,0.045)] transition hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg">
-                    <div className="flex items-center justify-between"><span className={"grid size-11 place-items-center rounded-xl " + tint}><Icon size={23} aria-hidden="true"/></span><span className="text-xl font-black text-slate-200">{number}</span></div>
+                    <div className="flex items-center justify-between"><span className={"grid size-11 place-items-center rounded-xl " + tint}><Icon size={23} aria-hidden="true"/></span><span className="text-xl font-black text-slate-500">{number}</span></div>
                     <div><h3 className="text-base font-extrabold">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{subtitle}</p></div>
                   </Link>
                 ))}
