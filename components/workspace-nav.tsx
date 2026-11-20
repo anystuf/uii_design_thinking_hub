@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Bell, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, Users } from "lucide-react";
 import { WorkspaceGuide, type WorkspaceRole } from "./workspace-guide";
+import { WorkspaceChatbot } from "./workspace-chatbot";
 import { warmWorkspaceApi } from "@/lib/authenticated-api";
 
 const links = [
@@ -55,6 +56,7 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
           </div>
         </>}
       </div>
+      <WorkspaceChatbot role={role} pathname={pathname} />
     </header>
   );
 }
