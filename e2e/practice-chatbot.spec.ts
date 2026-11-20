@@ -153,28 +153,35 @@ test('red creative cursor works automatically and draws real pixels over the ent
   })).toBe(true);
 });
 
-test('reduced-motion system renders a static red cursor marker, never a moving trail', async ({page}) => {
+test('reduced-motion still paints a clear RED LINE, without an animation loop', async ({page}) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const trail = page.getByTestId('creative-pointer-trail');
   await expect(trail).toHaveCount(1);
   await page.mouse.move(100,120);
-  await page.mouse.move(350,200, {steps:8});
+  await page.mouse.move(350,200, {steps:20});
   await expect(trail).toHaveAttribute('data-active','true');
-  await expect(trail).toHaveAttribute('data-render-mode','marker');
-  const positions = await page.evaluate(() => {
-    const c = document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]');
-    const ctx = c!.getContext('2d')!;
-    const ratio = c!.width / innerWidth;
-    const at = (x:number, y:number) => Array.from(ctx.getImageData(Math.floor(x * ratio), Math.floor(y * ratio),1,1).data);
-    return {last:at(350,200),old:at(100,120)};
+  await expect(trail).toHaveAttribute('data-render-mode','trail-static');
+  expect(Number(await trail.getAttribute('data-point-count'))).toBeGreaterThan(3);
+  // A red pixel MIDWAY between pointer positions is required, not just
+  // a red dot at the current cursor. Scan a 9x9 area for antialiasing.
+  const inkAcrossStroke = await page.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]')!;
+    const context = canvas.getContext('2d')!;
+    const ratio = canvas.width / innerWidth;
+    const at = (x: number, y: number) => {
+      const px = Math.floor(x*ratio), py = Math.floor(y*ratio);
+      const image = context.getImageData(px-4,py-4,9,9).data;
+      for(let i=0;i<image.length;i+=4) {
+        if(image[i] > 160 && image[i+1] < 130 && image[i+2] < 130 && image[i+3] > 80) return true;
+      }
+      return false;
+    };
+    return {start:at(125,128),middle:at(225,160),finish:at(325,192)};
   });
-  expect(positions.last[0]).toBeGreaterThan(180);
-  expect(positions.last[3]).toBeGreaterThan(100);
-  expect(positions.old[3]).toBe(0);
+  expect(inkAcrossStroke).toEqual({start:true,middle:true,finish:true});
 });
-
 
 test('dashboard shows globally mounted red ink cursor for admin after pointer movement', async ({page}) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local fixture only');
@@ -192,6 +199,7 @@ test('dashboard shows globally mounted red ink cursor for admin after pointer mo
   await page.mouse.move(340,380,{steps:16});
   await expect(trail).toHaveAttribute('data-active','true');
   await expect(trail).toHaveAttribute('data-render-mode','trail');
+  expect(Number(await trail.getAttribute('data-point-count'))).toBeGreaterThan(6);
   expect(await page.evaluate(() => {
     const canvas=document.querySelector<HTMLCanvasElement>('[data-testid="creative-pointer-trail"]')!;
     const ctx=canvas.getContext('2d')!;
