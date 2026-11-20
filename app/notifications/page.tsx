@@ -72,7 +72,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Thông báo" role={account?.token === token ? account.role : undefined} guest={ready && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-5 py-8">
         <h1 className="text-2xl font-semibold tracking-tight">Thông báo</h1>
