@@ -117,7 +117,7 @@ test('new lesson without exercise: empty HTTP 200 is treated as absence, not bro
   await page.getByRole('button',{name:/Introduction to Design Thinking/}).click();
   await page.getByRole('button',{name:'Mở bài học'}).click();
   await expect(page.getByRole('heading',{name:'Luyện tập và bài tập'})).toBeVisible();
-  await expect(page.getByText('Chưa có bài tập cho bài học này.')).toBeVisible();
+  await expect(page.getByText(/Chưa có bài tập được công bố/)).toBeVisible();
   await expect(page.getByRole('button',{name:'Tạo bài tập'})).toBeVisible();
   await expect(page.getByText(/Unexpected end of JSON input/)).toHaveCount(0);
   expect(exerciseReads).toBeGreaterThan(0);
