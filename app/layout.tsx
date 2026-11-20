@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { CreativePointerTrail } from '@/components/creative-pointer-trail';
+import { WorkspaceChatbot } from '@/components/workspace-chatbot';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-sharp', display: 'swap' });
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-ui', display: 'swap', preload: false });
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.variable} ${jakarta.variable} ${playfair.variable}`}>
         {children}
         <CreativePointerTrail />
+        <WorkspaceChatbot />
       </body>
     </html>
   );
