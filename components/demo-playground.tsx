@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { DemoPhoto } from "@/components/demo-photo";
 import { DEMO_COURSES, DEMO_EXERCISES, DEMO_TOOLS, type DemoExercise } from "@/lib/demo-content";
+import { DemoToolCanvas } from "@/components/demo-tool-canvas";
 
 const kindNames = {QUIZ:"Quiz",WRITTEN:"Viết phản tư",PROJECT:"Nhiệm vụ dự án",ACTIVITY:"Hoạt động sáng tạo"} as const;
 const markers = ["Learn","Practice","Apply"] as const;
@@ -83,7 +84,6 @@ export function DemoPlayground() {
   const [focus,setFocus]=useState(false);
   const [openTools,setOpenTools]=useState(!!query.get("tool"));
   const [toolName,setToolName]=useState(query.get("tool")||DEMO_TOOLS[0].name);
-  const [toolText,setToolText]=useState("");
   const [toolDone,setToolDone]=useState(false);
   const course=DEMO_COURSES.find(c=>c.id===courseId)??DEMO_COURSES[0];
   const courseExercises=DEMO_EXERCISES.filter(x=>x.courseId===course.id);
@@ -92,7 +92,7 @@ export function DemoPlayground() {
   const completedCourse=courseExercises.filter(x=>completed.includes(x.id)).length;
   const progress=Math.round(completedCourse/courseExercises.length*100);
   const selectCourse=(id:string)=>{setCourseId(id);setChapterIndex(0);setOpenTools(false)};
-  const selectTool=(name:string)=>{setToolName(name);setToolText("");setToolDone(false)};
+  const selectTool=(name:string)=>{setToolName(name);setToolDone(false)};
   const finish=()=>{
     setCompleted(ids=>ids.includes(exercise.id)?ids:[...ids,exercise.id]);
     if(chapterIndex<courseExercises.length-1)setChapterIndex(chapterIndex+1);
@@ -185,8 +185,7 @@ export function DemoPlayground() {
             <h3 className="mt-4 text-2xl font-black">{currentTool.name}</h3>
             <p className="mt-3 text-sm leading-7 text-[#556b71]">{currentTool.intro}</p>
             <p className="mt-3 text-sm font-bold">Đầu ra: {currentTool.output}</p>
-            <label htmlFor="tool-notes" className="mt-6 block text-xs font-black">Thử viết một ý tưởng hoặc ghi chú (không lưu)</label>
-            <textarea id="tool-notes" value={toolText} onChange={e=>setToolText(e.target.value)} rows={4} placeholder="Ý tưởng của tôi là…" className="mt-2 w-full rounded-xl border border-[#c9d8d6] p-3 text-sm leading-7"/>
+            <DemoToolCanvas key={currentTool.name} name={currentTool.name}/>
             <button type="button" onClick={()=>setToolDone(true)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#214a54] px-5 text-xs font-black text-white"><CheckCircle2 size={16}/> Đã thử công cụ</button>
             {toolDone&&<p role="status" className="mt-3 text-sm font-bold text-[#316d4a]">Đã thử trong giao diện demo — dữ liệu không được gửi lên máy chủ.</p>}
           </div>
