@@ -179,7 +179,9 @@ export default function DesignStudioPage() {
     if (!token || user?.role !== 'STUDENT' || !courseId || challenges.length === 0) return;
     const params = new URLSearchParams(window.location.search);
     if (!params.has('mode') || guidedAutoOpenedCourse.current === courseId) return;
+    const inCourseTeam = myTeams.find(item => item.challenge?.courseId === courseId);
     const picked = challenges.find(item => item.id === params.get('challenge')) ||
+      challenges.find(item => item.id === inCourseTeam?.challengeId) ||
       challenges.find(item => item.status === 'PUBLISHED');
     if (!picked) return;
     guidedAutoOpenedCourse.current = courseId;
