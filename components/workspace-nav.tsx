@@ -50,7 +50,7 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
           </nav>
           <div className={"flex flex-wrap items-center justify-between gap-x-1 border-t py-1 lg:flex-col lg:items-stretch " + (classic ? "border-white/15" : "border-slate-200")}>
             <p className={"text-sm font-semibold lg:sr-only " + (classic ? "text-white" : "text-slate-900")}>{title}</p>
-            <WorkspaceGuide key={role} role={role}/>
+            <WorkspaceGuide key={role} role={role} triggerClassName={classic ? "text-white hover:bg-white/10" : undefined}/>
             {onSignOut && <button type="button" onClick={onSignOut} className={"flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold " + (classic ? "text-slate-200 hover:bg-white/10" : "text-slate-700 hover:bg-slate-100")}><LogOut size={17} aria-hidden="true"/> Đăng xuất</button>}
           </div>
         </>}
