@@ -31,12 +31,12 @@ function requestGuard(req:NextRequest):Response|null {
 }
 
 const backend=process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/,"")||"http://localhost:4000";
-async function trustedUser(token:string|undefined):Promise<{role:HubRole;verified:boolean}> {
+async function trustedUser(token:string|undefined,timeoutMs=3500):Promise<{role:HubRole;verified:boolean}> {
   if(!token)return {role:"GUEST",verified:false};
   try {
     const res=await fetch(backend+"/auth/me",{
       headers:{Authorization:"Bearer "+token},
-      cache:"no-store",signal:AbortSignal.timeout(9500),
+      cache:"no-store",signal:AbortSignal.timeout(timeoutMs),
     });
     if(!res.ok)return {role:"GUEST",verified:false};
     const user=await res.json() as {role?:string};
@@ -138,7 +138,7 @@ export async function POST(req:NextRequest) {
     }):[];
     const authorization=req.headers.get("authorization")||"";
     const token=authorization.startsWith("Bearer ")?authorization.slice(7).trim():undefined;
-    const user=await trustedUser(token);
+    const user=await trustedUser(token,isPersonalProgress(question)?9500:3500);
     const role=user.role;
     const verified=user.verified;
     const suggestions=findGuideTopics(question,role,3)
