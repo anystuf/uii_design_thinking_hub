@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { Bell, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, House, Users } from "lucide-react";
+import { Bell, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, House, Users, MessagesSquare } from "lucide-react";
 import { WorkspaceGuide, type WorkspaceRole } from "./workspace-guide";
 import { warmWorkspaceApi } from "@/lib/authenticated-api";
 
@@ -12,6 +12,7 @@ const links = [
   { href: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
   { href: "/learn", label: "Khóa học", icon: BookOpen },
   { href: "/studio", label: "Dự án", icon: FolderKanban },
+  { href: "/community", label: "Cộng đồng sáng tạo", icon: MessagesSquare },
   { href: "/evidence", label: "Minh chứng & phản hồi", icon: FileText },
   { href: "/notifications", label: "Thông báo", icon: Bell },
 ];
