@@ -35,7 +35,7 @@ type SubmissionDetail = {
 };
 type CriterionDraft = { title: string; description: string; weight: number; maxScore: number };
 type Rating = { criterionId: string; score: number; comment?: string };
-const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
+const panel = 'min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5';
 const field = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-[#f37021]';
 const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50';
 const minor = 'rounded-xl border px-3 py-2 text-sm font-semibold text-[#153b77] disabled:opacity-50';
@@ -236,7 +236,7 @@ export default function ReviewPage() {
   return (
     <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} guest={authReady && !session} />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Đánh giá bài nộp</h1>
           <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
