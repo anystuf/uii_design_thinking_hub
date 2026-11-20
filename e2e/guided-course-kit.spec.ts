@@ -88,3 +88,26 @@ test("guided lesson reveals accessible hints, honest self-check and stage deep l
     .toHaveAttribute("href", "/studio?mode=EMPATHIZE&course=course");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test("Studio deep link keeps the selected course and visibly points to the right mode", async ({ page }) => {
+  test.skip(!!process.env.E2E_BASE_URL, "Local fixtures only");
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.addInitScript(() => localStorage.setItem("sb-example-auth-token", JSON.stringify({
+    access_token: "fixture-token", refresh_token: "fixture-refresh",
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    user: { id: "student-1", email: "student@example.test" },
+  })));
+  const course = { id: "course", title: "Guided Foundations", status: "PUBLISHED", createdById: "teacher" };
+  await page.route("http://localhost:4000/**", async route => {
+    const path = new URL(route.request().url()).pathname;
+    let body: unknown = [];
+    if (path === "/auth/me") body = { id: "student-1", role: "STUDENT", fullName: "Student" };
+    if (path === "/courses") body = [course];
+    if (path === "/courses/my-enrollments") body = [{ course }];
+    await route.fulfill({ json: body });
+  });
+  await page.goto("/studio?mode=IDEATE&course=course");
+  await expect(page.getByRole("status").filter({ hasText: "La bàn của bạn: Ideate" })).toBeVisible();
+  await expect(page.locator("#course")).toHaveValue("course");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
