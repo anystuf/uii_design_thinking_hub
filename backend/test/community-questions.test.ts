@@ -13,7 +13,7 @@ function setup() {
   const rows:Record<string,unknown>[]=[];
   const accepted:(string|null)[]=[];
   let recent=0;
-  let found={id:'q-1',projectId:null,title:'How do we interview?',authorId:'owner',
+  let found:{id:string;projectId:string|null;title:string|null;authorId:string;visibility:PostVisibility;acceptedCommentId:string|null}={id:'q-1',projectId:null,title:'How do we interview?',authorId:'owner',
     visibility:PostVisibility.COMMUNITY,acceptedCommentId:null as string|null};
   const prisma={
     post:{
