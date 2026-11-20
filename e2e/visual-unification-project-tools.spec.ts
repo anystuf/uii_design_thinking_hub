@@ -5,9 +5,9 @@ test("workspace keeps homepage navigation and the canonical editorial palette",a
  test.skip(!!process.env.E2E_BASE_URL,"Local fixture only");
  await page.setViewportSize({width:320,height:760});
  await page.goto("/learn");
- const home=page.getByRole("link",{name:"Về trang chủ UII Design Thinking Hub"});
+ const home=page.getByRole("link",{name:"Về trang chủ Design Thinking Hub"});
  await expect(home).toBeVisible();
- await expect(page.locator(".workspace-header")).toHaveCSS("background-color","rgb(250, 248, 241)");
+ await expect(page.locator("header").first()).toHaveCSS("background-color","rgb(250, 248, 241)");
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
  await home.click();
  await expect(page).toHaveURL("/");
