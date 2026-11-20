@@ -65,14 +65,15 @@ export function LessonPractice({
       try {
         const found = await api<Exercise | null>("/lessons/" + encodeURIComponent(lessonId) + "/exercise", token);
         if (!alive) return;
-        setExercise(found);
-        if (found) {
-          setKind(found.kind); setTitle(found.title); setInstructions(found.instructions);
-          setQuestions(found.items.length ? found.items : [newQuestion()]);
-          setPassingScore(found.passingScore); setMaxAttempts(found.maxAttempts);
-          setPublished(!!found.publishedAt);
-          setDueAt(found.dueAt ? new Date(found.dueAt).toISOString().slice(0, 16) : "");
-          const fetched = await api<Attempt[]>("/exercises/" + encodeURIComponent(found.id) + "/attempts" + (canManage ? "" : "/me"), token);
+        const valid = found && !Array.isArray(found) && typeof found.id === "string" && Array.isArray(found.items) ? found : null;
+        setExercise(valid);
+        if (valid) {
+          setKind(valid.kind); setTitle(valid.title); setInstructions(valid.instructions);
+          setQuestions(valid.items.length ? valid.items : [newQuestion()]);
+          setPassingScore(valid.passingScore); setMaxAttempts(valid.maxAttempts);
+          setPublished(!!valid.publishedAt);
+          setDueAt(valid.dueAt ? new Date(valid.dueAt).toISOString().slice(0, 16) : "");
+          const fetched = await api<Attempt[]>("/exercises/" + encodeURIComponent(valid.id) + "/attempts" + (canManage ? "" : "/me"), token);
           if (alive) setAttempts(fetched);
         }
       } catch (err) {
