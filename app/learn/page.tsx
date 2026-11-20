@@ -5,7 +5,6 @@ import { LearningAuthForm } from '@/components/learning-auth-form';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
-import { CreativePointerTrail } from '@/components/creative-pointer-trail';
 import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
 import { DesignThinkingLessonGuide } from '@/components/design-thinking-lesson-guide';
 import { DESIGN_THINKING_KIT, findKitLesson } from '@/lib/design-thinking-learning-kit';
@@ -76,8 +75,18 @@ export default function LearningFoundationPage() {
   const [learningView, setLearningView] = useState<'overview' | 'player'>('overview');
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(false);
-  const [authorSketchPointer, setAuthorSketchPointer] = useState(true);
   const [focusStep, setFocusStep] = useState<FocusStep>('learn');
+  useEffect(() => {
+    const active = user?.role === 'STUDENT' && learningView === 'player' && focusMode;
+    if (active) document.documentElement.dataset.uiiFocusMode = 'true';
+    else delete document.documentElement.dataset.uiiFocusMode;
+    window.dispatchEvent(new Event('uii:focus-mode-changed'));
+    return () => {
+      delete document.documentElement.dataset.uiiFocusMode;
+      window.dispatchEvent(new Event('uii:focus-mode-changed'));
+    };
+  }, [user?.role, learningView, focusMode]);
+
   useEffect(() => {
     if (!focusMode || learningView !== 'player') return;
     const target = document.getElementById('quest-task-' + focusStep);
@@ -362,7 +371,6 @@ export default function LearningFoundationPage() {
 
   return (
     <div className="min-h-screen bg-[#f5f7fb] text-[#12284a]">
-      {user && (user.role === 'ADMIN' || user.role === 'LECTURER') && <CreativePointerTrail enabled={authorSketchPointer} />}
       <WorkspaceNav title="Khóa học" role={user?.role} guest={!session} onSignOut={session ? () => void getSupabaseBrowserClient().auth.signOut() : undefined} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-[1320px] space-y-7 px-4 py-7 sm:px-7 lg:px-9">
         {error && <div role="alert" className="flex items-start gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><AlertCircle size={18} className="shrink-0"/><span>{error}</span></div>}
@@ -379,12 +387,6 @@ export default function LearningFoundationPage() {
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">{canTeach ? 'Thiết kế và quản lý những trải nghiệm học tập thực hành.' : 'Khám phá kiến thức, học theo tiến độ riêng và áp dụng vào dự án thực tế.'}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {canTeach && <button type="button" aria-pressed={authorSketchPointer}
-                aria-label={authorSketchPointer ? 'Tắt con trỏ nét vẽ' : 'Bật con trỏ nét vẽ'}
-                onClick={() => setAuthorSketchPointer(value => !value)}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#f0aca6] bg-[#fff4f2] px-4 text-sm font-bold text-[#9b241d]">
-                <span aria-hidden="true">✎</span> {authorSketchPointer ? 'Con trỏ vẽ · Bật' : 'Con trỏ vẽ · Tắt'}
-              </button>}
               <span className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600">{user.role === 'STUDENT' ? 'Sinh viên' : user.role === 'LECTURER' ? 'Giảng viên' : user.role === 'ADMIN' ? 'Quản trị viên' : 'Cố vấn'}</span>
             </div>
           </section>
