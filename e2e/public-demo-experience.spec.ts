@@ -10,7 +10,7 @@ test("photo-rich public landing has working course, workshop, tools and project 
   await expect(page.locator("#tools a[href^='/demo?tool=']")).toHaveCount(10);
   await expect(page.locator("#events article")).toHaveCount(4);
   await expect(page.getByTestId("demo-photo").first()).toBeVisible();
-  await expect(page.getByText(/dữ liệu người dùng thực tế/i).first()).toBeVisible();
+  await expect(page.getByText(/số liệu người dùng thực tế/i).first()).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.screenshot({path:testInfo.outputPath("home-photo-editorial-mobile.png"),fullPage:true});
 });
