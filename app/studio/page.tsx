@@ -193,6 +193,14 @@ export default function DesignStudioPage() {
     });
   }, [token, courseId, user?.role, challenges, myTeams]);
 
+  useEffect(() => {
+    if (!team || window.location.hash !== '#project-discussion') return;
+    const id = window.requestAnimationFrame(() => {
+      document.getElementById('project-discussion')?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [team]);
+
   function clean() { setError(''); setNotice(''); }
   function report(err: unknown) { setError(err instanceof Error ? err.message : 'Operation failed.'); }
   async function run(fn: () => Promise<void>) {
