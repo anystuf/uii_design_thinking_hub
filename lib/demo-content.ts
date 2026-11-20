@@ -25,12 +25,12 @@ export type DemoEvent = {
   date: string; title: string; format: string; description: string;
 };
 export const DEMO_PHOTOS = {
-  workshop: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1600&q=82",
-  stickyNotes: "https://images.unsplash.com/photo-1676277757211-ebd7fdeb3d5b?auto=format&fit=crop&w=1300&q=82",
-  chalkboard: "https://images.unsplash.com/photo-1758873272540-439a105db676?auto=format&fit=crop&w=1300&q=82",
-  teamwork: "https://images.unsplash.com/photo-1622674777904-386b3ef30c4a?auto=format&fit=crop&w=1300&q=82",
-  meeting: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&w=1300&q=82",
-  classroom: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1300&q=82",
+  workshop: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1400&q=70",
+  stickyNotes: "https://images.unsplash.com/photo-1676277757211-ebd7fdeb3d5b?auto=format&fit=crop&w=1080&q=66",
+  chalkboard: "https://images.unsplash.com/photo-1758873272540-439a105db676?auto=format&fit=crop&w=1080&q=66",
+  teamwork: "https://images.unsplash.com/photo-1622674777904-386b3ef30c4a?auto=format&fit=crop&w=1080&q=66",
+  meeting: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&w=1080&q=66",
+  classroom: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1080&q=66",
 } as const;
 
 export const DEMO_COURSES: readonly DemoCourse[] = [
