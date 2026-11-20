@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import assert from 'node:assert/strict';
+import * as assert from 'node:assert/strict';
 import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { ExerciseKind, UserRole } from '@prisma/client';
 import { PracticeService, gradeQuiz, normalizeQuizItems, publicQuizItems } from '../src/modules/practice/practice.service';
