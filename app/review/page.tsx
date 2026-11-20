@@ -12,6 +12,7 @@ import {
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
+import { parseEvidenceSource } from '@/lib/external-evidence';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = { id: string; title: string; createdById: string };
@@ -351,9 +352,13 @@ export default function ReviewPage() {
                     {details.items.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f6f8fc] p-3">
                         <div><p className="text-sm font-bold">{item.evidenceVersion.title} · v{item.evidenceVersion.version}</p>
-                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || item.evidenceVersion.description || 'Không có ghi chú'}</p>
+                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || parseEvidenceSource(item.evidenceVersion.description).notes || 'Không có ghi chú'}</p>
                         </div>
-                        {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
+                        <div className="flex flex-wrap gap-2">
+                          {parseEvidenceSource(item.evidenceVersion.description).url && <a href={parseEvidenceSource(item.evidenceVersion.description).url!}
+                            target="_blank" rel="noopener noreferrer" className={minor}>Xem link Drive / công cụ ↗</a>}
+                          {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
+                        </div>
                       </div>
                     ))}
                   </div>
