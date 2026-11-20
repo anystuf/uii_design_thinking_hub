@@ -5,6 +5,7 @@ import { LearningAuthForm } from '@/components/learning-auth-form';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
+import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -71,6 +72,8 @@ export default function LearningFoundationPage() {
   const [levelFilter, setLevelFilter] = useState('all');
   const [learningView, setLearningView] = useState<'overview' | 'player'>('overview');
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState(false);
+  const [focusStep, setFocusStep] = useState<FocusStep>('learn');
 
   useEffect(() => {
     let active = true;
@@ -288,6 +291,7 @@ export default function LearningFoundationPage() {
         method: 'PUT', body: JSON.stringify({ completed: !wasCompleted }),
       });
       if (course) setProgress(await api<Progress>('/courses/' + course.id + '/my-progress', token));
+      window.dispatchEvent(new Event('uii:learning-progress-changed'));
       setMessage(wasCompleted ? 'Đã bỏ đánh dấu hoàn thành.' : 'Đã lưu tiến độ trên máy chủ.');
     } catch (err) { fail(err); } finally { setBusy(false); }
   }
@@ -427,20 +431,32 @@ export default function LearningFoundationPage() {
                 <button type="button" onClick={() => {setLearningView('overview'); setActiveLessonId(null);window.history.replaceState(window.history.state,'','/learn?course='+encodeURIComponent(course.id));}} className="inline-flex min-h-11 items-center gap-2 rounded-xl border bg-white px-4 text-sm font-bold"><ArrowLeft size={17}/> Chương trình khóa học</button>
                 <span className="text-sm font-semibold text-slate-600">Bài {selectedLessonIndex+1}/{lessons.length}</span>
               </div>
-              <div className="grid lg:grid-cols-[260px_minmax(0,1fr)]">
-                <aside className="border-b border-slate-200 bg-[#f8fafd] p-4 lg:border-b-0 lg:border-r" aria-label="Danh sách bài học">
+              <div className={focusMode && user.role === "STUDENT" ? "grid" : "grid lg:grid-cols-[260px_minmax(0,1fr)]"}>
+                <aside className={focusMode && user.role === "STUDENT" ? "hidden" : "border-b border-slate-200 bg-[#f8fafd] p-4 lg:border-b-0 lg:border-r"} aria-label="Danh sách bài học">
                   <h3 className="mb-3 font-extrabold">Nội dung khóa học</h3>
                   <div className="space-y-2">{lessons.map((lesson,index) => <button key={lesson.id} type="button" aria-current={currentLesson.id===lesson.id?'step':undefined} onClick={() => openLesson(lesson)} className={"flex min-h-11 w-full items-start gap-2 rounded-xl border px-3 py-3 text-left text-sm "+(currentLesson.id===lesson.id?'border-[#153b77] bg-blue-50 font-bold text-[#153b77]':'border-transparent hover:border-slate-200 hover:bg-white')}><span>{index+1}.</span><span className="min-w-0 flex-1">{lesson.title}{completed.has(lesson.id) && <span className="mt-1 block text-xs text-emerald-700">✓ Đã hoàn thành</span>}</span></button>)}</div>
                 </aside>
                 <article className="min-w-0 space-y-6 p-5 sm:p-8">
                   <div><p className="text-xs font-extrabold uppercase tracking-widest text-[#ad4007]">LEARNING PLAYER</p><h3 id="lesson-player-title" tabIndex={-1} className="mt-2 text-2xl font-extrabold outline-none focus-visible:outline sm:text-3xl">{currentLesson.title}</h3>{currentLesson.description && <p className="mt-2 text-sm leading-7 text-slate-600">{currentLesson.description}</p>}</div>
+                  {user.role === 'STUDENT' && isEnrolled && <LearningQuestCompass
+                    key={course.id} courseId={course.id} userId={user.id} token={token}
+                    lessonCompleted={completed.has(currentLesson.id)}
+                    focusMode={focusMode} focusStep={focusStep}
+                    onFocusModeChange={setFocusMode} onFocusStepChange={setFocusStep}
+                  />}
+                  <div className={focusMode && focusStep !== "learn" && user.role === "STUDENT" ? "hidden" : "space-y-6"}>
                   {getYouTubeEmbedUrl(currentLesson.videoUrl) && <div className="aspect-video overflow-hidden rounded-2xl bg-slate-950"><iframe title={'Video bài học: '+currentLesson.title} src={getYouTubeEmbedUrl(currentLesson.videoUrl)!} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" className="h-full w-full" allowFullScreen/></div>}
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && (/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <video className="aspect-video w-full rounded-2xl bg-black" controls preload="metadata" src={getSafeHttpUrl(currentLesson.videoUrl)!}>Trình duyệt không hỗ trợ phát video.</video>}
                   {currentLesson.videoUrl && !getYouTubeEmbedUrl(currentLesson.videoUrl) && getSafeHttpUrl(currentLesson.videoUrl) && !(/\.(mp4|webm)(\?|#|$)/i.test(currentLesson.videoUrl)) && <a href={getSafeHttpUrl(currentLesson.videoUrl)!} target="_blank" rel="noreferrer" className="text-sm font-bold text-[#153b77] underline">Mở video trong tab mới</a>}
                   {currentLesson.content && <div className="rounded-xl bg-[#f8fafd] p-5"><h4 className="mb-3 font-bold">Nội dung bài học</h4><p className="whitespace-pre-wrap break-words text-base leading-8 text-slate-700">{currentLesson.content}</p></div>}
                   {getResourceLinks(currentLesson.content).length > 0 && <div><h4 className="mb-3 font-bold">Tài liệu tham khảo</h4><ul className="space-y-2">{getResourceLinks(currentLesson.content).map(link => <li key={link}><a className="break-all text-sm font-semibold text-[#153b77] underline" href={link} target="_blank" rel="noreferrer">{link}</a></li>)}</ul></div>}
+                  </div>
+                  <div className={focusMode && focusStep !== "practice" && user.role === "STUDENT" ? "hidden" : ""}>
                   <LessonPractice key={currentLesson.id} lessonId={currentLesson.id} courseId={course.id} token={token} canManage={canEditCourse} isEnrolled={isEnrolled}/>
+                  </div>
+                  <div className={focusMode && focusStep !== "apply" && user.role === "STUDENT" ? "hidden" : ""}>
                   <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5"><h4 className="flex items-center gap-2 font-bold"><Sparkles size={18} aria-hidden="true"/> Áp dụng kiến thức</h4><p className="mt-2 text-sm leading-7">Tìm một vấn đề thực tế, ghi nhận điều bạn quan sát và thử áp dụng phương pháp vừa học trong dự án.</p><Link href="/studio" className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#153b77] underline">Thực hành trong Design Studio <ArrowRight size={16}/></Link></div>
+                  </div>
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-5">
                     <div className="flex flex-wrap gap-2">{selectedLessonIndex > 0 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex-1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-semibold"><ArrowLeft size={16}/> Bài trước</button>}{selectedLessonIndex < lessons.length-1 && <button type="button" onClick={() => openLesson(lessons[selectedLessonIndex+1])} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">Bài tiếp theo <ArrowRight size={16}/></button>}</div>
                     {user.role === 'STUDENT' && isEnrolled && <button type="button" disabled={busy} onClick={() => void toggleProgress(currentLesson)} className={"min-h-11 rounded-xl px-5 text-sm font-bold "+(completed.has(currentLesson.id)?'border border-emerald-300 bg-emerald-50 text-emerald-800':'bg-[#b94708] text-white')}>{completed.has(currentLesson.id) ? '✓ Đã hoàn thành' : 'Đánh dấu hoàn thành'}</button>}
