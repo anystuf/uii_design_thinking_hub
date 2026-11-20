@@ -15,8 +15,7 @@ const roleQuestions: Record<WorkspaceRole | "GUEST", string[]> = {
   ADMIN: ["Quản lý tài khoản", "Tạo bài tập cho khóa học", "Xem bài chờ chấm"],
   MENTOR: ["Tôi xem dự án ở đâu?", "Làm sao để bắt đầu?"],
 };
-const strip = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d")
-  .toLowerCase().replace(/\s+/g, " ").trim();
+const strip = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/đ/g, "d").replace(/\s+/g, " ").trim();
 
 export function respondToGuide(message: string, role?: WorkspaceRole, path = "/dashboard"): Reply {
   const q = strip(message);
@@ -82,8 +81,10 @@ export function WorkspaceChatbot({ role, pathname = "/dashboard" }: {role?: Work
     const trimmed = text.trim().slice(0, 350);
     if (!trimmed) return;
     const answer = respondToGuide(trimmed, role, pathname);
-    const id = Date.now();
-    setMessages(current => [...current.slice(-19), { id, from: "user", text: trimmed }, { id: id + 1, from: "bot", ...answer }]);
+    setMessages(current => {
+      const id = (current[current.length - 1]?.id ?? 0) + 1;
+      return [...current.slice(-19), { id, from: "user" as const, text: trimmed }, { id: id + 1, from: "bot" as const, ...answer }];
+    });
     setQuestion("");
     inputRef.current?.focus();
   }
