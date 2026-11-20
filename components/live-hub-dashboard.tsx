@@ -286,7 +286,7 @@ export function LiveHubDashboard() {
         ? "Không gian giảng dạy"
         : "Tổng quan";
   return (
-    <div className="min-h-screen bg-[#f5f7fb] text-[#10284a]">
+    <div className="uii-workspace min-h-screen bg-[#faf8f1] text-[#132a35]">
       <WorkspaceNav
         variant="classic"
         title={title}
