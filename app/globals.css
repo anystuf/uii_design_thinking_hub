@@ -142,5 +142,6 @@ input, select, textarea {
 }
 
 @media (min-width: 1024px) {
-  .workspace-header + main { margin-left: 15rem; max-width: none; }
+  /* Chat launcher is a sibling between the sidebar and main: retain the desktop offset. */
+  .workspace-header ~ main { margin-left: 15rem; max-width: none; }
 }
