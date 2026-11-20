@@ -20,6 +20,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3100',
     channel: 'chrome',
-    trace: 'off',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
 });
