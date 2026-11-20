@@ -48,7 +48,7 @@ test('student completes a server-graded quiz and receives guidance from the chat
   await page.getByRole('button',{name:'Nộp bài và xem kết quả'}).click();
   await expect(page.getByText('Kết quả: 100/100')).toBeVisible();
   expect(posts).toBe(1);
-  await page.getByRole('button',{name:'Mở chatbot hướng dẫn UII'}).click();
+  await page.getByRole('button',{name:/Mở Hỏi UII/}).click();
   await expect(page.getByRole('dialog',{name:'Chatbot hướng dẫn sử dụng UII'})).toBeVisible();
   await page.getByLabel('Nhập câu hỏi cho chatbot').fill('Làm quiz ở đâu?');
   await page.getByRole('button',{name:'Gửi câu hỏi'}).click();
