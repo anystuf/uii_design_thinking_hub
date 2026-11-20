@@ -148,14 +148,14 @@ export async function POST(req:NextRequest) {
     if(isPersonalProgress(question)){
       const answer=token&&verified?await trustedProgress(token,role):
         "Để xem tiến độ học cá nhân, bạn cần đăng nhập và hệ thống phải xác minh được tài khoản. Mình hiện chưa có dữ liệu học có xác thực, nên không thể báo số bài hoặc tỷ lệ hoàn thành. Hãy vào Tổng quan hoặc Khóa học.";
-      return NextResponse.json({answer,mode:"verified-data",links:[{href:"/dashboard",label:"Mở Tổng quan"},{href:"/learn",label:"Khóa học"}],verified},{headers:{"Cache-Control":"no-store"}});
+      return NextResponse.json({answer,mode:"verified-data",links:[{href:"/dashboard",label:"Mở Tổng quan"},{href:"/learn",label:"Khóa học"}],verified,role},{headers:{"Cache-Control":"no-store"}});
     }
     // Product status is deliberately factual rather than generated speculation.
     if(isProductStatus(question)){
       const fall=deterministicGuide(question,role,path);
       const current=process.env.VERCEL_ENV||"local";
       const status="Môi trường hiện tại: "+current.toUpperCase()+". Giai đoạn sản phẩm: đang thử nghiệm/nghiệm thu, không đồng nghĩa production-ready. Endpoint này không có quyền truy cập GitHub CI theo thời gian thực.\n\n";
-      return NextResponse.json({answer:status+fall.text,mode:"verified-status",links:fall.links,verified},{headers:{"Cache-Control":"no-store"}});
+      return NextResponse.json({answer:status+fall.text,mode:"verified-status",links:fall.links,verified,role},{headers:{"Cache-Control":"no-store"}});
     }
     const answerFromAI=await runGemini({question,history,role,path});
     const fall=deterministicGuide(question,role,path);
@@ -164,6 +164,7 @@ export async function POST(req:NextRequest) {
       mode:answerFromAI?"gemini":"guided",
       links:answerFromAI?suggestions:fall.links,
       verified,
+      role,
     },{headers:{"Cache-Control":"no-store"}});
   }catch {
     return NextResponse.json({error:"Không đọc được câu hỏi. Vui lòng thử lại."},{status:400});
