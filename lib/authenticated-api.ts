@@ -80,7 +80,21 @@ export async function authenticatedApi<T>(path: string, token: string, init?: Re
       // Do not surface raw upstream errors that could contain personal data or connection details.
       throw new WorkspaceApiError(response.status, `Không tải được dữ liệu (HTTP ${response.status}). Hãy thử lại.${requestId ? ` Mã yêu cầu: ${requestId}` : ''}`);
     }
-    return await response.json() as T;
+    // Nest/Express may respond to "no exercise exists" with HTTP 200 and an
+    // empty body rather than JSON null. This is a valid absence, not malformed
+    // content. Never hide empty/unparseable responses for other API routes.
+    if (response.status === 204 || response.status === 205) return null as T;
+    const payload = await response.text();
+    if (!payload.trim()) {
+      if ((init?.method ?? 'GET').toUpperCase() === 'GET' &&
+          /^\\/lessons\\/[^/]+\\/exercise$/.test(path)) return null as T;
+      throw new WorkspaceApiError(502, 'Máy chủ trả về dữ liệu rỗng không hợp lệ. Vui lòng thử lại.');
+    }
+    try {
+      return JSON.parse(payload) as T;
+    } catch {
+      throw new WorkspaceApiError(502, 'Máy chủ trả về dữ liệu không đúng định dạng JSON. Vui lòng thử lại.');
+    }
   } catch (error) {
     if (controller.signal.aborted && !init?.signal?.aborted) {
       throw new Error(isProfileLookup
