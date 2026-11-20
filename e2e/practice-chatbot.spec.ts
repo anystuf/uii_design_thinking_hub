@@ -200,3 +200,33 @@ test('dashboard shows globally mounted red ink cursor for admin after pointer mo
     return color[0] > 150 && color[1] < 130 && color[2] < 130 && color[3] > 100;
   })).toBe(true);
 });
+
+
+test("lecturer can load five-question quiz mockup without saving or publishing it", async ({page})=>{
+  test.skip(!!process.env.E2E_BASE_URL,"Local fixture only");
+  await loginFixture(page,"teacher");
+  let submitted = 0;
+  await page.route("http://localhost:4000/**",async route=>{
+    const path=new URL(route.request().url()).pathname;
+    let data:unknown=[];
+    if(path==="/auth/me")data={id:"teacher",fullName:"Teacher Demo",role:"LECTURER"};
+    if(path==="/courses")data=[course];
+    if(path==="/courses/course")data=course;
+    if(path==="/courses/course/lessons")data=[lesson];
+    if(path==="/lessons/lesson-a/exercise"&&route.request().method()==="PUT")submitted++;
+    if(path==="/lessons/lesson-a/exercise"&&route.request().method()==="GET")data=null;
+    await route.fulfill({json:data});
+  });
+  await page.goto("/learn");
+  await page.getByRole("button",{name:/Introduction to Design Thinking/}).click();
+  await page.getByRole("button",{name:"Mở bài học"}).click();
+  await page.getByRole("button",{name:"Tạo bài tập"}).click();
+  await page.getByRole("button",{name:"Quiz mẫu · 5 câu"}).click();
+  await expect(page.getByText(/Ngân hàng câu hỏi \(5\/20\)/)).toBeVisible();
+  await expect(page.getByLabel("Công bố bài tập cho sinh viên")).not.toBeChecked();
+  await expect(page.getByLabel("Tiêu đề bài tập")).toHaveValue(/Design Thinking Basics Quiz/);
+  expect(submitted).toBe(0);
+  await page.getByRole("button",{name:"Tự luận mẫu"}).click();
+  await expect(page.getByLabel("Tiêu đề bài tập")).toHaveValue(/Observation Reflection/);
+  expect(submitted).toBe(0);
+});
