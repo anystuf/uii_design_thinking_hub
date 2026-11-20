@@ -7,7 +7,7 @@ import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
 import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
 import { DesignThinkingLessonGuide } from '@/components/design-thinking-lesson-guide';
-import { DESIGN_THINKING_KIT } from '@/lib/design-thinking-learning-kit';
+import { DESIGN_THINKING_KIT, findKitLesson } from '@/lib/design-thinking-learning-kit';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import {
@@ -478,9 +478,12 @@ export default function LearningFoundationPage() {
                   <div><h3 className="text-xl font-extrabold">Bạn sẽ học được gì?</h3><p className="mt-2 text-sm leading-7 text-slate-600">{course.description || 'Khám phá các phương pháp học và thực hành theo định hướng của giảng viên.'}</p></div>
                   <div><h3 className="mb-4 text-xl font-extrabold">Chương trình học</h3>
                     <div className="space-y-3">
-                      {lessons.map((lesson,index) => <div key={lesson.id} className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-200 p-4">
+                      {lessons.map((lesson,index) => <div key={lesson.id} className="space-y-2">
+                        {findKitLesson(lesson.title) && <h4 className="flex flex-wrap items-center gap-2 text-sm font-extrabold text-[#153b77]"><span className="rounded-full bg-blue-50 px-3 py-1">CHƯƠNG {index+1} · {findKitLesson(lesson.title)!.mode}</span><span className="text-xs font-normal text-slate-600">{findKitLesson(lesson.title)!.objective}</span></h4>}
+                        <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-slate-200 p-4">
                         <div className="flex min-w-0 flex-1 items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-[#153b77]">{lesson.contentType === 'VIDEO' ? <PlayCircle size={20}/> : lesson.contentType === 'ASSIGNMENT' ? <ListChecks size={20}/> : <FileText size={20}/>}</span><div className="min-w-0"><p className="text-xs font-semibold text-[#b94708]">Bài {index+1} · {lesson.contentType === 'VIDEO' ? 'Video' : lesson.contentType === 'WORKSHOP' ? 'Workshop' : lesson.contentType === 'ASSIGNMENT' ? 'Bài tập' : 'Bài đọc'}</p><h4 className="mt-1 font-bold">{lesson.title}</h4>{lesson.description && <p className="mt-1 text-sm text-slate-600">{lesson.description}</p>}{lesson.durationMinutes ? <p className="mt-1 text-xs text-slate-600">{lesson.durationMinutes} phút</p> : null}</div></div>
                         <div className="flex flex-wrap items-center gap-2">{completed.has(lesson.id) && <span className="text-xs font-bold text-emerald-700"><CheckCircle2 size={15} className="inline"/> Đã học</span>}{(isEnrolled || canEditCourse || lesson.isPreview) && <button type="button" className="min-h-11 rounded-xl border border-blue-200 px-3 text-sm font-bold text-[#153b77]" onClick={() => openLesson(lesson)}>Mở bài học</button>}{canEditCourse && <button type="button" disabled={busy} className="min-h-11 rounded-xl border px-3 text-sm font-semibold" onClick={() => {setEditingLessonId(lesson.id); setLessonTitle(lesson.title);setLessonContent(lesson.content??'');setLessonVideoUrl(lesson.videoUrl??'');setLessonType(lesson.contentType??'ARTICLE');setLessonPublished(!!lesson.publishedAt);document.getElementById('lesson-editor')?.scrollIntoView({behavior:'smooth',block:'start'});document.getElementById('lesson-title')?.focus({preventScroll:true});}}>Chỉnh sửa bài học</button>}{canEditCourse && !lesson.publishedAt && <button type="button" className="min-h-11 rounded-xl border px-3 text-sm font-semibold" disabled={busy} onClick={() => void publishLesson(lesson)}>Xuất bản bài học</button>}</div>
+                        </div>
                       </div>)}
                       {lessons.length === 0 && <div className="rounded-xl bg-slate-50 p-5 text-sm text-slate-600">{isEnrolled || canEditCourse ? 'Khóa học chưa có bài học được công bố.' : 'Ghi danh để xem nội dung học tập. Một số bài học xem trước có thể xuất hiện tại đây.'}</div>}
                     </div>
