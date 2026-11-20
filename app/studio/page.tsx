@@ -74,6 +74,12 @@ export default function DesignStudioPage() {
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [activities, setActivities] = useState<ProjectActivity[]>([]);
   const [mode, setMode] = useState<Mode>('EMPATHIZE');
+  // Deep-link to the selected d.school mode from a course lesson. This is a
+  // navigation preference only; challenge/team authorization is still server-side.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('mode');
+    if (requested && MODES.some(item => item.id === requested)) setMode(requested as Mode);
+  }, []);
   const [activeActivity, setActiveActivity] = useState<ProjectActivity | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
@@ -140,7 +146,10 @@ export default function DesignStudioPage() {
         const options = enrolled ? enrolled.map((e) => e.course) : list;
         setUser(me); setCourses(options); setTemplates(availableTemplates);
         setMyTeams(ownTeams); setInvitations(pendingInvitations);
-        setCourseId((prior) => options.some((c) => c.id === prior) ? prior : options[0]?.id ?? '');
+        const requestedCourse = new URLSearchParams(window.location.search).get('course');
+        setCourseId((prior) => options.some(c => c.id === requestedCourse)
+          ? requestedCourse!
+          : options.some(c => c.id === prior) ? prior : options[0]?.id ?? '');
         setError('');
       } catch (err) {
         if (active) setError(err instanceof Error ? err.message : 'Unable to load studio.');
@@ -319,6 +328,10 @@ export default function DesignStudioPage() {
   function selectMode(next: Mode) {
     if (dirty && !window.confirm('Nội dung chưa lưu sẽ bị mất. Chuyển mode?')) return;
     setMode(next); setActiveActivity(null); setDirty(false); setAnswers({});
+    const params = new URLSearchParams(window.location.search);
+    params.set('mode', next);
+    if (courseId) params.set('course', courseId);
+    window.history.replaceState(window.history.state, '', '/studio?' + params.toString());
   }
 
   async function saveActivity(completed: boolean) {
@@ -409,6 +422,7 @@ export default function DesignStudioPage() {
                 {!challenge ? <section className={card + ' py-16 text-center'}>
                   <Lightbulb className="mx-auto mb-3 text-[#ad4007]" size={35}/>
                   <h3 className="text-xl font-bold">Chọn một thử thách</h3>
+                  <p role="status" className="mt-2 text-sm font-semibold text-[#153b77]">La bàn của bạn: {MODES.find(item => item.id === mode)?.label} · Chọn thử thách để thực hành ở đúng chế độ này.</p>
                   <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
                 </section> : (
                   <>
@@ -506,7 +520,7 @@ export default function DesignStudioPage() {
                               <button key={item.id} type="button" role="tab" aria-selected={mode === item.id}
                                 onClick={() => selectMode(item.id)}
                                 className={'rounded-xl px-3 py-3 text-xs font-bold sm:text-sm ' + (mode === item.id ? 'bg-[#153b77] text-white' : 'bg-[#eef2f8] text-[#153b77]')}>
-                                {item.label}
+                                {item.label}{mode === item.id && <span className="ml-2 text-[11px] font-bold">· Bạn ở đây</span>}
                               </button>
                             ))}
                           </div>
