@@ -38,8 +38,9 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
   const ideate=page.getByRole('button',{name:/Ideate — Ý tưởng/});
   await ideate.click();
   await expect(ideate).toHaveAttribute('aria-pressed','true');
-  await expect(page.getByRole('link',{name:'Thực hành', exact:true})).toHaveAttribute('href', '/studio?mode=IDEATE&course=course');
-  await expect(page.getByText(/không phải cấp độ hay điểm số/)).toBeVisible();
+  await expect(page.getByRole('link',{name:/Mở Studio & nhóm/})).toHaveAttribute('href', '/studio?mode=IDEATE&course=course');
+  await expect(page.getByText(/đây không phải xếp hạng điểm số/)).toBeVisible();
+  await expect(page.getByRole('link',{name:/Đem vào dự án thật/})).toHaveAttribute('href', '/studio?course=course&mode=IDEATE');
 
   await page.getByRole('button',{name:'Chế độ tập trung'}).click();
   await expect(page.getByRole('button',{name:'Thoát chế độ tập trung'})).toBeVisible();
