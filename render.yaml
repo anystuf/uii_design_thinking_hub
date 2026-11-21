@@ -2,7 +2,9 @@
 # A Blueprint is optional: connect Render and explicitly sync this file.
 # Automatic deployments are OFF. Sync changes to the existing Render service only
 # after UII's staging workspace and release gate have been approved.
-# This is the desired UII service identity. Existing manually configured Render\n# services are NOT renamed by this file: migrate/verify explicitly before Blueprint sync.\n# Editing this file alone DOES NOT update an existing manually configured service.
+# This is the desired UII service identity. Existing manually configured Render
+# services are NOT renamed by this file: migrate/verify explicitly before Blueprint sync.
+# Editing this file alone DOES NOT update an existing manually configured service.
 services:
   - type: web
     name: uii-design-thinking-api-staging
