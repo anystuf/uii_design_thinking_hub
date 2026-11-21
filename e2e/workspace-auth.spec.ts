@@ -89,6 +89,6 @@ test('rate-limited signup shows actionable error and does not claim success',asy
   await page.getByLabel('Mật khẩu',{exact:true}).fill('Fixture!password123');
   await page.getByLabel('Xác nhận mật khẩu').fill('Fixture!password123');
   await page.getByRole('button',{name:'Đăng ký',exact:true}).click();
-  await expect(page.getByRole('alert')).toContainText('giới hạn');
+  await expect(page.getByRole('alert').filter({hasText:'giới hạn'})).toContainText('giới hạn');
   await expect(page.getByRole('heading',{name:'Kiểm tra email để tiếp tục'})).toHaveCount(0);
 });
