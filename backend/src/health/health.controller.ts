@@ -18,7 +18,7 @@ export class HealthController {
   check() {
     return {
       status: 'ok',
-      service: 'usi-design-thinking-hub-backend',
+      service: 'uii-design-thinking-hub-backend',
     };
   }
 
@@ -77,7 +77,7 @@ export class HealthController {
 
     return {
       status: 'ready',
-      service: 'usi-design-thinking-hub-backend',
+      service: 'uii-design-thinking-hub-backend',
       database: 'connected',
     };
   }
