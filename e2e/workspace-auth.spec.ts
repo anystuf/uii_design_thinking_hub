@@ -46,10 +46,12 @@ test('Google sign-in redirects to the configured Supabase provider and returns t
 });
 
 test('verification redirect remains on stable staging origin instead of expiring preview host',()=>{
-  expect(authRedirectUrl('https://usi-design-thinking-web-staging-7m88jb0mo-brian-tran-s-projects.vercel.app','/learn'))
-    .toBe('https://usi-design-thinking-web-staging.vercel.app/learn');
-  expect(authRedirectUrl('https://usi-design-thinking-web-staging.vercel.app','/learn'))
-    .toBe('https://usi-design-thinking-web-staging.vercel.app/learn');
+  expect(authRedirectUrl('https://uii-design-thinking-hub-staging-7m88jb0mo-team.vercel.app','/learn'))
+    .toBe('https://uii-design-thinking-hub-staging.vercel.app/learn');
+  expect(authRedirectUrl('https://uii-design-thinking-hub-preview.vercel.app','/learn'))
+    .toBe('https://uii-design-thinking-hub-staging.vercel.app/learn');
+  expect(authRedirectUrl('https://uii-design-thinking-hub-staging.vercel.app','/learn'))
+    .toBe('https://uii-design-thinking-hub-staging.vercel.app/learn');
   expect(authRedirectUrl('http://localhost:3100','/learn')).toBe('http://localhost:3100/learn');
 });
 
