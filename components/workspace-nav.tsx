@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { Bell, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, House, Users, MessagesSquare } from "lucide-react";
+import { Bell, FilePenLine, BookOpen, ClipboardCheck, FileText, FolderKanban, LayoutDashboard, LogOut, House, Users, MessagesSquare } from "lucide-react";
 import { WorkspaceGuide, type WorkspaceRole } from "./workspace-guide";
 import { warmWorkspaceApi } from "@/lib/authenticated-api";
 
@@ -24,6 +24,7 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
   const classic = variant === "classic" && !guest;
   useEffect(() => { warmWorkspaceApi(); }, []);
   const navigation = [...links];
+  if (role === "LECTURER" || role === "ADMIN") navigation.push({ href: "/console", label: "Console biên tập", icon: FilePenLine });
   if (role === "LECTURER" || role === "ADMIN") navigation.push({ href: "/review", label: "Đánh giá bài nộp", icon: ClipboardCheck });
   if (role === "ADMIN") navigation.push({ href: "/admin", label: "Quản trị", icon: Users });
 
