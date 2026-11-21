@@ -62,6 +62,12 @@ export class ProjectsController {
     return this.projectsService.delete(id, user);
   }
 
+  @Post('projects/:id/approve-showcase')
+  @Roles(UserRole.ADMIN, UserRole.LECTURER)
+  approveForShowcase(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.projectsService.approveForShowcase(id, user);
+  }
+
   @Post('projects/:id/submit')
   @Roles(UserRole.STUDENT, UserRole.ADMIN)
   submit(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
