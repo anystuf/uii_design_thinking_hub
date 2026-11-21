@@ -9,7 +9,7 @@ const viewer=(id:string,role:UserRole):AuthenticatedUser=>({
   id,role,email:id+'@example.test',fullName:id,
 });
 function fixture(approvedCount=1){
-  let project={id:'project-1',title:'Library research',ownerId:'student-1',courseId:'course-1',status:ProjectStatus.DRAFT};
+  let project:{id:string;title:string;ownerId:string;courseId:string;status:ProjectStatus}={id:'project-1',title:'Library research',ownerId:'student-1',courseId:'course-1',status:ProjectStatus.DRAFT};
   const data:{updates:number;notifications:{recipientId:string;type:string;entityType:string}[]}={updates:0,notifications:[]};
   const db={
     project:{
