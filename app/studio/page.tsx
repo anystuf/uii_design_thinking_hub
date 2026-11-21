@@ -599,7 +599,10 @@ export default function DesignStudioPage() {
                             <input required type="email" className={input + ' min-w-0 flex-1'} placeholder="Email thành viên đã ghi danh" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}/>
                             <button disabled={busy} className={minor}><Send size={15} className="mr-1 inline"/> Mời</button>
                           </form>}
-                          <h4 className="mb-2 flex items-center gap-2 text-sm font-bold"><ClipboardList size={17}/> Taskboard</h4>
+                          <details className="mt-4 rounded-xl border border-[#d7e4db] bg-[#f9fbf8] p-3">
+                            <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">Quản lý công việc nhóm · mở khi cần</summary>
+                            <div className="mt-3">
+                              <h4 className="mb-2 flex items-center gap-2 text-sm font-bold"><ClipboardList size={17}/> Taskboard</h4>
                           <div className="space-y-2">
                             {team.tasks.map((task) => (
                               <div key={task.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f6f8fc] p-3">
@@ -619,10 +622,15 @@ export default function DesignStudioPage() {
                             </select>
                             <button disabled={busy} className={minor}>+ Task</button>
                           </form>}
+                            </div>
+                          </details>
                         </section>
 
                         <ProjectDiscussion projectId={team.id} token={token} viewerId={user.id}/>
-                        <ExternalCollaborationBoard/>
+                        <details className="rounded-2xl border border-[#dae5de] bg-white p-4">
+                          <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">Bảng cộng tác ngoài UII · chỉ mở khi cần</summary>
+                          <div className="mt-3"><ExternalCollaborationBoard/></div>
+                        </details>
                         <section id="studio-stage-tools" tabIndex={-1} className={card}>
                           <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
                             {MODES.map((item) => (
