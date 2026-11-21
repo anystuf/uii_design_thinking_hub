@@ -12,6 +12,7 @@ import {withAuthDeadline} from "@/lib/auth-timeout";
 type User={id:string;role:"STUDENT"|"LECTURER"|"ADMIN"|"MENTOR";fullName:string};
 type Lesson={id:string;title:string;description?:string|null;content?:string|null;durationMinutes:number;publishedAt:string|null;orderIndex:number;contentType:string;videoUrl?:string|null};
 type Course={id:string;title:string;description?:string|null;level:string;status:"DRAFT"|"PUBLISHED"|"ARCHIVED";createdById:string;lessons?:Lesson[];_count?:{lessons:number}};
+type Project={id:string;title:string;description?:string|null;status:string;ownerId:string;courseId:string};
 type Tab="courses"|"announcements"|"showcase";
 const field="mt-2 min-h-11 w-full rounded-xl border border-[#cddbd1] bg-white p-3 text-base focus-visible:outline-[#346c67]";
 const primary="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50";
@@ -27,6 +28,7 @@ export default function ContentConsole(){
   const [success,setSuccess]=useState("");
   const [tab,setTab]=useState<Tab>("courses");
   const [courses,setCourses]=useState<Course[]>([]);
+  const [projects,setProjects]=useState<Project[]>([]);
   const [selected,setSelected]=useState<Course|null>(null);
   const [creating,setCreating]=useState(false);
   const [courseTitle,setCourseTitle]=useState("");
@@ -62,9 +64,12 @@ export default function ContentConsole(){
         if(!active)return;
         setUser(viewer);setToken(key);
         if(viewer.role==="LECTURER"||viewer.role==="ADMIN"){
-          const rows=await authenticatedApi<Course[]>("/courses",key);
+          const [rows,projectRows]=await Promise.all([
+            authenticatedApi<Course[]>("/courses",key),
+            authenticatedApi<Project[]>("/projects",key),
+          ]);
           if(!active)return;
-          setCourses(rows);
+          setCourses(rows);setProjects(projectRows);
           const requested=new URLSearchParams(location.search).get("course");
           if(requested&&rows.some(row=>row.id===requested&&(viewer.role==="ADMIN"||row.createdById===viewer.id))){
             const detail=await authenticatedApi<Course>("/courses/"+encodeURIComponent(requested),key);
@@ -132,6 +137,13 @@ export default function ContentConsole(){
       });
       await refresh(courseId);
       setSuccess("Đã lưu bài học. Tổng thời lượng trong Course Overview được tính lại từ thời lượng từng bài.");
+    });
+  }
+  async function approveProjectForShowcase(projectId:string){
+    await run(async()=>{
+      await authenticatedApi("/projects/"+encodeURIComponent(projectId)+"/approve-showcase",token,{method:"POST"});
+      setProjects(await authenticatedApi<Project[]>("/projects",token));
+      setSuccess("Đã duyệt toàn bộ dự án để trưng bày. Chủ dự án đã nhận thông báo, nhưng dự án CHƯA được đăng công khai; chủ dự án phải tự chọn công bố.");
     });
   }
   async function sendAnnouncement(e:FormEvent<HTMLFormElement>){
@@ -247,6 +259,15 @@ export default function ContentConsole(){
           {tab==="showcase"&&<section className="space-y-4 rounded-2xl border border-[#d9e5dc] bg-white p-6">
             <h2 className="text-2xl font-black">Trưng bày dự án · Workflow</h2>
             <p className="text-sm leading-7 text-[#5d7471]">Dự án phải được nộp và đánh giá trước khi xuất hiện tại Cộng đồng. Việc giảng viên phê duyệt không tự động đăng dự án; chủ dự án chọn chia sẻ sau khi được duyệt.</p>
+            <div className="rounded-xl border border-[#d8e6dc] bg-[#f6faf7] p-4">
+              <h3 className="text-base font-black">Duyệt dự án của khóa học</h3>
+              <p className="mt-1 text-xs leading-6 text-[#657a76]">Chỉ duyệt sau khi có ít nhất một phiên bản nộp đã được đánh giá APPROVED trong Review. Nút này không tự đăng lên Cộng đồng.</p>
+              <div className="mt-3 space-y-2">{projects.map(project=><div key={project.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#e0e9e1] bg-white p-3">
+                <div><p className="text-sm font-bold">{project.title}</p><p className="text-xs text-[#667a77]">{project.status==="PUBLISHED"?"Đã trưng bày":project.status==="APPROVED"?"Đã được duyệt":"Chưa đủ điều kiện trưng bày"}</p></div>
+                {!["APPROVED","PUBLISHED"].includes(project.status)&&<button type="button" disabled={busy} onClick={()=>void approveProjectForShowcase(project.id)} className={secondary}>Duyệt trưng bày</button>}
+              </div>)}</div>
+              {!projects.length&&<p className="mt-3 text-sm text-[#647a76]">Chưa có dự án trong các khóa học bạn quản lý.</p>}
+            </div>
             <ol className="list-inside list-decimal space-y-2 text-sm leading-7 text-[#365b59]">
               <li>Nhóm học viên làm dự án và lưu minh chứng trong Studio.</li>
               <li>Nhóm nộp phiên bản để giảng viên xem và phê duyệt.</li>
