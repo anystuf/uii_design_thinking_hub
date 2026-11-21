@@ -1,7 +1,8 @@
 import { test, expect, request, type APIRequestContext } from '@playwright/test';
 import { createClient } from '@supabase/supabase-js';
 
-const apiUrl = process.env.E2E_STAGING_API_ORIGIN;\nif (!apiUrl) throw new Error('E2E_STAGING_API_ORIGIN is required for real staging acceptance.');
+const apiUrl = process.env.E2E_STAGING_API_ORIGIN;
+if (!apiUrl) throw new Error('E2E_STAGING_API_ORIGIN is required for real staging acceptance.');
 const supabaseUrl = 'https://dpapvhvceuoegztxfuuu.supabase.co';
 type Role = 'STUDENT' | 'LECTURER' | 'ADMIN';
 
