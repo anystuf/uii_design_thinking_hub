@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 const api = 'https://usi-design-thinking-api-staging.onrender.com';
-const preview = 'https://usi-design-thinking-web-staging-mgqsw1t81-brian-tran-s-projects.vercel.app';
+const preview = process.env.STAGING_FRONTEND_ORIGIN || 'https://usi-design-thinking-web-staging.vercel.app';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function request(path, options = {}) {
@@ -28,6 +28,14 @@ for (let i = 0; i < 7; i++) {
 }
 assert.equal(ready, true, 'Staging API and DB must become ready');
 
+// Deployment contract: an existing guarded endpoint returns 401 without a
+// bearer token. A 404 proves the preview frontend is ahead of the Render API.
+const communityQuestions = await request('/community/questions');
+assert.equal(
+  communityQuestions.status, 401,
+  'Community Q&A API is not deployed. Expected protected GET /community/questions -> 401 (no token); 404 indicates an outdated Render commit.'
+);
+
 const unauthorized = await request('/courses/00000000-0000-4000-8000-000000000000/my-rewards');
 assert.equal(unauthorized.status, 401, 'Rewards must reject unauthenticated requests');
 
@@ -48,4 +56,4 @@ const disallowed = await request('/auth/me', {
   headers: { ...preflight.headers, Origin: foreignOrigin },
 });
 assert.notEqual(disallowed.headers.get('access-control-allow-origin'), foreignOrigin, 'Unknown origin must not be authorized');
-console.log('PASS: staging readiness, JWT boundary and exact Preview CORS');
+console.log('PASS: staging readiness, Community Q&A route, JWT boundary and exact Preview CORS');
