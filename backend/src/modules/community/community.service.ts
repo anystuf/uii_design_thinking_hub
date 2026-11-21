@@ -134,8 +134,8 @@ export class CommunityService {
   async createPost(dto: CreatePostDto, user: AuthenticatedUser) {
     const project = await this.prisma.project.findUnique({ where: { id: dto.projectId } });
     if (!project) throw new NotFoundException('Project not found.');
-    if (user.role !== UserRole.ADMIN && project.ownerId !== user.id) {
-      throw new ForbiddenException('You can only publish your own project.');
+    if (project.ownerId !== user.id) {
+      throw new ForbiddenException('Only the project owner can consent to publish this project.');
     }
     if (project.status !== ProjectStatus.APPROVED && project.status !== ProjectStatus.PUBLISHED) {
       throw new ForbiddenException('Only approved projects can be published.');
