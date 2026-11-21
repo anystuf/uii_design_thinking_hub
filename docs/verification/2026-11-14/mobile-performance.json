@@ -1,0 +1,65 @@
+{
+  "conditions": "Chrome, 390x844, 150ms latency, 1.6Mbps download, 0.75Mbps upload, 4x CPU, cache disabled, anonymous local production build",
+  "samples": [
+    {
+      "path": "/",
+      "iteration": 0,
+      "lcpMs": 1928,
+      "cls": 0.17430465241995063
+    },
+    {
+      "path": "/",
+      "iteration": 1,
+      "lcpMs": 1156,
+      "cls": 0.18851920051935303
+    },
+    {
+      "path": "/",
+      "iteration": 2,
+      "lcpMs": 1292,
+      "cls": 0.18851920051935303
+    },
+    {
+      "path": "/",
+      "iteration": 3,
+      "lcpMs": 1088,
+      "cls": 0.18851920051935303
+    },
+    {
+      "path": "/",
+      "iteration": 4,
+      "lcpMs": 1428,
+      "cls": 0.18851920051935303
+    },
+    {
+      "path": "/learn",
+      "iteration": 0,
+      "lcpMs": 2976,
+      "cls": 0
+    },
+    {
+      "path": "/learn",
+      "iteration": 1,
+      "lcpMs": 2780,
+      "cls": 0
+    },
+    {
+      "path": "/learn",
+      "iteration": 2,
+      "lcpMs": 2432,
+      "cls": 0
+    },
+    {
+      "path": "/learn",
+      "iteration": 3,
+      "lcpMs": 2236,
+      "cls": 0
+    },
+    {
+      "path": "/learn",
+      "iteration": 4,
+      "lcpMs": 2236,
+      "cls": 0
+    }
+  ]
+}

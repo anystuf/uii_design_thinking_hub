@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -39,23 +39,8 @@ export class UsersService {
   }
 
   async findAll() {
-    try {
-      return await this.prisma.user.findMany({
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (error) {
-      if (isPrismaConnectionError(error)) {
-        return [];
-      }
-
-      throw error;
-    }
+    return this.prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
   }
-}
-
-function isPrismaConnectionError(error: unknown): boolean {
-  return (
-    error instanceof Prisma.PrismaClientInitializationError ||
-    error instanceof Prisma.PrismaClientKnownRequestError
-  );
 }
