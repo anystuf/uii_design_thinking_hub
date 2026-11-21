@@ -151,7 +151,7 @@ export default function CommunityPage(){
      </div>}
      {showPublish&&viewer&&<form onSubmit={e=>void publish(e)} className="space-y-3 rounded-2xl border border-[#d8e6dd] bg-white p-5">
        <h2 className="text-lg font-black text-[#173445]">Đăng dự án của nhóm lên cộng đồng</h2>
-       <p className="text-xs leading-6 text-[#647779]">Chỉ chủ dự án (hoặc quản trị viên) được đăng dự án đã duyệt; nội dung công khai cho thành viên đăng nhập. Không đăng thông tin cá nhân của người được phỏng vấn.</p>
+       <p className="text-xs leading-6 text-[#647779]">Chỉ chủ dự án được tự chọn công bố dự án đã được giảng viên duyệt để trưng bày; quản trị viên không tự đăng thay chủ dự án. Bài đăng hiển thị cho thành viên đăng nhập. Không đăng thông tin cá nhân của người được phỏng vấn.</p>
        <label htmlFor="share-project" className="block text-sm font-bold">Dự án đã duyệt</label>
        <select id="share-project" required value={projectId} onChange={e=>setProjectId(e.target.value)} className="min-h-11 w-full rounded-xl border bg-white px-3">
          <option value="">Chọn dự án</option>{shareable.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}
