@@ -10,7 +10,7 @@ import {getSupabaseBrowserClient} from "@/lib/supabase-browser";
 import {withAuthDeadline} from "@/lib/auth-timeout";
 
 type User={id:string;role:"STUDENT"|"LECTURER"|"ADMIN"|"MENTOR";fullName:string};
-type Lesson={id:string;title:string;description?:string|null;content?:string|null;durationMinutes:number;publishedAt:string|null;orderIndex:number;contentType:string};
+type Lesson={id:string;title:string;description?:string|null;content?:string|null;durationMinutes:number;publishedAt:string|null;orderIndex:number;contentType:string;videoUrl?:string|null};
 type Course={id:string;title:string;description?:string|null;level:string;status:"DRAFT"|"PUBLISHED"|"ARCHIVED";createdById:string;lessons?:Lesson[];_count?:{lessons:number}};
 type Tab="courses"|"announcements"|"showcase";
 const field="mt-2 min-h-11 w-full rounded-xl border border-[#cddbd1] bg-white p-3 text-base focus-visible:outline-[#346c67]";
@@ -37,6 +37,9 @@ export default function ContentConsole(){
   const [lessonTitle,setLessonTitle]=useState("");
   const [lessonDescription,setLessonDescription]=useState("");
   const [lessonContent,setLessonContent]=useState("");
+  const [lessonType,setLessonType]=useState("ARTICLE");
+  const [lessonVideoUrl,setLessonVideoUrl]=useState("");
+  const [lessonOrder,setLessonOrder]=useState(0);
   const [lessonMinutes,setLessonMinutes]=useState(15);
   const [lessonPublished,setLessonPublished]=useState(false);
   const [annTitle,setAnnTitle]=useState("");
@@ -111,6 +114,7 @@ export default function ContentConsole(){
     setEditLessonId(lesson?.id??"new");setLessonTitle(lesson?.title??"");
     setLessonDescription(lesson?.description??"");setLessonContent(lesson?.content??"");
     setLessonMinutes(lesson?.durationMinutes??15);setLessonPublished(!!lesson?.publishedAt);
+    setLessonType(lesson?.contentType??"ARTICLE");setLessonVideoUrl(lesson?.videoUrl??"");setLessonOrder(lesson?.orderIndex??selected?.lessons?.length??0);
   }
   async function saveLesson(e:FormEvent<HTMLFormElement>){
     e.preventDefault();if(!selected)return;
@@ -123,7 +127,7 @@ export default function ContentConsole(){
         body:JSON.stringify({
           title:lessonTitle.trim(),description:lessonDescription.trim(),content:lessonContent.trim(),
           durationMinutes:duration,isPublished:lessonPublished,
-          ...(editLessonId==="new"?{orderIndex:selected.lessons?.length??0,contentType:"ARTICLE"}:{}),
+          contentType:lessonType,videoUrl:lessonVideoUrl.trim(),orderIndex:lessonOrder,
         }),
       });
       await refresh(courseId);
@@ -205,7 +209,14 @@ export default function ContentConsole(){
                     <h4 className="font-black">{editLessonId==="new"?"Tạo bài học":"Chỉnh sửa bài học"}</h4>
                     <label className={titleStyle}>Tên bài học<input required maxLength={160} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className={field}/></label>
                     <label className={titleStyle}>Mô tả<input maxLength={1200} value={lessonDescription} onChange={e=>setLessonDescription(e.target.value)} className={field}/></label>
-                    <label className={titleStyle}>Thời lượng (phút)<input required type="number" min={0} max={600} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))} className={field}/></label>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <label className={titleStyle}>Thời lượng (phút)<input required type="number" min={0} max={600} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))} className={field}/></label>
+                      <label className={titleStyle}>Thứ tự bài học<input required type="number" min={0} max={500} value={lessonOrder} onChange={e=>setLessonOrder(Number(e.target.value))} className={field}/></label>
+                    </div>
+                    <label className={titleStyle}>Loại bài học<select value={lessonType} onChange={e=>setLessonType(e.target.value)} className={field}>
+                      <option value="ARTICLE">Bài đọc</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Tài liệu mẫu</option><option value="ASSIGNMENT">Bài tập</option>
+                    </select></label>
+                    <label className={titleStyle}>Video / tài liệu liên kết (URL)<input type="url" maxLength={500} placeholder="https://..." value={lessonVideoUrl} onChange={e=>setLessonVideoUrl(e.target.value)} className={field}/></label>
                     <label className={titleStyle}>Nội dung<textarea maxLength={10000} rows={6} value={lessonContent} onChange={e=>setLessonContent(e.target.value)} className={field}/></label>
                     <label className="flex min-h-11 items-center gap-2 text-sm font-bold"><input type="checkbox" checked={lessonPublished} onChange={e=>setLessonPublished(e.target.checked)}/> Công bố bài học</label>
                     <div className="flex flex-wrap gap-2"><button disabled={busy} className={primary}><Save size={16}/> Lưu bài học</button><button type="button" disabled={busy} className={secondary} onClick={()=>setEditLessonId("")}>Hủy</button></div>
