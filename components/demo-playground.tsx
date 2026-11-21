@@ -11,6 +11,7 @@ import {
 import { DemoPhoto } from "@/components/demo-photo";
 import { DEMO_COURSES, DEMO_EXERCISES, DEMO_TOOLS, type DemoExercise } from "@/lib/demo-content";
 import { DemoToolCanvas } from "@/components/demo-tool-canvas";
+import { StudioGuidedDemo } from "@/components/studio-guided-demo";
 
 const kindNames = {QUIZ:"Quiz",WRITTEN:"Viết phản tư",PROJECT:"Nhiệm vụ dự án",ACTIVITY:"Hoạt động sáng tạo"} as const;
 const markers = ["Learn","Practice","Apply"] as const;
@@ -131,6 +132,8 @@ export function DemoPlayground() {
         </div>
         <DemoPhoto src={course.photo} alt={"Ảnh workshop minh họa khóa học "+course.title} className="aspect-[5/3] rounded-[25px]" tint={course.accent}/>
       </section>}
+
+      {!focus&&<div className="mt-8"><StudioGuidedDemo/></div>}
 
       <div className="mt-9 grid min-w-0 gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
         <aside className={focus?"hidden":"min-w-0 space-y-5"}>
