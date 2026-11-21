@@ -6,6 +6,7 @@ import { WorkspaceLoading } from '@/components/workspace-loading';
 import { WorkspaceNav } from '@/components/workspace-nav';
 import { LessonPractice } from '@/components/lesson-practice';
 import { LearningQuestCompass, type FocusStep } from '@/components/learning-quest-compass';
+import { StudentNextAction } from '@/components/student-next-action';
 import { DesignThinkingLessonGuide } from '@/components/design-thinking-lesson-guide';
 import { DemoPhoto } from '@/components/demo-photo';
 import { DEMO_COURSES } from '@/lib/demo-content';
@@ -183,7 +184,6 @@ export default function LearningFoundationPage() {
   const levels = [...new Set(courses.map(item => item.level).filter(Boolean))];
   const currentLesson = lessons.find(item => item.id === activeLessonId) ?? null;
   const selectedLessonIndex = currentLesson ? lessons.findIndex(item => item.id === currentLesson.id) : -1;
-  const nextUnfinishedLesson = lessons.find(item => !completed.has(item.id)) ?? lessons[0];
   function openLesson(lesson: Lesson) {
     if (!course) return;
     setActiveLessonId(lesson.id);
@@ -490,9 +490,14 @@ export default function LearningFoundationPage() {
                   {lessons.length > 0 && <span className="inline-flex items-center gap-2"><BookOpen size={16} aria-hidden="true"/>{lessons.length} bài học có thể xem</span>}
                   {lessons.some(item => item.durationMinutes && item.durationMinutes > 0) && <span className="inline-flex items-center gap-2"><Clock3 size={16} aria-hidden="true"/>{lessons.reduce((total, item) => total + (item.durationMinutes ?? 0), 0)} phút nội dung đã định thời lượng</span>}
                 </div>
-                {user.role === 'STUDENT' && !isEnrolled && <button disabled={busy} type="button" onClick={() => void enroll()} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#153b77] px-6 py-3 text-sm font-bold text-white hover:bg-blue-900"><Users size={18} aria-hidden="true"/> Ghi danh khóa học</button>}
-                {isEnrolled && nextUnfinishedLesson && <button type="button" onClick={() => openLesson(nextUnfinishedLesson)} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-6 py-3 text-sm font-bold text-white hover:bg-orange-800"><PlayCircle size={19} aria-hidden="true"/>{progress?.percent === 100 ? 'Ôn tập bài học' : 'Bắt đầu / tiếp tục học'}</button>}
-                {progress && <div className="mt-5 max-w-xl"><div className="mb-2 flex justify-between gap-3 text-sm font-semibold"><span>Tiến độ của bạn</span><span>{progress.completedLessons}/{progress.totalLessons} bài · {progress.percent}%</span></div><div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress.percent} className="h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-[#b94708]" style={{width:progress.percent+'%'}}/></div></div>}
+                {user.role === 'STUDENT' && learningView === 'overview' &&
+                  <StudentNextAction
+                    courseId={course.id} enrolled={isEnrolled} lessons={lessons}
+                    completedIds={completed} progressPercent={progress?.percent ?? null}
+                    busy={busy} onEnroll={() => void enroll()}
+                    onOpenLesson={id => {const next = lessons.find(item => item.id === id); if (next) openLesson(next);}}
+                  />
+                }
               </div>
               {learningView === 'overview' && <div className="grid gap-7 p-5 lg:grid-cols-[minmax(0,1fr)_280px] sm:p-8">
                 <div className="space-y-7">
