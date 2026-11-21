@@ -1,14 +1,14 @@
 # UII Hub — Staging deployment runbook
 
-**Target:** Singapore Supabase project `dpapvhvceuoegztxfuuu`; Draft PRs #1 → #5 → #6 → #7 → this staging PR.
+**Target:** Singapore Supabase project `dpapvhvceuoegztxfuuu`; Release candidate source: `feat/guided-dschool-learning-path-20261121` (see `docs/RELEASE-CANDIDATE-20261121.md`).
 **Scope:** Staging only. Do not merge into `main` or assign a production domain before UAT.
 
 ## Confirmed infrastructure
 
-- Supabase PostgreSQL 17 in Singapore: 34 application tables from Releases A–D; **no real users or pilot data have been seeded**.
+- Supabase PostgreSQL 17 in Singapore: 34 application tables from Releases A–D; Auth signups may have created real staging learner records; never assume the staging database is empty.
 - Bucket `design-evidence` exists, is private, and allows PDF, JPG, PNG, MP3, MP4, TXT up to 50,000,000 bytes.
 - JWT current signing algorithm ECC P-256 / ES256 (as evidenced by Supabase Dashboard).
-- The four existing Prisma SQL migrations were already applied using the connected Supabase migration runner.
+- Initial Prisma migrations were applied and baselined; inspect live `_prisma_migrations` and Supabase migration history before applying later feature migrations.
   A matching `public._prisma_migrations` history has been baselined using SHA-256 checksums of the exact repository SQL files.
 - All 34 application tables and the Prisma history table have RLS enabled, with no client Data API policies: **all application access is enforced in the NestJS backend**. Do not add blanket anonymous/authenticated policies. Review the Supabase Data API exposure settings too.
 - A fresh deployment must verify `npx prisma migrate status` and `npx prisma migrate deploy` using the actual Render database connection before serving users. `migrate deploy` should report no pending migrations.
@@ -18,7 +18,7 @@
 
 The root `render.yaml` Blueprint declares a **Free** service in **Singapore**, with automatic deploys **off** until the configuration is reviewed.
 
-1. Connect Render and choose the intended workspace explicitly. For manual setup, create **Web Service**, repository `anystuf/uii_design_thinking_hub`, branch `chore/mvp-staging-readiness-20261106`, root directory `backend`, runtime Node, Singapore, Free.
+1. Connect Render and choose the intended workspace explicitly. For manual setup, create **Web Service**, repository `anystuf/uii_design_thinking_hub`, branch `feat/guided-dschool-learning-path-20261121` for the reviewed staging candidate, root directory `backend`, runtime Node, Singapore, Free.
 2. Build command: `npm install --no-audit --no-fund && npm run prisma:generate && npm run build`.
    Render uses `NODE_ENV=production` and therefore `NPM_CONFIG_INCLUDE=dev` must be set during builds to install the Nest CLI and TypeScript tooling from `devDependencies`.
 3. Start command: `npm run start:prod`. Health path: `/health/ready`.
@@ -44,7 +44,7 @@ Render Free instances can spin down after inactivity, so hourly in-process deadl
 ## Step 2 — Vercel staging frontend
 
 1. Create a new **Next.js** Vercel project linked to the same repository.
-2. Deploy branch `chore/mvp-staging-readiness-20261106` as **Preview**, not Production.
+2. Deploy the reviewed candidate SHA from `feat/guided-dschool-learning-path-20261121` as **Preview**, not Production.
 3. Use repository **root directory `.`**. Build: `npm ci && npm run build` (Next.js build).
 4. Set **Preview** environment variables:
 
@@ -60,10 +60,28 @@ Render Free instances can spin down after inactivity, so hourly in-process deadl
 
 **Never expose `SUPABASE_SECRET_KEY` or Postgres URLs through `NEXT_PUBLIC_*`.**
 
+## Distributed Community API compatibility
+
+The live Render service may still use its older manually configured branch even when
+the repo's `render.yaml` has been updated. Changes to that declarative file do
+not themselves edit an already created Render service.
+
+After reviewing `backend/prisma/migrations/202611210001_community_questions/migration.sql`,
+apply the migration to the **staging** project, reconcile Prisma migration history,
+verify `Post.projectId` is nullable and `Post.title`, `Post.topic`, and
+`Post.acceptedCommentId` exist, then deploy the corresponding NestJS API SHA.
+
+Before updating the stable frontend alias or merging `main`, run the manual
+`Staging API compatibility smoke` workflow. An unauthenticated
+`GET /community/questions` MUST return **401**. A **404** means the
+new UI points to an older backend and the release is blocked. Verify 200
+with an authorized test account and actual question/answer persistence
+separately. Never mistake a successful frontend CI run for this contract.
+
 ## Step 3 — Pre-UAT release gate
 
 - Render `GET /health/ready` returns HTTP 200 after successful DB connectivity (not merely an application process).
-- `npx prisma migrate status` shows four applied releases and no pending migration.
+- `npx prisma migrate status` shows all expected applied migrations and no pending migration.
 - Supabase Auth new student account logs into `/learn` and creates a matching PostgreSQL `User` row.
 - Provision lecturer role by **trusted server-side admin operation** only; never by editable JWT user metadata.
 - Lecturer creates a course, a challenge, a rubric; two students enroll, join a team, work in five modes, upload evidence, submit snapshots, receive review and notifications.
