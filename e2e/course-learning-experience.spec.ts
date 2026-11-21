@@ -50,3 +50,40 @@ test('student discovers, enrolls, and completes a lesson in the new learning pla
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('lesson-player-mobile-320.png'),fullPage:true});
 });
+
+
+test('completed course offers project application rather than restarting lessons', async ({ page }) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local learning fixture only');
+  await page.setViewportSize({ width: 375, height: 844 });
+  await page.addInitScript(() => localStorage.setItem('sb-example-auth-token', JSON.stringify({
+    access_token:'fixture-token',refresh_token:'fixture-refresh',
+    expires_at:Math.floor(Date.now()/1000)+3600,user:{id:'student',email:'student@example.test'},
+  })));
+  const course={id:'course',title:'Complete Design Thinking',createdById:'teacher',
+    status:'PUBLISHED',level:'Foundation',description:'Apply every step.'};
+  const lessons=[
+    {id:'a',title:'Empathize',courseId:'course',publishedAt:'2026-11-20T00:00:00Z',orderIndex:0},
+    {id:'b',title:'Define',courseId:'course',publishedAt:'2026-11-20T00:00:00Z',orderIndex:1},
+  ];
+  await page.route('http://localhost:4000/**',async route=>{
+    const path=new URL(route.request().url()).pathname;
+    let data:unknown=[];
+    if(path==='/auth/me')data={id:'student',fullName:'Student',role:'STUDENT'};
+    if(path==='/courses')data=[course];
+    if(path==='/courses/course')data=course;
+    if(path==='/courses/my-enrollments')data=[{id:'enrollment',courseId:'course',course}];
+    if(path==='/courses/course/lessons')data=lessons;
+    if(path==='/courses/course/my-progress')data={courseId:'course',completedLessons:2,totalLessons:2,percent:100,
+      lessons:[{lessonId:'a',completed:true},{lessonId:'b',completed:true}]};
+    await route.fulfill({json:data});
+  });
+  await page.goto('/learn');
+  await page.getByRole('button',{name:/Complete Design Thinking/}).click();
+  const next=page.getByTestId('student-next-action');
+  await expect(next.getByRole('heading',{name:'Chuyển kiến thức thành sản phẩm'})).toBeVisible();
+  await expect(next.getByRole('link',{name:/Đến Design Studio/}))
+    .toHaveAttribute('href','/studio?course=course');
+  await expect(next.getByRole('progressbar')).toHaveAttribute('aria-valuenow','100');
+  await expect(next.getByRole('button',{name:/Học tiếp bài này/})).toHaveCount(0);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
