@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ChallengeStatus } from '@prisma/client';
+import { ChallengeStatus, UserRole } from '@prisma/client';
+import { AnnouncementAudience, PublishAnnouncementDto } from './dto/publish-announcement.dto';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 
@@ -16,6 +18,66 @@ export class NotificationsService {
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
+  }
+
+  /** In-app course or platform announcement. Only a verified course owner or
+   * administrator can reach the intended recipients. A new UUID makes every
+   * explicit publish action unique; createMany keeps fanout atomic. */
+  async publishAnnouncement(dto: PublishAnnouncementDto, user: AuthenticatedUser) {
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.LECTURER) {
+      throw new ForbiddenException('Only lecturers and administrators can announce.');
+    }
+    const title = dto.title.trim();
+    const body = dto.body.trim();
+    if (title.length < 4 || body.length < 10) {
+      throw new BadRequestException('Please provide a meaningful title and message.');
+    }
+    if (dto.audience === AnnouncementAudience.ALL_STUDENTS && user.role !== UserRole.ADMIN) {
+      throw new ForbiddenException('Only administrators may notify the whole platform.');
+    }
+    if (dto.audience === AnnouncementAudience.COURSE && !dto.courseId) {
+      throw new BadRequestException('A course must be selected.');
+    }
+    if (dto.audience === AnnouncementAudience.ALL_STUDENTS && dto.courseId) {
+      throw new BadRequestException('Site-wide announcements cannot target a course.');
+    }
+
+    let recipients: { id: string }[] = [];
+    let entityId: string;
+    if (dto.audience === AnnouncementAudience.COURSE) {
+      const course = await this.prisma.course.findUnique({ where: { id: dto.courseId } });
+      if (!course) throw new NotFoundException('Course not found.');
+      if (user.role !== UserRole.ADMIN && course.createdById !== user.id) {
+        throw new ForbiddenException('Only the course lecturer may send this announcement.');
+      }
+      recipients = (await this.prisma.enrollment.findMany({
+        where: { courseId: course.id },
+        select: { userId: true },
+      })).map(record => ({ id: record.userId }));
+      entityId = course.id;
+    } else {
+      recipients = await this.prisma.user.findMany({
+        where: { role: UserRole.STUDENT },
+        select: { id: true },
+      });
+      entityId = randomUUID();
+    }
+    const unique = [...new Set(recipients.map(recipient => recipient.id))];
+    if (!unique.length) return { sent: 0, audience: dto.audience, message: 'No recipients yet.' };
+    const message = title + '\n\n' + body;
+    const publicationId = randomUUID();
+    const sent = await this.prisma.notification.createMany({
+      data: unique.map(recipientId => ({
+        recipientId,
+        actorId: user.id,
+        type: 'COURSE_ANNOUNCEMENT',
+        entityType: dto.audience === AnnouncementAudience.COURSE ? 'Course' : 'Platform',
+        entityId,
+        message,
+        dedupeKey: 'announcement:' + publicationId + ':' + recipientId,
+      })),
+    });
+    return { sent: sent.count, audience: dto.audience };
   }
 
   async markRead(id: string, user: AuthenticatedUser) {
