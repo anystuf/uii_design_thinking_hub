@@ -41,7 +41,7 @@ test('student completes a server-graded quiz and receives guidance from the chat
   });
   await page.goto('/learn');
   await page.getByRole('button',{name:/Introduction to Design Thinking/}).click();
-  await page.getByRole('button',{name:'Bắt đầu / tiếp tục học'}).click();
+  await page.getByRole('button',{name:/Học tiếp bài này/}).click();
   await expect(page.getByRole('heading',{name:'Luyện tập và bài tập'})).toBeVisible();
   await page.getByText('Which question is open-ended?').scrollIntoViewIfNeeded();
   await page.getByLabel('What challenges do you face?').check();
