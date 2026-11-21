@@ -22,6 +22,7 @@ Planned pillars are strategic direction, **not a claim that those services are l
 - `/evidence` — Evidence & Iteration (F09/F11/F12): private files, versioned evidence, immutable snapshots.
 - `/review` — Assessment Studio (F13/F14), restricted to Lecturer and Admin.
 - `/notifications` — Notification Center (F16): personal notices and reminders.
+- `/console` — lecturer/admin Content Console for course metadata, lesson time, publishing, announcements and project-showcase approvals. Requires matching backend release.
 - `/community` — project showcase and internal Quora-style Q&A. Questions require the matching Render API and the pending community schema migration. A Vercel frontend build alone does not make posting available.
 
 The earlier static concept remains in source as a design reference, but is **no longer mounted** as the live homepage. The browser does not set application roles; the backend checks authorization.
