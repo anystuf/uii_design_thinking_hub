@@ -90,10 +90,12 @@ export function StudentNextAction({
           )}
         </div>
       </div>
-      {enrolled && lessons.length > 0 && (
+      {enrolled && (lessons.length > 0 || validProgress !== null) && (
         <div className="mt-4 border-t border-[#c7e0d3] pt-3">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#426d5e]">
-            <span className="font-bold">Đã hoàn thành {completedCount}/{lessons.length} bài đang hiển thị</span>
+            <span className="font-bold">{lessons.length > 0
+              ? "Đã hoàn thành " + completedCount + "/" + lessons.length + " bài đang hiển thị"
+              : "Tiến độ tổng quan từ máy chủ"}</span>
             <span>{validProgress === null ? "Tiến độ máy chủ chưa sẵn sàng" : validProgress + "% tiến độ đã lưu"}</span>
           </div>
           {validProgress !== null && (
