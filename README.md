@@ -22,6 +22,7 @@ Planned pillars are strategic direction, **not a claim that those services are l
 - `/evidence` — Evidence & Iteration (F09/F11/F12): private files, versioned evidence, immutable snapshots.
 - `/review` — Assessment Studio (F13/F14), restricted to Lecturer and Admin.
 - `/notifications` — Notification Center (F16): personal notices and reminders.
+- `/community` — project showcase and internal Quora-style Q&A. Questions require the matching Render API and the pending community schema migration. A Vercel frontend build alone does not make posting available.
 
 The earlier static concept remains in source as a design reference, but is **no longer mounted** as the live homepage. The browser does not set application roles; the backend checks authorization.
 
@@ -45,7 +46,8 @@ The five Stanford d.school modes are **non-linear**. Private evidence and immuta
 - `docs/FRONTEND-BUILD-MEASURE-LEARN.md`: public/private IA, pilot hypotheses and UX metrics.
 - `docs/RELEASE-A-UAT.md` through `docs/RELEASE-D-UAT.md`: scripted acceptance tests.
 - `docs/STAGING-DEPLOYMENT.md`: staging-specific infrastructure runbook.
+- `docs/RELEASE-CANDIDATE-20261121.md`: canonical candidate, drift analysis and main promotion gates.
 
 ## Release status
 
-Releases A–D code is deployed in the dedicated staging environment, but **full security, storage and end-to-end UAT remains pending**. Staging readiness and production approval are not synonymous. Do not merge the staging branch to main until UII acceptance gates and pilot sign-off are complete.
+The canonical learning candidate is `feat/guided-dschool-learning-path-20261121`. Frontend previews, Render backend, and Supabase migrations may be on different versions: **Community Q&A currently cannot be assumed operational in staging**. CI is not authenticated staging UAT. The stable staging alias can deliberately remain on an older hotfix. See the release candidate runbook for the required database, API compatibility, security, pilot and `main` gates. Do not merge to `main` until they pass.
