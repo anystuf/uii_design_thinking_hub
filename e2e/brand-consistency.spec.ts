@@ -10,7 +10,7 @@ function inspect(dir: string): string[] {
   return readdirSync(dir).flatMap(name => {
     const abs = join(dir, name);
     if (statSync(abs).isDirectory()) return inspect(abs);
-    if (!/\\.(tsx?|jsx?|mjs|css|yaml)$/.test(name)) return [];
+    if (!/\.(tsx?|jsx?|mjs|css|yaml)$/.test(name)) return [];
     const contents = readFileSync(abs, 'utf8');
     return legacyMarker.test(contents) ? [relative(root, abs)] : [];
   });
