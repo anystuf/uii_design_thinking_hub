@@ -6,7 +6,7 @@ import {
   ArrowRight, BookmarkCheck, Check, ChevronDown, ChevronUp, CircleHelp,
   Lightbulb, MessageCircle, Plus, Search, Send, ShieldCheck, Sparkles, ThumbsUp, Trash2, Users,
 } from "lucide-react";
-import {authenticatedApi} from "@/lib/authenticated-api";
+import {authenticatedApi, WorkspaceApiError} from "@/lib/authenticated-api";
 
 type Viewer={id:string;fullName:string;role:"STUDENT"|"LECTURER"|"MENTOR"|"ADMIN"};
 type Person={id:string;fullName:string;role:string};
@@ -38,6 +38,7 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
   const [loading,setLoading]=useState(true);
   const [apiReady,setApiReady]=useState(false);
   const [error,setError]=useState("");
+  const [apiUnavailable,setApiUnavailable]=useState(false);
   const [notice,setNotice]=useState("");
   const [search,setSearch]=useState("");
   const [topic,setTopic]=useState("ALL");
@@ -55,15 +56,15 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
 
   const refresh=useCallback(async()=>{
     const result=await authenticatedApi<Question[]>("/community/questions",token);
-    setQuestions(result);setApiReady(true);
+    setQuestions(result);setApiReady(true);setApiUnavailable(false);
   },[token]);
 
   useEffect(()=>{
     let active=true;
-    setLoading(true);setError("");
+    setLoading(true);setError("");setApiUnavailable(false);
     void authenticatedApi<Question[]>("/community/questions",token)
       .then(items=>{if(active){setQuestions(items);setApiReady(true);}})
-      .catch(err=>{if(active){setApiReady(false);setError(err instanceof Error?err.message:"Không tải được mục Hỏi đáp.");}})
+      .catch(err=>{if(active){setApiReady(false);if(err instanceof WorkspaceApiError && err.status===404){setApiUnavailable(true);setError("");}else{setError(err instanceof Error?err.message:"Không tải được mục Hỏi đáp.");}}})
       .finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[token]);
@@ -156,6 +157,17 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
         className={primary}><Plus size={18}/>{composing?"Đóng biểu mẫu":"Đặt câu hỏi"}</button>
     </div>
     {notice&&<p role="status" className="rounded-xl border border-[#c3e0ca] bg-[#ebf8ee] px-4 py-3 text-sm text-[#215b3b]"><Check size={16} className="mr-2 inline"/>{notice}</p>}
+    {apiUnavailable&&<div role="status" className="rounded-[22px] border border-[#d4dddf] bg-[#f5f8f9] p-5 text-sm leading-7 text-[#30545d]">
+      <div className="flex items-start gap-3">
+        <ShieldCheck className="mt-1 shrink-0 text-[#356b6e]" size={21}/>
+        <div>
+          <p className="font-black text-[#173445]">Hỏi đáp đang chờ đồng bộ hệ thống</p>
+          <p className="mt-1">Giao diện Hỏi đáp đã có, nhưng máy chủ hiện tại chưa hỗ trợ API câu hỏi. Đây là trạng thái triển khai của UII, không phải lỗi tài khoản của bạn.</p>
+          <p className="mt-1 text-xs">Bạn vẫn có thể khám phá dự án cộng đồng và trao đổi trong Design Studio. Việc thử lại liên tục sẽ không giải quyết được khi API chưa được cập nhật.</p>
+          <a href="#real-feed-heading" className="mt-3 inline-flex min-h-10 items-center gap-1 rounded-full border border-[#adc9bc] bg-white px-4 text-xs font-bold text-[#173445]">Xem dự án cộng đồng <ArrowRight size={14}/></a>
+        </div>
+      </div>
+    </div>}
     {error&&<div role="alert" className="rounded-xl border border-[#f0c3b6] bg-[#fff2eb] p-4 text-sm leading-6 text-[#8b4138]">
       <p>{error}</p>
       <p className="mt-1 text-xs">Nếu backend chưa được cập nhật, Hỏi đáp có thể tạm thời chưa khả dụng. Khu chia sẻ dự án bên dưới vẫn hoạt động riêng.</p>
@@ -207,7 +219,7 @@ export function CommunityQaBoard({token,viewer}:{token:string;viewer:Viewer}){
           </div>
         </div>
         {loading&&<div role="status" className="rounded-2xl border bg-white p-5 text-sm">Đang tải câu hỏi thật…</div>}
-        {!loading&&!error&&visible.length===0&&<div className="rounded-[22px] border border-dashed border-[#b6d1c5] bg-white p-6 text-center">
+        {!loading&&!error&&!apiUnavailable&&visible.length===0&&<div className="rounded-[22px] border border-dashed border-[#b6d1c5] bg-white p-6 text-center">
           <MessageCircle className="mx-auto text-[#76968c]" size={28}/>
           <p className="mt-3 text-sm font-black text-[#20474f]">Chưa có câu hỏi phù hợp.</p>
           <p className="mt-1 text-xs leading-6 text-[#607778]">Hãy đổi bộ lọc hoặc đặt câu hỏi đầu tiên. Đây không phải dữ liệu mô phỏng.</p>
