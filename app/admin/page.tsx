@@ -75,7 +75,7 @@ export default function AdminPage() {
           <ul className="mt-5 divide-y">{users.map((user) => <li key={user.id} className="flex flex-wrap items-center justify-between gap-2 py-4"><span className="font-semibold">{user.fullName}</span><span className="rounded-lg bg-blue-50 px-3 py-2 text-sm">{user.role}</span></li>)}</ul>
           {!users.length && <p className="mt-4">Chưa có tài khoản để hiển thị.</p>}
         </section>
-        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Quản lý khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
+        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/console">Console: khóa học & thông báo</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
       </>}
     </main>
   </div>;
