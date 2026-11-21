@@ -28,7 +28,7 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
 
   await page.goto('/learn');
   await page.getByRole('button',{name:/Design Thinking Foundations/}).click();
-  await page.getByRole('button',{name:'Bắt đầu / tiếp tục học'}).click();
+  await page.getByRole('button',{name:/Học tiếp bài này/}).click();
   await expect(page.getByRole('heading',{name:'La bàn học tập của bạn'})).toBeVisible();
   await expect(page.getByTestId('creative-pointer-trail')).toHaveCount(1);
   await expect(page.getByRole('button',{name:/con trỏ nét vẽ/i})).toHaveCount(0);
