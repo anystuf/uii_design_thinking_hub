@@ -92,9 +92,9 @@ export default function NotificationsPage() {
                   <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#ad4007]">{notice.type.replaceAll('_',' ')}</p>
                   <p className="text-sm font-semibold">{notice.message}</p>
                   <p className="mt-2 text-xs text-slate-600">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
-                  <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : '/studio'}
+                  <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : notice.entityType === 'Course' ? '/learn?course='+encodeURIComponent(notice.entityId) : notice.entityType === 'Platform' ? '/dashboard' : '/studio'}
                     className="mt-3 inline-block text-sm font-bold text-[#153b77] underline">
-                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp và phản hồi' : 'Xem thử thách'}
+                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp và phản hồi' : notice.entityType === 'Course' ? 'Mở khóa học' : notice.entityType === 'Platform' ? 'Mở tổng quan' : 'Xem thử thách'}
                   </Link>
                 </div>
                 {!notice.readAt ?
