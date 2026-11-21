@@ -70,7 +70,7 @@ export class NotificationsService {
       data: unique.map(recipientId => ({
         recipientId,
         actorId: user.id,
-        type: 'COURSE_ANNOUNCEMENT',
+        type: dto.audience === AnnouncementAudience.COURSE ? 'COURSE_ANNOUNCEMENT' : 'PLATFORM_ANNOUNCEMENT',
         entityType: dto.audience === AnnouncementAudience.COURSE ? 'Course' : 'Platform',
         entityId,
         message,
