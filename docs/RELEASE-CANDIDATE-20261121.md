@@ -12,6 +12,8 @@ a verified distributed application deployment.
   canvases; Learn → Practice → Apply and a student Focus Mode.
 - XP from verified LMS progress, never from fake/staged records.
 - Quizzes, written/project practice, grading/review and lesson authoring.
+- **Content Console** `/console` for server-authorized lecturer/admin course metadata, lesson durations, video links, publication and in-app announcements.
+- **Project showcase approval** after an approved rubric-reviewed submission, distinct from the owner's subsequent opt-in Community publication.
 - Design Studio with group membership, projects, evidence, feedback and iteration.
 - At least two explicitly labeled **demo** student teams illustrating five stages.
 - Private group discussion and collaboration; community project showcase.
