@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   staging-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest\n    env:\n      STAGING_API_ORIGIN: ${{ vars.STAGING_API_ORIGIN }}\n      STAGING_FRONTEND_ORIGIN: ${{ vars.STAGING_FRONTEND_ORIGIN }}
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
