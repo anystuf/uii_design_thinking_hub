@@ -6,6 +6,8 @@ import { WorkspaceNav } from '@/components/workspace-nav';
 import { ProjectDiscussion } from '@/components/project-discussion';
 import { ExternalCollaborationBoard } from '@/components/external-collaboration-board';
 import { SampleTeamGallery } from '@/components/learning-stage-workbench';
+import { StudioGuidedJourney } from '@/components/studio-guided-journey';
+import { getStudioGuidedStep } from '@/lib/studio-guidance';
 import { guideForStage } from '@/lib/stage-experience';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
@@ -109,6 +111,11 @@ export default function DesignStudioPage() {
     (user?.role === 'ADMIN' || courses.some((c) => c.id === challenge.courseId && c.createdById === user?.id));
   const isOwner = !!team && team.ownerId === user?.id;
   const canEditTeam = isStudent && !!team && team.members.some((m) => m.userId === user?.id);
+  const guidedStep = getStudioGuidedStep({ courseId, challenges,
+    challengeId: challenge?.id ?? null, teamId: team?.id ?? null,
+    myTeams, invitationCount: invitations.length, templates, activities, mode,
+  });
+  const completedActivities = activities.filter(item => item.status === 'COMPLETED').length;
 
   useEffect(() => {
     let mounted = true;
@@ -367,6 +374,45 @@ export default function DesignStudioPage() {
     window.history.replaceState(window.history.state, '', '/studio?' + params.toString());
   }
 
+  function guideTo(id: string) {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(id);
+        target?.scrollIntoView({ behavior: 'auto', block: 'start' });
+        target?.focus({ preventScroll: true });
+      });
+    });
+  }
+
+  async function followStudioGuide() {
+    if (busy) return;
+    if (guidedStep.kind === 'choose-challenge' && guidedStep.resourceId) {
+      await run(async () => { await loadChallenge(guidedStep.resourceId!); });
+      guideTo('studio-challenge-detail');
+    } else if (guidedStep.kind === 'choose-team' && guidedStep.resourceId) {
+      await run(async () => { await loadTeam(guidedStep.resourceId!); });
+      guideTo('studio-team-workspace');
+    } else if (guidedStep.kind === 'accept-invitation') {
+      guideTo('studio-invitations');
+    } else if (guidedStep.kind === 'create-team') {
+      guideTo('studio-create-team');
+    } else if (guidedStep.kind === 'start' && guidedStep.resourceId) {
+      const selected = templates.find(item => item.id === guidedStep.resourceId);
+      if (selected && canEditTeam) {
+        await startActivity(selected);
+        guideTo('studio-activity-editor');
+      } else {
+        guideTo('studio-stage-tools');
+      }
+    } else if (guidedStep.kind === 'resume' && guidedStep.resourceId) {
+      const draft = activities.find(item => item.id === guidedStep.resourceId);
+      if (draft && activeActivity?.id !== draft.id) selectActivity(draft);
+      guideTo('studio-activity-editor');
+    } else {
+      guideTo('studio-stage-tools');
+    }
+  }
+
   async function saveActivity(completed: boolean) {
     if (!activeActivity || !team) return;
     await run(async () => {
@@ -401,8 +447,13 @@ export default function DesignStudioPage() {
         {authReady && !session && <div className={card}>Bạn cần đăng nhập trước. <Link href="/learn" className="font-bold text-[#153b77] underline">Mở trang đăng nhập</Link></div>}
         {session && user && (
           <>
+            {isStudent && <StudioGuidedJourney
+              step={guidedStep} stage={mode} completedCount={completedActivities}
+              busy={busy} onAction={() => void followStudioGuide()}
+              onSelectStage={next => selectMode(next)}
+            />}
             {isStudent && invitations.length > 0 && (
-              <section className={card}>
+              <section id="studio-invitations" tabIndex={-1} className={card}>
                 <h3 className="mb-3 flex items-center gap-2 text-lg font-bold"><Users size={18}/> Lời mời tham gia nhóm ({invitations.length})</h3>
                 <div className="space-y-3">
                   {invitations.map((invitation) => (
@@ -454,15 +505,18 @@ export default function DesignStudioPage() {
               </aside>
 
               <div className="min-w-0 space-y-5">
-                {!challenge ? <section className={card + ' py-16 text-center'}>
+                {!challenge ? <section className={card + ' py-12 text-center'}>
                   <Lightbulb className="mx-auto mb-3 text-[#ad4007]" size={35}/>
                   <h3 className="text-xl font-bold">Chọn một thử thách</h3>
                   <p role="status" className="mt-2 text-sm font-semibold text-[#153b77]">La bàn của bạn: {MODES.find(item => item.id === mode)?.label} · Chọn thử thách để thực hành ở đúng chế độ này.</p>
                   <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
-                  <div className="mx-auto mt-5 max-w-3xl text-left"><SampleTeamGallery stage={mode}/></div>
+                  <details className="mx-auto mt-5 max-w-3xl rounded-xl border border-[#d6e2db] bg-white p-4 text-left">
+                    <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">Xem hai nhóm làm mẫu · chỉ để tham khảo</summary>
+                    <div className="mt-3"><SampleTeamGallery stage={mode}/></div>
+                  </details>
                 </section> : (
                   <>
-                    <section className={card}>
+                    <section id="studio-challenge-detail" tabIndex={-1} className={card}>
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                         <span className="rounded-full bg-[#eaf0fa] px-3 py-1 text-xs font-bold text-[#153b77]">{challenge.status}</span>
                         {canManageChallenge && challenge.status === 'DRAFT' &&
@@ -507,8 +561,8 @@ export default function DesignStudioPage() {
                         {teams.map((item) => <button key={item.id} className={team?.id === item.id ? action : minor}
                           onClick={() => void run(async () => { await loadTeam(item.id); })}>{item.title}</button>)}
                       </div>
-                      {isStudent && challenge.status === 'PUBLISHED' && teams.length === 0 && (
-                        <form onSubmit={(event) => void createTeam(event)} className="mt-4 flex flex-wrap gap-2">
+                      {isStudent && challenge.status === 'PUBLISHED' && !myTeams.some(item => item.challengeId === challenge.id) && (
+                        <form id="studio-create-team" tabIndex={-1} onSubmit={(event) => void createTeam(event)} className="mt-4 flex flex-wrap gap-2">
                           <input required maxLength={160} className={input + ' min-w-0 flex-1'} placeholder="Tên nhóm / dự án" value={teamName} onChange={(e) => setTeamName(e.target.value)}/>
                           <button disabled={busy} className={action}><Plus size={16} className="mr-1 inline"/> Tạo nhóm</button>
                         </form>
@@ -519,12 +573,15 @@ export default function DesignStudioPage() {
                       <h3 className="text-lg font-black text-[#173445]">Bạn sẽ làm gì trong giai đoạn {guideForStage(mode).title}?</h3>
                       <p className="mt-2 text-sm leading-7 text-[#526970]">{guideForStage(mode).question}</p>
                       <p className="mt-2 text-xs font-semibold text-[#ac4f3b]">Đầu ra: {guideForStage(mode).deliverable}</p>
-                      <div className="mt-4"><SampleTeamGallery stage={mode} compact/></div>
+                      <details className="mt-4 rounded-xl border border-[#d6e2db] bg-white p-3">
+                        <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">Xem ví dụ mô phỏng ở giai đoạn này</summary>
+                        <div className="mt-2"><SampleTeamGallery stage={mode} compact/></div>
+                      </details>
                       <p className="mt-3 text-sm text-[#526970]">Chọn nhóm đã tham gia hoặc tạo nhóm mới để lưu bài làm thật. Ví dụ trên không phải dữ liệu người dùng thật.</p>
                     </section>}
                     {team && (
                       <>
-                        <section className={card}>
+                        <section id="studio-team-workspace" tabIndex={-1} className={card}>
                           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                              <h3 className="text-lg font-black">{team.title} · Team Workspace</h3>
                              <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Nộp minh chứng hoặc link Drive ↗</Link>
@@ -566,7 +623,7 @@ export default function DesignStudioPage() {
 
                         <ProjectDiscussion projectId={team.id} token={token} viewerId={user.id}/>
                         <ExternalCollaborationBoard/>
-                        <section className={card}>
+                        <section id="studio-stage-tools" tabIndex={-1} className={card}>
                           <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
                             {MODES.map((item) => (
                               <button key={item.id} type="button" role="tab" aria-selected={mode === item.id}
@@ -609,7 +666,7 @@ export default function DesignStudioPage() {
                           </div>
 
                           {activeActivity && (
-                            <div className="space-y-4 rounded-xl border border-[#dfe6f1] bg-[#f8fafd] p-4 sm:p-5">
+                            <div id="studio-activity-editor" tabIndex={-1} className="space-y-4 rounded-xl border border-[#dfe6f1] bg-[#f8fafd] p-4 sm:p-5">
                               <div>
                                 <h4 className="text-lg font-bold">{activeActivity.template.name}</h4>
                                 <p className="mt-1 text-xs text-slate-600">{activeActivity.template.instructions}</p>
