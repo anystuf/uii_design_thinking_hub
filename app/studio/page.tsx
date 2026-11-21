@@ -529,6 +529,10 @@ export default function DesignStudioPage() {
                              <h3 className="text-lg font-black">{team.title} · Team Workspace</h3>
                              <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Nộp minh chứng hoặc link Drive ↗</Link>
                            </div>
+                          <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#eaf3ed] p-3 text-xs leading-6 text-[#365d57]">
+                            <span className="flex-1">Muốn dự án xuất hiện tại Cộng đồng? Nộp bản làm và nhận đánh giá, nhờ giảng viên duyệt trưng bày, sau đó chủ dự án tự chọn công bố.</span>
+                            <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#c0dbca] bg-white px-3 font-black">Mở Cộng đồng →</Link>
+                          </div>
                           <div className="mb-4 flex flex-wrap gap-2">
                             {team.members.map((m) => <span key={m.id} className="rounded-full bg-[#eaf0fa] px-3 py-1.5 text-xs font-semibold">
                               {m.user.fullName} · {m.role}
