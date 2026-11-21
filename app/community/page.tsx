@@ -50,7 +50,7 @@ export default function CommunityPage(){
    post.project.id!=="44444444-4444-4444-8444-444444444444" &&
    !/^SAMPLE[.:\s-]/i.test(post.project.course?.title||"")
  );
- const shareable=projects.filter(p=>(p.status==="APPROVED"||p.status==="PUBLISHED")&&(viewer?.role==="ADMIN"||p.ownerId===viewer?.id));
+ const shareable=projects.filter(p=>(p.status==="APPROVED"||p.status==="PUBLISHED")&&p.ownerId===viewer?.id);
 
  useEffect(()=>{
    let active=true;
