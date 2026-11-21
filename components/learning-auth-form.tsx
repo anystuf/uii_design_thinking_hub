@@ -89,10 +89,11 @@ export function LearningAuthForm() {
         setError("Chưa nhận được kết quả xác thực. Tải lại trang để kiểm tra. Nếu vừa đăng ký, hãy kiểm tra hộp thư.");
       } else {
         const code = err && typeof err === "object" && "code" in err ? err.code : null;
+        const status = err && typeof err === "object" && "status" in err ? err.status : null;
         setError(code === "invalid_credentials" ? "Email hoặc mật khẩu không đúng."
           : code === "email_not_confirmed" ? "Bạn cần xác nhận địa chỉ email trước khi đăng nhập."
           : code === "weak_password" ? "Mật khẩu chưa đáp ứng yêu cầu. Hãy chọn mật khẩu mạnh hơn."
-          : code === "over_email_send_rate_limit" || code === "email_rate_limit_exceeded" || code === "over_request_rate_limit"
+          : status === 429 || code === "over_email_send_rate_limit" || code === "email_rate_limit_exceeded" || code === "over_request_rate_limit"
             ? "Hệ thống đang giới hạn số email/yêu cầu. Hãy kiểm tra hộp thư và Spam, tránh đăng ký liên tục."
           : code === "user_already_exists" || code === "user_already_registered"
             ? "Địa chỉ email này có thể đã được đăng ký. Hãy chọn Đăng nhập."
@@ -131,7 +132,8 @@ export function LearningAuthForm() {
       setMessage("Đã tiếp nhận yêu cầu gửi lại. Nếu tài khoản còn chờ xác nhận, hãy kiểm tra Hộp thư đến, Spam hoặc Quảng cáo.");
     } catch (err) {
       const code = err && typeof err === "object" && "code" in err ? err.code : null;
-      setError(code === "over_email_send_rate_limit" || code === "email_rate_limit_exceeded"
+      const status = err && typeof err === "object" && "status" in err ? err.status : null;
+      setError(status === 429 || code === "over_email_send_rate_limit" || code === "email_rate_limit_exceeded"
         ? "Bạn đã yêu cầu email quá nhiều lần. Vui lòng kiểm tra hộp thư hiện tại hoặc thử sau."
         : err instanceof AuthTimeoutError
           ? "Chưa nhận được kết quả yêu cầu gửi lại. Kiểm tra hộp thư trước khi thử tiếp."
