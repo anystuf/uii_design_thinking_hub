@@ -80,6 +80,7 @@ export function UIIPublicLanding() {
               <p className="mt-4 max-w-[550px] text-[15px] leading-8 text-[#30545c]">Khám phá bài học, phỏng vấn người dùng, phát triển ý tưởng, tạo nguyên mẫu và thử nghiệm. Một không gian sáng tạo dành cho sinh viên, giảng viên và những người muốn tạo tác động tích cực.</p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/demo" className="inline-flex min-h-12 items-center gap-3 rounded-full bg-[#ba3024] px-7 py-3 text-sm font-black text-white shadow-[0_8px_0_#d63a2b] transition hover:-translate-y-0.5 hover:bg-[#94251e]">Trải nghiệm bài học <ArrowRight size={18}/></Link>
+                <Link href="/demo#studio-self-guided" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#d6e0d5] bg-white/90 px-6 text-sm font-black text-[#173445] hover:bg-white">Thử Design Studio tự hướng dẫn <ArrowRight size={17}/></Link>
                 <Link href="/learn" className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-[#163445] bg-white px-7 py-3 text-sm font-extrabold text-[#163445] hover:bg-[#faf8f1]">Khám phá khóa học <BookOpen size={17}/></Link>
               </div>
               <div className="mt-11 flex flex-wrap items-center gap-3">
