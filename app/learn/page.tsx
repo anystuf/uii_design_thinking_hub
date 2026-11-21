@@ -459,6 +459,7 @@ export default function LearningFoundationPage() {
 
           {canTeach && <details className="rounded-2xl border bg-white p-5" id="course-authoring">
             <summary className="min-h-11 cursor-pointer text-lg font-bold">Dành cho giảng viên · Tạo khóa học mới</summary>
+            <p className="mt-3 text-sm text-[#5a726f]">Biên tập thông tin khóa học, mức độ, trạng thái và thời lượng bài học trong <Link href="/console" className="font-bold underline">Console biên tập chuyên dụng</Link>.</p>
             <form onSubmit={event => void createCourse(event)} className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className="block text-sm font-semibold">Tên khóa học<input required maxLength={160} value={courseTitle} onChange={e => setCourseTitle(e.target.value)} className="mt-2 min-h-11 w-full rounded-xl border px-3"/></label>
               <label className="block text-sm font-semibold">Mô tả khóa học<textarea maxLength={1200} value={courseDescription} onChange={e => setCourseDescription(e.target.value)} rows={3} className="mt-2 w-full rounded-xl border px-3 py-2"/></label>
@@ -476,6 +477,7 @@ export default function LearningFoundationPage() {
               <div className="border-b bg-[#f7f9fd] p-5 sm:p-8">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-[#153b77]">{course.status === 'PUBLISHED' ? 'Đang mở ghi danh' : course.status === 'DRAFT' ? 'Bản nháp' : 'Đã lưu trữ'}</span>
+                  {canEditCourse && <Link href={"/console?course="+encodeURIComponent(course.id)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#b3d7c1] bg-white px-4 text-sm font-bold text-[#173445]">Chỉnh sửa thông tin & thời lượng <ArrowRight size={16}/></Link>}
                   {canEditCourse && course.status === 'DRAFT' && <button type="button" disabled={busy} onClick={() => void publishCourse()} className="min-h-11 rounded-xl bg-[#b94708] px-5 text-sm font-bold text-white">Xuất bản khóa học</button>}
                   <button type="button" onClick={() => {setCourse(null); setLessons([]); setProgress(null); setLearningView('overview'); setActiveLessonId(null);}} className="inline-flex min-h-11 items-center gap-1 rounded-xl border px-3 text-sm font-semibold text-[#153b77]"><X size={16} aria-hidden="true"/> Đóng chi tiết</button>
                 </div>
