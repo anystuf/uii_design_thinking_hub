@@ -53,3 +53,24 @@ test('signed-in learners can ask and answer a question in the Quora-style commun
   expect(answerCount).toBe(1);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
+
+
+test('new Community UI reports a missing deployed API as a rollout issue, not a user error',async({page})=>{
+  test.skip(!!process.env.E2E_BASE_URL,'Local API fixture only');
+  await page.addInitScript(()=>localStorage.setItem('sb-example-auth-token',JSON.stringify({
+    access_token:'fixture-token',refresh_token:'fixture-refresh',expires_at:Math.floor(Date.now()/1000)+3600,
+    user:{id:'student-1',email:'student@example.test'},
+  })));
+  await page.route('http://localhost:4000/**',async route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(path==='/auth/me')return route.fulfill({json:{id:'student-1',fullName:'Learner One',role:'STUDENT'}});
+    if(path==='/community/questions')return route.fulfill({status:404,json:{statusCode:404,message:'Cannot GET /community/questions'}});
+    return route.fulfill({json:[]});
+  });
+  await page.goto('/community');
+  await expect(page.getByRole('heading',{name:'Hỏi đáp cùng cộng đồng'})).toBeVisible();
+  await expect(page.getByRole('status').filter({hasText:'Hỏi đáp đang chờ đồng bộ hệ thống'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Đặt câu hỏi'})).toBeDisabled();
+  await expect(page.getByText(/Chưa có câu hỏi phù hợp/)).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Dự án được chia sẻ trong UII'})).toBeVisible();
+});
