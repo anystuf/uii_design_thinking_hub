@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
-const api = 'https://usi-design-thinking-api-staging.onrender.com';
-const preview = process.env.STAGING_FRONTEND_ORIGIN || 'https://usi-design-thinking-web-staging.vercel.app';
+const api = process.env.STAGING_API_ORIGIN?.replace(/\\/+$/, '');\nif (!api) throw new Error('STAGING_API_ORIGIN must point to the approved staging Render API.');
+const preview = process.env.STAGING_FRONTEND_ORIGIN || 'https://uii-design-thinking-hub-staging.vercel.app';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 async function request(path, options = {}) {
