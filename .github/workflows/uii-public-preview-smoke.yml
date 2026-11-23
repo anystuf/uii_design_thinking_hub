@@ -1,0 +1,55 @@
+name: UII public Preview smoke
+
+on:
+  push:
+    branches:
+      - feat/guided-dschool-learning-path-20261121
+    paths:
+      - .github/workflows/uii-public-preview-smoke.yml
+      - app/login/page.tsx
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uii-public-preview-smoke
+  cancel-in-progress: false
+
+jobs:
+  anonymous-preview-http:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PREVIEW_ORIGIN: https://uii-design-thinking-hub-preview.vercel.app
+    steps:
+      - name: Verify public homepage and demo return HTTP 200
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in / /demo /learn; do
+            status="$(curl --retry 2 --retry-delay 2 --max-time 30 -sSL -o /dev/null -w '%{http_code}' "${PREVIEW_ORIGIN}${path}")"
+            echo "GET ${path}: HTTP ${status}"
+            if [[ "${status}" != "200" ]]; then
+              echo "::error::Public Preview ${path} returned HTTP ${status}, expected 200"
+              exit 1
+            fi
+          done
+
+      - name: Verify canonical login compatibility redirect
+        shell: bash
+        run: |
+          set -euo pipefail
+          headers="$(mktemp)"
+          trap 'rm -f "${headers}"' EXIT
+          status="$(curl --retry 2 --retry-delay 2 --max-time 30 -sS -D "${headers}" -o /dev/null -w '%{http_code}' "${PREVIEW_ORIGIN}/login")"
+          echo "GET /login: HTTP ${status}"
+          if [[ "${status}" != "307" && "${status}" != "308" && "${status}" != "302" ]]; then
+            echo "::error::/login must redirect to the learning sign-in; got HTTP ${status}"
+            exit 1
+          fi
+          if ! grep -Eiq '^location: (/learn|https?://[^[:space:]]+/learn)([?#]|[[:space:]]|$)' "${headers}"; then
+            echo "::error::/login did not redirect to /learn"
+            exit 1
+          fi
+          echo "PASS: UII Preview anonymous routes and login compatibility"
