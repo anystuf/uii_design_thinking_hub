@@ -13,7 +13,7 @@ Change control: keep PR #20 draft; never merge into main or import classroom dat
 - Supabase browser client uses supabase-js implicit client auth with detectSessionInUrl, not an SSR code-exchange route. Do not configure a /auth/callback or /auth/confirm URL unless that route is first implemented and tested.
 - Signed-in permissions are determined by backend roles, not by user-selected signup metadata.
 - The repository runbook identifies dpapvhvceuoegztxfuuu as the UII **staging LMS** Supabase project. The separately supplied aignaxmirbbnfuutvvdg project currently identifies as ATH_Research and must not receive UII LMS migrations.
-- The connected Supabase accounts did not authorize reading dpapvhvceuoegztxfuuu during this check. No database writes were performed.
+- A connected Supabase account with authorized access verified dpapvhvceuoegztxfuuu as ACTIVE_HEALTHY. Its public schema has 37 tables with RLS enabled. The Prisma history contains five completed migrations through 202611200001_lesson_practice; 202611210001_community_questions is not applied. The Post table still requires projectId and lacks title, topic and acceptedCommentId. These checks were read-only; no schema or data writes were performed.
 
 ## Required Supabase operator configuration — after verifying the project ID
 
@@ -43,11 +43,11 @@ Change control: keep PR #20 draft; never merge into main or import classroom dat
 | Source branch and pull request | Candidate branch; PR #20 Draft | GitHub |
 | Legacy /login link | Implemented in source | app/login/page.tsx; e2e/login-compat.spec.ts |
 | Frontend CI at final SHA | Pending | GitHub Actions run URL |
-| Supabase UII LMS connection | BLOCKED: account access | Project ref dpapvhvceuoegztxfuuu |
+| Supabase UII LMS connection | VERIFIED: read-only, ACTIVE_HEALTHY | Project ref dpapvhvceuoegztxfuuu |
 | Supabase Site URL and email template | NOT VERIFIED | Operator check |
 | Fresh signup/confirm/session E2E | NOT VERIFIED | Restricted UAT log |
 | Render version and readiness | BLOCKED: workspace confirmation | Deploy SHA and health/ready |
-| Database migration compatibility | NOT VERIFIED | Migration status and schema review |
+| Database migration compatibility | Q&A migration MISSING; deployment BLOCKED | Prisma history and information_schema read-only review |
 | Stable staging promotion | NOT PERFORMED | Alias mapping |
 | Real classroom import | NOT PERFORMED | Private, approved dry-run only |
 
