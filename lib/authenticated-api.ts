@@ -1,4 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const upstreamUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+// Preview hostnames are ephemeral. Make browser API calls on the same origin
+// and let the Next.js /backend rewrite forward to the configured Render API.
+// Keep direct API calls in local tests and on GitHub Pages static export.
+const useSameOriginProxy = typeof window !== 'undefined' &&
+  (window.location.hostname.endsWith('.vercel.app') ||
+   process.env.NEXT_PUBLIC_API_PROXY === 'true');
+const API_URL = useSameOriginProxy ? '/backend' : upstreamUrl;
 const REQUEST_TIMEOUT_MS = 25000;
 // Render Free web services spin down after inactivity and can take about a minute to wake.
 const PROFILE_WAKE_TIMEOUT_MS = 75000;
@@ -73,12 +80,29 @@ export async function authenticatedApi<T>(path: string, token: string, init?: Re
       // Do not surface raw upstream errors that could contain personal data or connection details.
       throw new WorkspaceApiError(response.status, `Không tải được dữ liệu (HTTP ${response.status}). Hãy thử lại.${requestId ? ` Mã yêu cầu: ${requestId}` : ''}`);
     }
-    return await response.json() as T;
+    // Nest/Express may respond to "no exercise exists" with HTTP 200 and an
+    // empty body rather than JSON null. This is a valid absence, not malformed
+    // content. Never hide empty/unparseable responses for other API routes.
+    if (response.status === 204 || response.status === 205) return null as T;
+    const payload = await response.text();
+    if (!payload.trim()) {
+      if ((init?.method ?? 'GET').toUpperCase() === 'GET' &&
+          /^\/lessons\/[^/]+\/exercise$/.test(path)) return null as T;
+      throw new WorkspaceApiError(502, 'Máy chủ trả về dữ liệu rỗng không hợp lệ. Vui lòng thử lại.');
+    }
+    try {
+      return JSON.parse(payload) as T;
+    } catch {
+      throw new WorkspaceApiError(502, 'Máy chủ trả về dữ liệu không đúng định dạng JSON. Vui lòng thử lại.');
+    }
   } catch (error) {
     if (controller.signal.aborted && !init?.signal?.aborted) {
       throw new Error(isProfileLookup
         ? 'Máy chủ chưa xác minh được tài khoản. Hãy thử lại.'
         : 'Máy chủ phản hồi chậm. Hãy thử lại.');
+    }
+    if (error instanceof TypeError && /failed to fetch|networkerror|load failed/i.test(error.message)) {
+      throw new Error('Không kết nối được API. Kiểm tra kết nối rồi chọn Thử lại; nếu vẫn lỗi, báo quản trị viên kiểm tra máy chủ.');
     }
     throw error;
   } finally {

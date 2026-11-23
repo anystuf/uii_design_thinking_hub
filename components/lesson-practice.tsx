@@ -39,6 +39,7 @@ export function LessonPractice({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [editing, setEditing] = useState(false);
+  const [ungradedChoice, setUngradedChoice] = useState<number | null>(null);
   const [kind, setKind] = useState<Kind>("QUIZ");
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
@@ -94,6 +95,36 @@ export function LessonPractice({
     }).catch(() => { if (alive) setProjects([]); });
     return () => { alive = false; };
   }, [kind, isEnrolled, canManage, courseId, token]);
+
+  /** Fill the editor, but never persist or publish without lecturer action. */
+  function loadExample(kindToLoad: Kind) {
+    setKind(kindToLoad);
+    setPublished(false);
+    setMaxAttempts(3);
+    setPassingScore(70);
+    setDueAt("");
+    if (kindToLoad === "QUIZ") {
+      setTitle("Design Thinking Basics Quiz · Bản mẫu");
+      setInstructions("Chọn đáp án phù hợp nhất cho mỗi câu. Sau khi nộp, xem giải thích rồi áp dụng vào một tình huống thực tế.");
+      setQuestions([
+        {id:"demo-1",prompt:"Mục tiêu chính của Design Thinking là gì?",options:["Ghi nhớ lý thuyết","Giải quyết vấn đề lấy con người làm trung tâm","Viết code nhanh hơn","Thay thế mọi cuộc họp"],correctIndex:1,explanation:"Design Thinking tập trung vào nhu cầu người dùng và cải tiến dựa trên bằng chứng.",points:1},
+        {id:"demo-2",prompt:"Chế độ nào tập trung vào việc thấu hiểu con người?",options:["Test","Define","Empathize","Prototype"],correctIndex:2,explanation:"Empathize giúp tìm hiểu trải nghiệm và nhu cầu thực tế.",points:1},
+        {id:"demo-3",prompt:"Một nguyên mẫu ban đầu nên là gì?",options:["Sản phẩm hoàn thiện","Mô hình đủ để học từ người dùng","Chiến dịch quảng cáo","Bảng điểm cuối kỳ"],correctIndex:1,explanation:"Prototype ưu tiên học nhanh thay vì hoàn thiện ngay.",points:1},
+        {id:"demo-4",prompt:"Thử nghiệm mang lại điều gì cho nhóm?",options:["Bảo đảm thành công","Phản hồi để cải tiến","Loại bỏ nhu cầu người dùng","Thay thế giai đoạn phát ý tưởng"],correctIndex:1,explanation:"Test cung cấp dữ liệu để quay lại điều chỉnh định nghĩa, ý tưởng hoặc nguyên mẫu.",points:1},
+        {id:"demo-5",prompt:"Quy trình Design Thinking vận hành như thế nào?",options:["Luôn theo một chiều cố định","Linh hoạt, có thể lặp lại","Chỉ dành cho người làm thiết kế","Chỉ dành cho doanh nghiệp"],correctIndex:1,explanation:"Năm chế độ không phải năm cổng bắt buộc đi theo thứ tự.",points:1},
+      ]);
+    } else if (kindToLoad === "WRITTEN") {
+      setTitle("Observation Reflection · Bản mẫu");
+      setInstructions("Quan sát một trải nghiệm dịch vụ trong trường khoảng 15 phút. Viết 150–200 từ: người dùng làm gì; gặp khó khăn ở đâu; cảm xúc nào chỉ là suy đoán; một nhu cầu chưa được đáp ứng. Tránh nhập dữ liệu nhận dạng cá nhân. Gợi ý rubric: Quan sát 30, insight 30, tập trung người dùng 20, diễn đạt 20.");
+      setQuestions([newQuestion()]);
+    } else {
+      setTitle("Low-Fidelity Prototype Challenge · Bản mẫu");
+      setInstructions("Tạo một nguyên mẫu giấy hoặc storyboard cho ý tưởng nhóm. Chuẩn bị 1 hình ảnh nguyên mẫu, 1 đoạn mô tả ngắn, 3 giả định cần thử và 3 phát hiện từ phản hồi. Khi sử dụng thật, liên kết với dự án/nhóm được phép truy cập và nộp minh chứng qua Evidence.");
+      setQuestions([newQuestion()]);
+    }
+    setNotice("Đã nạp nội dung mẫu vào biểu mẫu. Hãy chỉnh sửa, kiểm duyệt đáp án và chủ động bấm Lưu bài tập; không tự công bố.");
+    setError("");
+  }
 
   function reviseQuestion(index: number, patch: Partial<Question>) {
     setQuestions(items => items.map((item, i) => i === index ? { ...item, ...patch } : item));
@@ -157,11 +188,40 @@ export function LessonPractice({
     {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}
       <button type="button" onClick={() => setReload(n => n + 1)} className="ml-2 font-bold underline">Thử lại</button></div>}
     {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
-    {!loading && !exercise && !editing && <div className="rounded-xl border border-dashed p-5 text-sm text-slate-600">
-      {canManage ? "Chưa có bài tập cho bài học này. Chọn Tạo bài tập để thêm quiz hoặc bài thực hành." :
-        "Giảng viên chưa công bố bài tập cho bài học này."}
+    {!loading && !exercise && !editing && <div className="rounded-2xl border border-[#d3e6d5] bg-[#f5fbf4] p-5 text-sm">
+      {canManage ? <p className="text-[#4d6570]">Chưa có bài tập được công bố. Giảng viên có thể dùng nút Tạo bài tập để thêm quiz và bài thực hành được lưu vào LMS.</p> :
+        <div className="space-y-4">
+          <div><p className="text-[11px] font-black uppercase tracking-[.12em] text-[#a54733]">TRY · REFLECT · TRY AGAIN</p>
+            <h4 className="mt-1 text-lg font-black text-[#173445]">Thử nhanh trước khi làm bài chính thức</h4>
+            <p className="mt-1 text-xs leading-6 text-[#546e71]">Giảng viên chưa công bố bài chấm điểm cho bài học này. Câu hỏi tự kiểm tra sau đây không tính điểm, không ghi vào LMS và không thay thế bài được giao.</p>
+          </div>
+          <fieldset className="space-y-2">
+            <legend className="mb-2 font-bold text-[#173445]">Khi bắt đầu giải quyết một vấn đề trong trường, nhóm nên làm gì trước?</legend>
+            {["Vội dựng ứng dụng vì nhóm thấy ý tưởng hay", "Quan sát, phỏng vấn và tìm hiểu trải nghiệm người dùng thật", "Dựa hoàn toàn vào dự đoán của nhóm"].map((option,i)=>
+              <label key={option} className={"flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border bg-white p-3 text-sm leading-6 "+(ungradedChoice===i?"border-[#b95237] ring-1 ring-[#e4a28b]":"border-[#d7e4db]")}>
+                <input type="radio" name="uii-self-check" checked={ungradedChoice===i} onChange={()=>setUngradedChoice(i)} className="mt-1.5"/>
+                <span>{option}</span>
+              </label>)}
+          </fieldset>
+          {ungradedChoice!==null&&<p role="status" className={"rounded-xl p-3 text-sm leading-6 "+(ungradedChoice===1?"bg-[#d7f0df] text-[#22553b]":"bg-[#ffe7d7] text-[#7f4130]")}>
+            {ungradedChoice===1?"Đúng! Empathize bắt đầu bằng hiểu người dùng, không phải nghĩ ra giải pháp. Hãy dùng công cụ ở La bàn để ghi lại quan sát.":"Chưa chính xác. Design Thinking yêu cầu bạn thu thập bằng chứng về nhu cầu thật trước khi quyết định giải pháp."}
+          </p>}
+          <div className="flex flex-wrap items-center gap-3">
+            <a href="#quest-compass-title" className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white">Chọn công cụ trong La bàn</a>
+            <button type="button" onClick={()=>setUngradedChoice(null)} className="inline-flex min-h-11 items-center rounded-full border border-[#b9d2c8] bg-white px-4 text-xs font-black text-[#173445]">Thử lại</button>
+          </div>
+        </div>}
     </div>}
     {!loading && canManage && editing && <form onSubmit={event => void save(event)} className="space-y-5 rounded-2xl bg-slate-50 p-4 sm:p-6">
+      <div className="rounded-xl border border-[#f3d0b5] bg-[#fff7ec] p-4">
+        <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#a44b25]">Bộ bài tập mẫu · Chỉ điền biểu mẫu, không lưu tự động</p>
+        <p className="mt-1 text-xs leading-6 text-slate-600">Chọn một mẫu có sẵn, chỉnh sửa theo khóa học rồi bấm Lưu. Mặc định các mẫu chưa được công bố.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={() => loadExample("QUIZ")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Quiz mẫu · 5 câu</button>
+          <button type="button" onClick={() => loadExample("WRITTEN")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Tự luận mẫu</button>
+          <button type="button" onClick={() => loadExample("PROJECT")} className="min-h-11 rounded-full border border-[#cb865f] bg-white px-4 text-xs font-extrabold text-[#753f25]">Dự án mẫu</button>
+        </div>
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm font-semibold">Hình thức
           <select value={kind} onChange={e => setKind(e.target.value as Kind)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3">

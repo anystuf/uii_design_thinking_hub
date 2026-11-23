@@ -7,6 +7,8 @@ import {
   Lightbulb, MapPin, PauseCircle, PlayCircle, RotateCcw, Shapes, Sparkles,
 } from "lucide-react";
 import { authenticatedApi as api } from "@/lib/authenticated-api";
+import { studioModeHref } from "@/lib/design-thinking-learning-kit";
+import { LearningStageWorkbench } from "@/components/learning-stage-workbench";
 
 type Mode = "EMPATHIZE" | "DEFINE" | "IDEATE" | "PROTOTYPE" | "TEST";
 export type FocusStep = "learn" | "practice" | "apply";
@@ -119,6 +121,7 @@ export function LearningQuestCompass({
         </button>
       </div>
 
+      {!focusMode && <p className="text-xs leading-5 text-[#8a3027]">Di chuyển chuột để tạo nét vẽ đỏ phác thảo. Hiệu ứng tự tắt trong chế độ tập trung hoặc khi thiết bị bật giảm chuyển động.</p>}
       <div role="group" aria-label="La bàn năm chế độ tư duy thiết kế" className={focusMode ? "hidden" : "grid grid-cols-2 gap-2 sm:grid-cols-5"}>
         {modes.map((item, index) => {
           const Icon = item.icon;
@@ -144,19 +147,22 @@ export function LearningQuestCompass({
       </div>
 
       {focusMode && <p className="text-xs text-slate-600">Đã thu gọn bản đồ và điểm số để bạn tập trung vào một nhiệm vụ.</p>}
-      <div role="status" className="flex flex-wrap items-start gap-3 rounded-2xl border border-orange-100 bg-white p-4">
+      <div role="status" className="flex flex-wrap items-start gap-3 rounded-2xl border-2 border-[#f3b5ad] bg-white p-4 shadow-[0_4px_0_#fff0ed]">
         <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#fff0e3] text-[#a6450b]">
           <MapPin size={20} aria-hidden="true"/>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold">{current.name} — {current.vi}</p>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-[#a12d26]">Con trỏ hành trình · Bạn ở đây</p>
+          <p className="mt-1 text-sm font-extrabold">{current.name} — {current.vi}</p>
           <p className="mt-1 text-sm leading-6 text-slate-600">{current.hint}</p>
-          <p className="mt-1 text-xs text-slate-500">Đây là điểm chú ý do bạn chọn, không phải cấp độ hay điểm số đánh giá.</p>
+          <p className="mt-1 text-xs text-slate-500">Bạn chọn bước tư duy đang thực hành. Công cụ, câu hỏi và đầu ra sẽ đổi theo giai đoạn; đây không phải xếp hạng điểm số.</p>
         </div>
-        <Link href="/studio" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-3 text-sm font-bold text-[#153b77] hover:bg-blue-50">
-          Thực hành <ArrowRight size={16} aria-hidden="true"/>
+        <Link href={studioModeHref(mode, courseId)} className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#153b77] px-3 text-sm font-bold text-[#153b77] hover:bg-blue-50">
+          Mở Studio & nhóm <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </div>
+
+      {(!focusMode || focusStep === "apply") && <LearningStageWorkbench stage={mode} courseId={courseId} focusMode={focusMode}/>}
 
       <section aria-label="Điểm nỗ lực dựa trên dữ liệu học tập" className={focusMode ? "hidden" : "rounded-2xl bg-[#092653] p-4 text-white sm:p-5"}>
         <div className="flex flex-wrap items-center justify-between gap-3">

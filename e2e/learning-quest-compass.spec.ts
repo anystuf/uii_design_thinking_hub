@@ -28,18 +28,26 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
 
   await page.goto('/learn');
   await page.getByRole('button',{name:/Design Thinking Foundations/}).click();
-  await page.getByRole('button',{name:'Bắt đầu / tiếp tục học'}).click();
+  await page.getByRole('button',{name:/Học tiếp bài này/}).click();
   await expect(page.getByRole('heading',{name:'La bàn học tập của bạn'})).toBeVisible();
+  await expect(page.getByTestId('creative-pointer-trail')).toHaveCount(1);
+  await expect(page.getByRole('button',{name:/con trỏ nét vẽ/i})).toHaveCount(0);
   await expect(page.getByText('Điểm hành trình · XP')).toBeVisible();
   await expect(page.getByRole('progressbar',{name:'Tiến độ XP khả dụng trong khóa học'})).toHaveAttribute('aria-valuenow','60');
 
   const ideate=page.getByRole('button',{name:/Ideate — Ý tưởng/});
   await ideate.click();
   await expect(ideate).toHaveAttribute('aria-pressed','true');
-  await expect(page.getByText(/không phải cấp độ hay điểm số/)).toBeVisible();
+  await expect(page.getByRole('link',{name:/Mở Studio & nhóm/})).toHaveAttribute('href', '/studio?mode=IDEATE&course=course');
+  await expect(page.getByText(/đây không phải xếp hạng điểm số/)).toBeVisible();
+  await expect(page.getByRole('link',{name:/Đem vào dự án thật/})).toHaveAttribute('href', '/studio?course=course&mode=IDEATE');
 
   await page.getByRole('button',{name:'Chế độ tập trung'}).click();
   await expect(page.getByRole('button',{name:'Thoát chế độ tập trung'})).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-uii-focus-mode','true');
+  await page.mouse.move(100, 150);
+  await page.mouse.move(260, 220, {steps: 10});
+  await expect(page.getByTestId('creative-pointer-trail')).toHaveAttribute('data-active','false');
   await expect(page.getByRole('heading',{name:'Nội dung bài học'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'Luyện tập và bài tập'})).toBeHidden();
 
@@ -48,8 +56,11 @@ test('mobile learning compass guides non-linear modes, earned XP and one-task fo
   await expect(page.getByRole('heading',{name:'Nội dung bài học'})).toBeHidden();
 
   await page.getByRole('button',{name:/3. Vận dụng/}).click();
-  await expect(page.getByRole('link',{name:/Thực hành trong Design Studio/})).toBeVisible();
+  const studioLink=page.getByRole('link',{name:/Mở đúng chế độ EMPATHIZE trong Studio/});
+  await expect(studioLink).toBeVisible();
+  await expect(studioLink).toHaveAttribute('href', '/studio?mode=EMPATHIZE&course=course');
   await page.getByRole('button',{name:'Thoát chế độ tập trung'}).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-uii-focus-mode','true');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({path:testInfo.outputPath('quest-compass-mobile-320.png'), fullPage:true});
 });

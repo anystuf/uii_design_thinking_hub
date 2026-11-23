@@ -80,6 +80,53 @@ export class ProjectsService {
     });
   }
 
+  /** Lecturer explicitly approves an entire project for optional public showcase.
+   * Academic snapshot approval alone never publishes student work. */
+  async approveForShowcase(id: string, user: AuthenticatedUser) {
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.LECTURER) {
+      throw new ForbiddenException('A course lecturer or administrator must approve a showcase.');
+    }
+    const project = await this.findProjectEntity(id);
+    if (user.role === UserRole.LECTURER) {
+      await this.assertLecturerCanAccessProject(project, user);
+    }
+    if (project.status === ProjectStatus.PUBLISHED || project.status === ProjectStatus.APPROVED) {
+      return { projectId: id, status: project.status, alreadyApproved: true };
+    }
+    const approvedSnapshots = await this.prisma.submissionSnapshot.count({
+      where: { projectId: id, status: SubmissionStatus.APPROVED },
+    });
+    if (!approvedSnapshots) {
+      throw new ConflictException('A reviewed and approved project submission is required before showcase approval.');
+    }
+    const members = await this.prisma.projectMember.findMany({
+      where: { projectId: id }, select: { userId: true },
+    });
+    const recipients = [...new Set([project.ownerId, ...members.map(member => member.userId)])];
+    await this.prisma.$transaction(async tx => {
+      const changed = await tx.project.updateMany({
+        where: {
+          id,
+          status: { in: [ProjectStatus.DRAFT, ProjectStatus.SUBMITTED, ProjectStatus.UNDER_REVIEW, ProjectStatus.REVISION_REQUESTED] },
+        },
+        data: { status: ProjectStatus.APPROVED },
+      });
+      if (changed.count !== 1) throw new ConflictException('Project status changed. Refresh and try again.');
+      if (recipients.length) {
+        await tx.notification.createMany({
+          data: recipients.map(recipientId => ({
+            recipientId, actorId: user.id,
+            type: 'SHOWCASE_APPROVED', entityType: 'Project', entityId: id,
+            message: 'Dự án "' + project.title + '" đã được duyệt để trưng bày. Chủ dự án có thể tự chọn công bố tại Cộng đồng UII.',
+            dedupeKey: 'showcase:approved:' + id + ':' + recipientId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
+    return { projectId: id, status: ProjectStatus.APPROVED, eligibleToShare: true };
+  }
+
   async findById(id: string, user: AuthenticatedUser) {
     const project = await this.prisma.project.findUnique({
       where: { id },
@@ -323,17 +370,19 @@ export class ProjectsService {
   async createFeedback(id: string, dto: CreateFeedbackDto, user: AuthenticatedUser) {
     const project = await this.findProjectEntity(id);
 
-    if (user.role === UserRole.LECTURER) {
-      await this.assertLecturerCanAccessProject(project, user);
-    }
-
+    // Both directions of project feedback are allowed, but only for an
+    // authorized team member, the owning lecturer or an administrator.
+    // Never allow students in other groups to post to a private project.
+    await this.assertCanAccessProject(project, user);
+    const content = dto.comment.trim();
+    if (!content) throw new BadRequestException('Message cannot be empty.');
     await this.ensureDevUser(user);
 
     return this.prisma.feedback.create({
       data: {
         projectId: id,
         authorId: user.id,
-        comment: dto.comment,
+        comment: content,
       },
       include: {
         author: {

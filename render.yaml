@@ -1,12 +1,16 @@
-# USI Design Thinking Hub staging backend
+# UII Design Thinking Hub staging backend
 # A Blueprint is optional: connect Render and explicitly sync this file.
-# Automatic deployments are OFF; supply all required secrets in Render first.
+# Automatic deployments are OFF. Sync changes to the existing Render service only
+# after UII's staging workspace and release gate have been approved.
+# This is the desired UII service identity. Existing manually configured Render
+# services are NOT renamed by this file: migrate/verify explicitly before Blueprint sync.
+# Editing this file alone DOES NOT update an existing manually configured service.
 services:
   - type: web
-    name: usi-design-thinking-api-staging
+    name: uii-design-thinking-api-staging
     runtime: node
     repo: https://github.com/anystuf/uii_design_thinking_hub
-    branch: chore/mvp-staging-readiness-20261106
+    branch: feat/guided-dschool-learning-path-20261121
     rootDir: backend
     region: singapore
     plan: free

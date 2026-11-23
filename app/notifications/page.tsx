@@ -72,11 +72,18 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Thông báo" role={account?.token === token ? account.role : undefined} guest={ready && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-5 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">Thông báo</h1>
-        <p className="text-sm text-slate-600">Theo dõi hạn nộp và phản hồi dành cho bạn.</p>
+        <header className="rounded-[28px] border border-[#cce5d7] bg-[#d4f0dd] p-6 sm:p-9">
+          <p className="text-xs font-black uppercase tracking-[.16em] text-[#78513b]">YOUR NEXT STEP</p>
+          <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Thông báo và phản hồi.</h1>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Nắm những cập nhật quan trọng để tiếp tục học, thực hành và cải tiến.</p>
+        </header>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">Theo dõi hạn nộp và phản hồi dành cho bạn.</p>
+          {(account?.role === 'ADMIN' || account?.role === 'LECTURER') && <Link href="/console" className="inline-flex min-h-11 items-center rounded-xl bg-[#173445] px-4 text-sm font-bold text-white">Soạn thông báo trong Console</Link>}
+        </div>
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
         {!ready ? <WorkspaceLoading label="Đang kiểm tra phiên đăng nhập…"/> : busy && <WorkspaceLoading label="Đang tải thông báo…"/>}
         {ready && !session && <div className="rounded-xl bg-white p-5">Bạn cần <Link className="font-bold underline" href="/learn">đăng nhập</Link>.</div>}
@@ -86,11 +93,11 @@ export default function NotificationsPage() {
               <div key={notice.id} className={'flex flex-wrap items-start justify-between gap-4 rounded-2xl border bg-white p-5 shadow-sm ' + (!notice.readAt ? 'border-[#e5af78]' : 'border-slate-200')}>
                 <div className="min-w-0 flex-1">
                   <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#ad4007]">{notice.type.replaceAll('_',' ')}</p>
-                  <p className="text-sm font-semibold">{notice.message}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm font-semibold">{notice.message}</p>
                   <p className="mt-2 text-xs text-slate-600">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
-                  <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : '/studio'}
+                  <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : notice.entityType === 'Course' ? '/learn?course='+encodeURIComponent(notice.entityId) : notice.entityType === 'Platform' ? '/dashboard' : '/studio'}
                     className="mt-3 inline-block text-sm font-bold text-[#153b77] underline">
-                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp và phản hồi' : 'Xem thử thách'}
+                    {notice.entityType === 'SubmissionSnapshot' ? 'Xem bài nộp và phản hồi' : notice.entityType === 'Course' ? 'Mở khóa học' : notice.entityType === 'Platform' ? 'Mở tổng quan' : 'Xem thử thách'}
                   </Link>
                 </div>
                 {!notice.readAt ?

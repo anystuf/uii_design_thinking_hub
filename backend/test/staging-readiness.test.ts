@@ -30,11 +30,11 @@ test('CORS config permits exact comma-separated staging origins', () => {
     DATABASE_URL: 'postgresql://example.invalid/db',
     DIRECT_URL: 'postgresql://example.invalid/db',
     SUPABASE_JWT_ISSUER: 'https://example.supabase.co/auth/v1',
-    FRONTEND_ORIGIN: 'http://localhost:3000, https://usi-preview.vercel.app',
+    FRONTEND_ORIGIN: 'http://localhost:3000, https://uii-design-thinking-hub-preview.vercel.app',
   };
   const result = configValidationSchema.validate(env, { allowUnknown: true });
   assert.equal(result.error, undefined);
-  assert.equal(result.value.FRONTEND_ORIGIN, 'http://localhost:3000,https://usi-preview.vercel.app');
+  assert.equal(result.value.FRONTEND_ORIGIN, 'http://localhost:3000,https://uii-design-thinking-hub-preview.vercel.app');
 });
 
 test('CORS config rejects wildcards and URL paths', () => {

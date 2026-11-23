@@ -13,6 +13,7 @@ import {
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
+import { formatEvidenceSource, parseEvidenceSource, safeEvidenceUrl } from '@/lib/external-evidence';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Mode = 'EMPATHIZE' | 'DEFINE' | 'IDEATE' | 'PROTOTYPE' | 'TEST';
@@ -42,7 +43,7 @@ type UploadToken = { intentId: string; token: string; bucket: string; storageKey
 
 const modes: Mode[] = ['EMPATHIZE', 'DEFINE', 'IDEATE', 'PROTOTYPE', 'TEST'];
 const types = ['INTERVIEW','OBSERVATION','PERSONA','JOURNEY_MAP','AFFINITY_MAP','NEED_STATEMENT','IDEA','PROTOTYPE','TEST_RESULT','PHOTO','VIDEO','DOCUMENT','REFLECTION'];
-const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
+const panel = 'min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5';
 const input = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-offset-2 focus:outline-[#f37021]';
 const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50';
 const secondary = 'rounded-xl border px-4 py-2.5 text-sm font-semibold text-[#153b77] disabled:opacity-50';
@@ -64,6 +65,7 @@ export default function EvidenceStudioPage() {
   const [evidenceType, setEvidenceType] = useState('DOCUMENT');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [externalUrl, setExternalUrl] = useState('');
   const [reflection, setReflection] = useState('');
   const [newVersionOf, setNewVersionOf] = useState<Evidence | null>(null);
   const [chosenFile, setChosenFile] = useState<File | null>(null);
@@ -127,7 +129,7 @@ export default function EvidenceStudioPage() {
     ]);
     setProject(detail); setEvidence(versioned); setSubmissions(snapshots); setIterations(notes);
     setNewVersionOf(null); setFileAsset(null); setChosenFile(null);
-    setTitle(''); setDescription(''); setReflection(''); setSelectedVersions({});
+    setTitle(''); setDescription(''); setReflection(''); setExternalUrl(''); setSelectedVersions({});
   }
 
   function clean() { setNotice(''); setError(''); }
@@ -172,7 +174,7 @@ export default function EvidenceStudioPage() {
         await api(token, '/versioned-evidence/' + newVersionOf.id, {
           method: 'PATCH',
           body: JSON.stringify({
-            type: evidenceType, title, description, reflection,
+            type: evidenceType, title, description: formatEvidenceSource(description, externalUrl), reflection,
             fileAssetId: fileAsset?.id,
           }),
         });
@@ -180,7 +182,7 @@ export default function EvidenceStudioPage() {
         await api(token, '/projects/' + project.id + '/versioned-evidence', {
           method: 'POST',
           body: JSON.stringify({
-            mode, type: evidenceType, title, description, reflection,
+            mode, type: evidenceType, title, description: formatEvidenceSource(description, externalUrl), reflection,
             fileAssetId: fileAsset?.id,
           }),
         });
@@ -194,7 +196,8 @@ export default function EvidenceStudioPage() {
     const latest = item.versions[0];
     setNewVersionOf(item);
     setTitle(latest?.title ?? item.title);
-    setDescription(latest?.description ?? '');
+    const prior = parseEvidenceSource(latest?.description);
+    setDescription(prior.notes); setExternalUrl(prior.url ?? '');
     setReflection(latest?.reflection ?? '');
     setEvidenceType(latest?.type ?? item.type);
     setMode(item.sprintStage.stage); setFileAsset(null); setChosenFile(null);
@@ -240,12 +243,14 @@ export default function EvidenceStudioPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-[#fae2d3] p-5 sm:p-8">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Minh chứng & phản hồi</h1>
+            <p className="text-xs font-black uppercase tracking-[.16em] text-[#9a4536]">MAKE · DOCUMENT · IMPROVE</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Minh chứng và phản hồi.</h1>
+            <p className="mt-2 text-sm text-[#50666b]">Lưu bản nháp, dẫn liên kết sản phẩm, nộp theo phiên bản và học từ phản hồi.</p>
             <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
           </div>
           {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</span>}
@@ -274,7 +279,7 @@ export default function EvidenceStudioPage() {
                     {newVersionOf && <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#eef3fc] p-3 text-sm">
                       <span>Chỉnh sửa: <strong>{newVersionOf.title}</strong> (v{newVersionOf.activeVersion})</span>
                       <button type="button" className={secondary} onClick={() => {
-                        setNewVersionOf(null); setTitle(''); setDescription(''); setReflection('');
+                        setNewVersionOf(null); setTitle(''); setDescription(''); setExternalUrl(''); setReflection('');
                         setFileAsset(null); setChosenFile(null);
                       }}>Hủy</button>
                     </div>}
@@ -293,8 +298,18 @@ export default function EvidenceStudioPage() {
                         <input required maxLength={160} className={input + ' mt-2'} value={title} onChange={(e) => setTitle(e.target.value)}/>
                       </label>
                       <label className="block text-sm font-semibold">Mô tả
-                        <textarea rows={3} maxLength={3000} className={input + ' mt-2'} value={description} onChange={(e) => setDescription(e.target.value)}/>
+                        <textarea rows={3} maxLength={1900} className={input + ' mt-2'} value={description} onChange={(e) => setDescription(e.target.value)}/>
                       </label>
+                      <div className="rounded-2xl border border-[#c8e4da] bg-[#f2faf1] p-4">
+                        <label htmlFor="external-evidence-url" className="block text-sm font-extrabold text-[#173445]">Liên kết sản phẩm · Google Drive / Miro / Figma (tùy chọn)</label>
+                        <input id="external-evidence-url" type="url" maxLength={1000} value={externalUrl}
+                          onChange={event=>setExternalUrl(event.target.value)}
+                          placeholder="https://drive.google.com/…"
+                          aria-describedby="external-evidence-tip"
+                          className={input + ' mt-2'} />
+                        <p id="external-evidence-tip" className="mt-2 text-xs leading-6 text-[#466c68]">Khuyến nghị dùng đường dẫn xem được bởi giảng viên qua quyền chia sẻ phù hợp, không nhất thiết công khai cho cả Internet. Nộp link không tải tệp lên UII, tiết kiệm dung lượng. Link được lưu trong từng phiên bản, nhưng tệp bên ngoài vẫn có thể thay đổi.</p>
+                        {!!externalUrl.trim() && !safeEvidenceUrl(externalUrl) && <p role="alert" className="mt-2 text-xs font-semibold text-[#9e3328]">Chỉ dùng liên kết HTTPS chính thức từ Drive, Docs, Miro, Figma, Canva, GitHub, Notion hoặc OneDrive.</p>}
+                      </div>
                       <label className="block text-sm font-semibold">Reflection
                         <textarea rows={3} maxLength={3000} className={input + ' mt-2'} value={reflection} onChange={(e) => setReflection(e.target.value)}/>
                       </label>
@@ -323,6 +338,7 @@ export default function EvidenceStudioPage() {
                             <div className="min-w-0"><p className="text-sm font-semibold">Version {version.version}</p>
                               <p className="text-xs text-slate-600">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('vi-VN')}</p>
                               {version.fileAsset && <p className="text-xs text-slate-600">{version.fileAsset.fileName}</p>}
+                              {parseEvidenceSource(version.description).url && <a href={parseEvidenceSource(version.description).url!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-[#173445] underline">Mở link sản phẩm đã nộp ↗</a>}
                             </div>
                             {version.fileAsset && <button className={secondary} onClick={() => void getDownload(version.fileAsset!.id)}>Download</button>}
                           </div>)}
@@ -396,6 +412,7 @@ export default function EvidenceStudioPage() {
                           {item.items.map((entry) => <div key={entry.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f6f8fc] p-3 text-xs">
                             <span>{entry.evidenceVersion.title} · evidence v{entry.evidenceVersion.version}</span>
                             {entry.evidenceVersion.fileAsset && <button className={secondary} onClick={() => void getDownload(entry.evidenceVersion.fileAsset!.id)}>Download</button>}
+                            {parseEvidenceSource(entry.evidenceVersion.description).url && <a href={parseEvidenceSource(entry.evidenceVersion.description).url!} target="_blank" rel="noopener noreferrer" className={secondary}>Xem link ↗</a>}
                           </div>)}
                         </div>
                       </div>)}

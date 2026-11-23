@@ -56,11 +56,15 @@ export default function AdminPage() {
     }
   }, []);
 
-  return <div className="min-h-screen bg-[#f6f8fc]">
+  return <div className="uii-workspace min-h-screen bg-[#f6f8fc]">
     <WorkspaceNav title="Quản trị" role={account?.role} />
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
       {loading && <p role="status">Đang kiểm tra quyền quản trị…</p>}
-      <h1 className="text-2xl font-semibold tracking-tight">Quản trị</h1>
+      <header className="rounded-[28px] border border-[#e3d8ec] bg-[#e7e2fb] p-6 sm:p-9">
+          <p className="text-xs font-black uppercase tracking-[.16em] text-[#7a3a47]">UII · PEOPLE & GOVERNANCE</p>
+          <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Quản trị và phát triển cộng đồng.</h1>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Quản lý tài khoản, điều phối khóa học và theo dõi hoạt động đổi mới. Vai trò và quyền truy cập được xác minh bởi máy chủ.</p>
+        </header>
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{error}<button className="ml-3 min-h-11 underline" onClick={() => setReload((value) => value + 1)}>Thử lại</button></div>}
       {!loading && !account && !error && <p>Đăng nhập để tiếp tục. <Link href="/learn" className="underline">Đăng nhập</Link></p>}
       {account && account.role !== 'ADMIN' && <p role="alert">Trang này dành cho quản trị viên. <Link href="/dashboard" className="underline">Về tổng quan</Link></p>}
@@ -71,7 +75,7 @@ export default function AdminPage() {
           <ul className="mt-5 divide-y">{users.map((user) => <li key={user.id} className="flex flex-wrap items-center justify-between gap-2 py-4"><span className="font-semibold">{user.fullName}</span><span className="rounded-lg bg-blue-50 px-3 py-2 text-sm">{user.role}</span></li>)}</ul>
           {!users.length && <p className="mt-4">Chưa có tài khoản để hiển thị.</p>}
         </section>
-        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Quản lý khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
+        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/console">Console: khóa học & thông báo</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
       </>}
     </main>
   </div>;

@@ -12,6 +12,7 @@ import {
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { withAuthDeadline } from '@/lib/auth-timeout';
+import { parseEvidenceSource } from '@/lib/external-evidence';
 
 type User = { id: string; fullName: string; role: 'STUDENT' | 'LECTURER' | 'ADMIN' | 'MENTOR' };
 type Course = { id: string; title: string; createdById: string };
@@ -35,7 +36,7 @@ type SubmissionDetail = {
 };
 type CriterionDraft = { title: string; description: string; weight: number; maxScore: number };
 type Rating = { criterionId: string; score: number; comment?: string };
-const panel = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm';
+const panel = 'min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-5';
 const field = 'w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm focus:outline-[#f37021]';
 const primary = 'rounded-xl bg-[#153b77] px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50';
 const minor = 'rounded-xl border px-3 py-2 text-sm font-semibold text-[#153b77] disabled:opacity-50';
@@ -234,11 +235,15 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8fc] text-[#12284a]">
+    <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
       <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} guest={authReady && !session} />
-      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Đánh giá bài nộp</h1>
+          <header className="rounded-[28px] border border-[#e5d6c9] bg-[#ffe3cd] p-6 sm:p-9">
+            <p className="text-xs font-black uppercase tracking-[.16em] text-[#823f2f]">LEARN · ASSESS · IMPROVE</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Đánh giá bài nộp.</h1>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Mỗi phản hồi là một cơ hội cải tiến. Chấm bài theo rubric và khuyến khích sinh viên thử lại.</p>
+          </header>
           <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
         </div>
         {busy && account && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</p>}
@@ -347,9 +352,13 @@ export default function ReviewPage() {
                     {details.items.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f6f8fc] p-3">
                         <div><p className="text-sm font-bold">{item.evidenceVersion.title} · v{item.evidenceVersion.version}</p>
-                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || item.evidenceVersion.description || 'Không có ghi chú'}</p>
+                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || parseEvidenceSource(item.evidenceVersion.description).notes || 'Không có ghi chú'}</p>
                         </div>
-                        {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
+                        <div className="flex flex-wrap gap-2">
+                          {parseEvidenceSource(item.evidenceVersion.description).url && <a href={parseEvidenceSource(item.evidenceVersion.description).url!}
+                            target="_blank" rel="noopener noreferrer" className={minor}>Xem link Drive / công cụ ↗</a>}
+                          {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
+                        </div>
                       </div>
                     ))}
                   </div>
