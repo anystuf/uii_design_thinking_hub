@@ -26,7 +26,8 @@ export default function ResetPasswordPage() {
     let recoveryEvent = false;
     // Supabase may consume the fragment during client initialization.
     const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const recoveryFragment = fragment.get('type') === 'recovery' && !!fragment.get('access_token') && !!fragment.get('refresh_token');
+    const recoveryAccessToken = fragment.get('type') === 'recovery' && fragment.get('refresh_token')
+      ? fragment.get('access_token') : null;
     try {
       const client = getSupabaseBrowserClient();
       const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
@@ -41,7 +42,10 @@ export default function ResetPasswordPage() {
       void withAuthDeadline(() => client.auth.getSession()).then(({ data, error: sessionError }) => {
         if (!active) return;
         if (sessionError) { setState('invalid'); return; }
-        if (data.session && (recoveryEvent || recoveryFragment)) setState('ready');
+        // A pre-existing login alone must never unlock the recovery form.
+        // Only a real PASSWORD_RECOVERY event or the session created from the
+        // exact recovery link's access token can unlock password change.
+        if (data.session && (recoveryEvent || (recoveryAccessToken && data.session.access_token === recoveryAccessToken))) setState('ready');
         else if (!recoveryEvent) setState('invalid');
       }).catch(() => { if (active && !recoveryEvent) setState('invalid'); });
 
