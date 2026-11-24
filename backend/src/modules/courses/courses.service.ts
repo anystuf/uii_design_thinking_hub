@@ -13,6 +13,7 @@ import { AuthenticatedUser } from '../../common/types/authenticated-user.type';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { calculateLearningRewards } from './learning-rewards';
 
 @Injectable()
 export class CoursesService {
@@ -45,23 +46,141 @@ export class CoursesService {
     });
   }
 
+  async myEnrollments(user: AuthenticatedUser) {
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Student access required.');
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { userId: user.id, course: { status: CourseStatus.PUBLISHED } },
+      include: { course: { select: { id: true, title: true, description: true, status: true, level: true } } },
+      orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+    });
+    const courseIds = enrollments.map(item => item.courseId);
+    // Two bulk reads, independent of the number of enrolled courses.
+    const lessons = courseIds.length ? await this.prisma.lesson.findMany({
+      where: { courseId: { in: courseIds }, publishedAt: { not: null } },
+      select: { id: true, title: true, courseId: true },
+      orderBy: [{ orderIndex: 'asc' }, { id: 'asc' }],
+    }) : [];
+    const records = lessons.length ? await this.prisma.lessonProgress.findMany({
+      where: { userId: user.id, lessonId: { in: lessons.map(lesson => lesson.id) } },
+      select: { lessonId: true, completed: true },
+    }) : [];
+    const completed = new Set(records.filter(item => item.completed).map(item => item.lessonId));
+    const byCourse = new Map<string, typeof lessons>();
+    for (const lesson of lessons) {
+      const group = byCourse.get(lesson.courseId) ?? [];
+      group.push(lesson); byCourse.set(lesson.courseId, group);
+    }
+    return enrollments.map(item => {
+      const curriculum = byCourse.get(item.courseId) ?? [];
+      const count = curriculum.filter(lesson => completed.has(lesson.id)).length;
+      const next = curriculum.find(lesson => !completed.has(lesson.id));
+      return { ...item, progress: {
+        totalLessons: curriculum.length, completedLessons: count,
+        percent: curriculum.length ? Math.round(count * 100 / curriculum.length) : 0,
+        nextLesson: next ? { id: next.id, title: next.title } : null,
+      } };
+    });
+  }
+
+  async myRewards(id: string, user: AuthenticatedUser) {
+    if (user.role !== UserRole.STUDENT) throw new ForbiddenException('Student access required.');
+
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: id } },
+      select: { id: true },
+    });
+    if (!enrolled) throw new ForbiddenException('Course enrollment required.');
+
+    // All points are calculated from authorized published learning records.
+    const [lessons, exercises] = await Promise.all([
+      this.prisma.lesson.findMany({
+        where: { courseId: id, publishedAt: { not: null } },
+        select: { id: true },
+      }),
+      this.prisma.lessonExercise.findMany({
+        where: { publishedAt: { not: null }, lesson: { courseId: id, publishedAt: { not: null } } },
+        select: { id: true, passingScore: true },
+      }),
+    ]);
+    const [progress, attempts] = await Promise.all([
+      lessons.length ? this.prisma.lessonProgress.findMany({
+        where: { userId: user.id, lessonId: { in: lessons.map(lesson => lesson.id) }, completed: true },
+        select: { lessonId: true },
+      }) : Promise.resolve([]),
+      exercises.length ? this.prisma.exerciseAttempt.findMany({
+        where: { userId: user.id, exerciseId: { in: exercises.map(exercise => exercise.id) }, status: 'GRADED' },
+        select: { exerciseId: true, score: true },
+      }) : Promise.resolve([]),
+    ]);
+
+    return {
+      courseId: id,
+      ...calculateLearningRewards(
+        lessons.map(lesson => lesson.id),
+        progress.map(record => record.lessonId),
+        exercises,
+        attempts,
+      ),
+    };
+  }
+
+  async myProgress(id: string, user: AuthenticatedUser) {
+    const enrolled = await this.prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: user.id, courseId: id } },
+    });
+    if (!enrolled) throw new ForbiddenException('Course enrollment required.');
+
+    const lessons = await this.prisma.lesson.findMany({
+      where: { courseId: id, publishedAt: { not: null } },
+      select: { id: true },
+    });
+    const ids = lessons.map((lesson) => lesson.id);
+    const progress = ids.length
+      ? await this.prisma.lessonProgress.findMany({
+          where: { userId: user.id, lessonId: { in: ids } },
+          select: { lessonId: true, completed: true },
+        })
+      : [];
+    const completed = progress.filter((record) => record.completed).length;
+    return {
+      courseId: id,
+      totalLessons: lessons.length,
+      completedLessons: completed,
+      percent: lessons.length ? Math.round(completed * 100 / lessons.length) : 0,
+      lessons: progress,
+    };
+  }
+
   async findById(id: string, user: AuthenticatedUser) {
-    const course = await this.prisma.course.findUnique({
+    const course = await this.prisma.course.findUnique({ where: { id } });
+    if (!course) throw new NotFoundException('Course not found.');
+    this.assertCanView(course, user);
+
+    const enrolled = user.role === UserRole.STUDENT
+      ? Boolean(await this.prisma.enrollment.findUnique({
+          where: { userId_courseId: { userId: user.id, courseId: id } },
+        }))
+      : true;
+
+    const canManage = user.role === UserRole.ADMIN ||
+      (user.role === UserRole.LECTURER && course.createdById === user.id);
+
+    return this.prisma.course.findUnique({
       where: { id },
       include: {
-        lessons: { orderBy: { orderIndex: 'asc' } },
+        lessons: {
+          where: canManage
+            ? {}
+            : enrolled
+              ? { publishedAt: { not: null } }
+              : { isPreview: true, publishedAt: { not: null } },
+          orderBy: { orderIndex: 'asc' },
+        },
         createdBy: {
           select: { id: true, email: true, fullName: true, role: true },
         },
       },
     });
-
-    if (!course) {
-      throw new NotFoundException('Course not found.');
-    }
-
-    this.assertCanView(course, user);
-    return course;
   }
 
   async create(dto: CreateCourseDto, user: AuthenticatedUser) {

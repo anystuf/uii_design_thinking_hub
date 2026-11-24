@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  GoneException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -60,7 +61,7 @@ export class ProjectsService {
         ? {}
         : user.role === UserRole.LECTURER
           ? { course: { createdById: user.id } }
-          : { ownerId: user.id };
+          : { OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }] };
 
     return this.prisma.project.findMany({
       where,
@@ -77,6 +78,53 @@ export class ProjectsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  /** Lecturer explicitly approves an entire project for optional public showcase.
+   * Academic snapshot approval alone never publishes student work. */
+  async approveForShowcase(id: string, user: AuthenticatedUser) {
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.LECTURER) {
+      throw new ForbiddenException('A course lecturer or administrator must approve a showcase.');
+    }
+    const project = await this.findProjectEntity(id);
+    if (user.role === UserRole.LECTURER) {
+      await this.assertLecturerCanAccessProject(project, user);
+    }
+    if (project.status === ProjectStatus.PUBLISHED || project.status === ProjectStatus.APPROVED) {
+      return { projectId: id, status: project.status, alreadyApproved: true };
+    }
+    const approvedSnapshots = await this.prisma.submissionSnapshot.count({
+      where: { projectId: id, status: SubmissionStatus.APPROVED },
+    });
+    if (!approvedSnapshots) {
+      throw new ConflictException('A reviewed and approved project submission is required before showcase approval.');
+    }
+    const members = await this.prisma.projectMember.findMany({
+      where: { projectId: id }, select: { userId: true },
+    });
+    const recipients = [...new Set([project.ownerId, ...members.map(member => member.userId)])];
+    await this.prisma.$transaction(async tx => {
+      const changed = await tx.project.updateMany({
+        where: {
+          id,
+          status: { in: [ProjectStatus.DRAFT, ProjectStatus.SUBMITTED, ProjectStatus.UNDER_REVIEW, ProjectStatus.REVISION_REQUESTED] },
+        },
+        data: { status: ProjectStatus.APPROVED },
+      });
+      if (changed.count !== 1) throw new ConflictException('Project status changed. Refresh and try again.');
+      if (recipients.length) {
+        await tx.notification.createMany({
+          data: recipients.map(recipientId => ({
+            recipientId, actorId: user.id,
+            type: 'SHOWCASE_APPROVED', entityType: 'Project', entityId: id,
+            message: 'Dự án "' + project.title + '" đã được duyệt để trưng bày. Chủ dự án có thể tự chọn công bố tại Cộng đồng UII.',
+            dedupeKey: 'showcase:approved:' + id + ':' + recipientId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
+    return { projectId: id, status: ProjectStatus.APPROVED, eligibleToShare: true };
   }
 
   async findById(id: string, user: AuthenticatedUser) {
@@ -97,7 +145,7 @@ export class ProjectsService {
       throw new NotFoundException('Project not found.');
     }
 
-    this.assertCanViewProject(project, user);
+    await this.assertCanAccessProject(project, user);
     return project;
   }
 
@@ -192,37 +240,8 @@ export class ProjectsService {
     return { success: true };
   }
 
-  async submit(id: string, user: AuthenticatedUser) {
-    const project = await this.findProjectEntity(id);
-    if (user.role !== UserRole.ADMIN) {
-      this.assertOwnProject(project, user);
-    }
-
-    if (project.status !== ProjectStatus.DRAFT && project.status !== ProjectStatus.REVISION_REQUESTED) {
-      throw new ConflictException('Only draft or revision-requested projects can be submitted.');
-    }
-
-    const sprintStage = await this.findSprintStage(id, project.currentStage);
-    const version = (await this.prisma.submission.count({
-      where: { projectId: id, sprintStageId: sprintStage.id },
-    })) + 1;
-
-    return this.prisma.$transaction(async (tx) => {
-      const submission = await tx.submission.create({
-        data: {
-          projectId: id,
-          sprintStageId: sprintStage.id,
-          authorId: user.id,
-          version,
-          status: SubmissionStatus.SUBMITTED,
-        },
-      });
-      const updatedProject = await tx.project.update({
-        where: { id },
-        data: { status: ProjectStatus.SUBMITTED },
-      });
-      return { project: updatedProject, submission };
-    });
+  async submit(_id: string, _user: AuthenticatedUser) {
+    throw new GoneException('Use POST /projects/:id/snapshot-submissions for immutable submissions.');
   }
 
   async findSubmissions(id: string, user: AuthenticatedUser) {
@@ -297,76 +316,40 @@ export class ProjectsService {
 
   async createEvidence(id: string, dto: CreateEvidenceDto, user: AuthenticatedUser) {
     const project = await this.findProjectEntity(id);
-
     if (user.role !== UserRole.ADMIN) {
-      this.assertOwnProject(project, user);
+      await this.assertTeamMember(project, user);
     }
-
+    if (dto.files?.length) {
+      throw new BadRequestException(
+        'Mock file uploads are disabled. Use /projects/:id/uploads/presign and the versioned evidence API.',
+      );
+    }
     const sprintStage = await this.findSprintStageForProject(id, dto.sprintStageId);
-    await this.ensureDevUser(user);
-
-    const uploadedFiles = dto.files?.length
-      ? await Promise.all(
-          dto.files.map((file) => this.sharePointService.uploadFile(file)),
-        )
-      : [];
-
-    return this.prisma.evidence.create({
-      data: {
-        projectId: id,
-        sprintStageId: sprintStage.id,
-        type: dto.type,
-        title: dto.title,
-        description: dto.description,
-        reflection: dto.reflection,
-        createdById: user.id,
-        files: {
-          create: uploadedFiles,
+    return this.prisma.$transaction(async (tx) => {
+      const evidence = await tx.evidence.create({
+        data: {
+          projectId: id, sprintStageId: sprintStage.id, createdById: user.id,
+          type: dto.type, title: dto.title, description: dto.description,
+          reflection: dto.reflection, activeVersion: 1,
         },
-      },
-      include: {
-        sprintStage: true,
-        files: true,
-      },
+      });
+      await tx.evidenceVersion.create({
+        data: {
+          evidenceId: evidence.id, version: 1, createdById: user.id,
+          type: dto.type, title: dto.title, description: dto.description,
+          reflection: dto.reflection,
+        },
+      });
+      return evidence;
     });
   }
 
-  async updateEvidence(id: string, dto: UpdateEvidenceDto, user: AuthenticatedUser) {
-    const evidence = await this.findEvidenceEntity(id);
-    const project = await this.findProjectEntity(evidence.projectId);
-
-    if (user.role === UserRole.ADMIN) {
-      return this.persistEvidenceUpdate(id, dto);
-    }
-
-    this.assertOwnProject(project, user);
-
-    if (evidence.createdById !== user.id) {
-      throw new ForbiddenException('Students can only edit their own evidence.');
-    }
-
-    return this.persistEvidenceUpdate(id, dto);
+  async updateEvidence(_id: string, _dto: UpdateEvidenceDto, _user: AuthenticatedUser) {
+    throw new GoneException('Use PATCH /versioned-evidence/:id to preserve version history.');
   }
 
-  async deleteEvidence(id: string, user: AuthenticatedUser) {
-    const evidence = await this.findEvidenceEntity(id);
-    const project = await this.findProjectEntity(evidence.projectId);
-
-    if (user.role === UserRole.ADMIN) {
-      await this.deleteEvidenceFiles(evidence);
-      await this.prisma.evidence.delete({ where: { id } });
-      return { success: true };
-    }
-
-    this.assertOwnProject(project, user);
-
-    if (evidence.createdById !== user.id) {
-      throw new ForbiddenException('Students can only delete their own evidence.');
-    }
-
-    await this.deleteEvidenceFiles(evidence);
-    await this.prisma.evidence.delete({ where: { id } });
-    return { success: true };
+  async deleteEvidence(_id: string, _user: AuthenticatedUser) {
+    throw new GoneException('Versioned evidence is retained for submission audit; deletion is unavailable.');
   }
 
   async findFeedback(id: string, user: AuthenticatedUser) {
@@ -387,17 +370,19 @@ export class ProjectsService {
   async createFeedback(id: string, dto: CreateFeedbackDto, user: AuthenticatedUser) {
     const project = await this.findProjectEntity(id);
 
-    if (user.role === UserRole.LECTURER) {
-      await this.assertLecturerCanAccessProject(project, user);
-    }
-
+    // Both directions of project feedback are allowed, but only for an
+    // authorized team member, the owning lecturer or an administrator.
+    // Never allow students in other groups to post to a private project.
+    await this.assertCanAccessProject(project, user);
+    const content = dto.comment.trim();
+    if (!content) throw new BadRequestException('Message cannot be empty.');
     await this.ensureDevUser(user);
 
     return this.prisma.feedback.create({
       data: {
         projectId: id,
         authorId: user.id,
-        comment: dto.comment,
+        comment: content,
       },
       include: {
         author: {
@@ -507,26 +492,18 @@ export class ProjectsService {
       return;
     }
 
-    this.assertOwnProject(project, user);
+    await this.assertTeamMember(project, user);
   }
 
-  private assertCanViewProject(
-    project: Project & { course: { createdById: string } },
-    user: AuthenticatedUser,
-  ) {
-    if (user.role === UserRole.ADMIN) {
-      return;
+  private async assertTeamMember(project: Project, user: AuthenticatedUser) {
+    if (project.ownerId === user.id) return;
+    if (user.role !== UserRole.STUDENT) {
+      throw new ForbiddenException('Project team access denied.');
     }
-
-    if (user.role === UserRole.LECTURER && project.course.createdById === user.id) {
-      return;
-    }
-
-    if (user.role === UserRole.STUDENT && project.ownerId === user.id) {
-      return;
-    }
-
-    throw new ForbiddenException('Insufficient role for this project.');
+    const member = await this.prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId: project.id, userId: user.id } },
+    });
+    if (!member) throw new ForbiddenException('Project team membership required.');
   }
 
   private assertOwnProject(project: Project, user: AuthenticatedUser) {

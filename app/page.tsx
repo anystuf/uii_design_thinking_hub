@@ -1,5 +1,5 @@
-import { FocusedLearningHub } from "@/components/focused-learning-hub";
+import { UIIPublicLanding } from '@/components/uii-public-landing';
 
-export default function Page() {
-  return <FocusedLearningHub />;
+export default function HomePage() {
+  return <UIIPublicLanding />;
 }

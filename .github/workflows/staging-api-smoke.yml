@@ -1,0 +1,24 @@
+name: Staging API compatibility smoke
+
+on:
+  # Explicitly run only after the Render service and DB migration are staged.
+  # Do not silently rely on a dated feature PR as a release gate.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  staging-smoke:
+    runs-on: ubuntu-latest
+    env:
+      STAGING_API_ORIGIN: ${{ vars.STAGING_API_ORIGIN }}
+      STAGING_FRONTEND_ORIGIN: ${{ vars.STAGING_FRONTEND_ORIGIN }}
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public staging health, authentication and preview CORS
+        run: node scripts/staging-api-smoke.mjs

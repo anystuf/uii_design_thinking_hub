@@ -1,0 +1,111 @@
+name: MVP Releases A–D checks
+
+on:
+  pull_request:
+    branches: ['feat/practice-assignment-chatbot-20261120', 'feat/learning-quest-compass-20261120', 'feat/classic-dashboard-course-experience-20261120', 'feat/workspace-guidance-auth-20261120', 'feat/production-acceptance-20261116', 'feat/role-dashboard-ux-20261114', 'fix/lms-security-and-authenticated-uat-20261114', 'feat/production-learning-experience-20261114', 'chore/mvp-staging-readiness-20261106', 'fix/codex-staging-auth-timeout', main, 'feat/mvp-release-a-learning-foundation-20261105', 'feat/mvp-release-b-design-studio-20261105', 'feat/mvp-release-c-evidence-20261105', 'feat/mvp-release-d-assessment-20261105']
+  workflow_dispatch:
+
+# Keep a single active validation for a PR. Each new commit supersedes the
+# previous run, so intermediate failures do not waste runner minutes.
+concurrency:
+  group: mvp-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm ci
+      - run: node scripts/verify-api-proxy.mjs
+      - run: node --test scripts/uii-staging-preflight.test.mjs
+      - run: npm run lint
+      - run: npm audit --omit=dev --audit-level=high --registry=https://registry.npmjs.org
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-key
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: studio_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm ci --no-audit --no-fund
+      - run: npm run prisma:generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - run: npm run prisma:seed
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - run: npm test
+        env:
+          RUN_DB_INTEGRATION: 'true'
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/studio_test
+      - name: Verify NestJS production entrypoint
+        run: test -f dist/src/main.js
+
+  responsive:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: local-layout-check
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          package-manager-cache: false
+      - run: npm ci
+      - run: npx playwright install --with-deps chrome
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: responsive-and-accessibility
+          path: |
+            playwright-report/
+            test-results/

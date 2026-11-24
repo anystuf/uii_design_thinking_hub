@@ -9,12 +9,13 @@
     "format": "prettier --write \"src/**/*.ts\" \"prisma/**/*.prisma\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "test": "node --test -r ts-node/register test/*.test.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",
@@ -26,7 +27,10 @@
     "class-validator": "^0.14.1",
     "joi": "^17.13.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "jose": "^5.9.6",
+    "@supabase/supabase-js": "2.119.0",
+    "@nestjs/schedule": "^4.1.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.8",
