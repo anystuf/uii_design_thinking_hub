@@ -47,6 +47,13 @@ export function studentClassroomNextAction(data: StudentClassroomData, projectId
       href: '/studio' };
   }
   if (!data.activityCount || data.completedActivities === 0) {
+    // A learner may have completed Activity 2 as versioned evidence before
+    // doing a Studio template. Do not send them back to a fictitious "start".
+    if (data.evidenceCount > 0) {
+      return { stage: 'Bước 3 · Chuẩn bị nộp', title: 'Đính kèm slide và chọn minh chứng',
+        detail: 'Bạn đã lưu minh chứng; hãy chuẩn bị sản phẩm và nộp một snapshot. Chưa được tính là đã nộp.',
+        href: evidenceHref };
+    }
     return { stage: 'Bước 3 · Thực hành', title: 'Bắt đầu hoạt động Design Thinking',
       detail: 'Chọn hoạt động trong Studio, nhập kết quả và lưu lại.',
       href: '/studio' };
