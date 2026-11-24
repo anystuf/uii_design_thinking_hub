@@ -34,7 +34,7 @@ export default function ResetPasswordPage() {
           recoveryEvent = true;
           if (session) setState('ready');
         }
-        if (event === 'SIGNED_OUT' && !recoveryEvent) setState('invalid');
+        // Do not override a completed password change when the client signs out.
       });
 
       void withAuthDeadline(() => client.auth.getSession()).then(({ data, error: sessionError }) => {
