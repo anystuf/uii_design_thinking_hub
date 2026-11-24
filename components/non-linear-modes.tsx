@@ -136,7 +136,7 @@ export function NonLinearModes() {
           <span className="inline-flex whitespace-nowrap rounded-full bg-[#dcefd7] px-5 py-2.5 text-[13px] font-black text-[#245a43] shadow-sm">
             QUY TRÌNH PHI TUYẾN TÍNH
           </span>
-          <p className="mt-2 text-sm italic text-[#63777d]">A non-linear process</p>
+          <p className="mt-2 text-sm italic text-[#4c6269]">A non-linear process</p>
           <ArrowLeftRight aria-hidden="true" className="mx-auto mt-2 text-[#889ba0]" size={24} />
         </div>
         {modes.map((mode, index) => (
@@ -149,7 +149,7 @@ export function NonLinearModes() {
           <span className="inline-flex rounded-full bg-[#dcefd7] px-4 py-2 text-xs font-black text-[#245a43]">
             QUY TRÌNH PHI TUYẾN TÍNH
           </span>
-          <p className="mt-2 text-xs italic text-[#63777d]">Bạn có thể bắt đầu ở bất kỳ chế độ nào.</p>
+          <p className="mt-2 text-xs italic text-[#4c6269]">Bạn có thể bắt đầu ở bất kỳ chế độ nào.</p>
           <InfinityRibbon compact />
         </div>
         <div className="-mt-1 grid gap-4 sm:grid-cols-2">
