@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { ArrowRight, BookOpen, CheckCircle2, ClipboardCheck, FileText, FolderKanban, RefreshCcw, ShieldCheck } from 'lucide-react';
 
@@ -31,7 +31,7 @@ const card = 'rounded-[22px] border border-[#d7dfda] bg-white p-5 shadow-sm sm:p
 const actionStyle = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 py-3 text-sm font-bold text-white hover:bg-[#285365] focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-500';
 const secondaryStyle = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#b8c9c1] bg-white px-5 py-3 text-sm font-bold text-[#173445] hover:bg-[#f1f6f2]';
 
-function ActionLink({ href, children, secondary = false }: { href: string; children: React.ReactNode; secondary?: boolean }) {
+function ActionLink({ href, children, secondary = false }: { href: string; children: ReactNode; secondary?: boolean }) {
   return <Link href={href} className={secondary ? secondaryStyle : actionStyle}>{children}<ArrowRight aria-hidden="true" size={16}/></Link>;
 }
 
@@ -158,7 +158,7 @@ export default function ClassroomPage() {
       authenticatedApi<Submission[]>('/projects/' + encodeURIComponent(teamId) + '/snapshot-submissions', token),
     ]).then(([activities, evidence, submissions]) => {
       if (!active) return;
-      const latest = [...submissions].sort((a, b) => b.version - a.version)[0];
+      const latest = [...submissions].sort((a, b) => Date.parse(b.submittedAt) - Date.parse(a.submittedAt) || b.version - a.version)[0];
       setStudentData({
         activityCount: activities.length,
         completedActivities: activities.filter(a => a.status === 'COMPLETED').length,
@@ -201,7 +201,7 @@ export default function ClassroomPage() {
         publishedRubrics: activeCourse ? rubricCount : 0,
         pendingReviews: queueCount,
       });
-  const checking = loading || detailLoading;
+  const checking = loading || detailLoading || !!error || !!detailError;
 
   async function signOut() {
     await getSupabaseBrowserClient().auth.signOut();
