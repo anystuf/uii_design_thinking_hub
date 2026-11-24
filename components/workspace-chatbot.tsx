@@ -116,6 +116,9 @@ export function WorkspaceChatbot() {
     }
   }
 
+  // Recovery is a focused security task, not a place for floating help controls.
+  if (pathname === "/forgot-password" || pathname === "/reset-password") return null;
+
   return <>
     <button type="button"
       aria-label={open?"Đóng Hỏi UII – chatbot hướng dẫn":"Mở Hỏi UII – chatbot hướng dẫn"}
