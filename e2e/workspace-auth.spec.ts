@@ -94,3 +94,45 @@ test('rate-limited signup shows actionable error and does not claim success',asy
   await expect(page.getByRole('alert').filter({hasText:'giới hạn'})).toContainText('giới hạn');
   await expect(page.getByRole('heading',{name:'Kiểm tra email để tiếp tục'})).toHaveCount(0);
 });
+
+
+test('UII password recovery requests a stable UII destination and does not reveal account existence', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local auth fixture only');
+  await page.setViewportSize({width:320,height:844});
+  let requests=0;
+  await page.route(url => url.origin === 'https://example.supabase.co' && url.pathname === '/auth/v1/recover', async route => {
+    requests++;
+    const redirect = new URL(route.request().url()).searchParams.get('redirect_to');
+    expect(redirect).toBe('http://localhost:3100/reset-password');
+    const body = route.request().postDataJSON();
+    expect(body.email).toBe('student@example.test');
+    await route.fulfill({status:200,json:{}});
+  });
+  await page.goto('/learn');
+  await page.getByRole('link',{name:'Quên mật khẩu?'}).click();
+  await expect(page).toHaveURL(/\/forgot-password$/);
+  await page.getByLabel('Email',{exact:true}).fill('student@example.test');
+  await page.getByRole('button',{name:'Gửi hướng dẫn đặt lại mật khẩu'}).click();
+  await expect(page.getByRole('status')).toContainText('Nếu địa chỉ email này có tài khoản UII');
+  expect(requests).toBe(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+test('password recovery rate limit is truthful and never claims an email was sent', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local auth fixture only');
+  await page.route(url => url.origin === 'https://example.supabase.co' && url.pathname === '/auth/v1/recover',
+    route => route.fulfill({status:429,json:{code:'over_email_send_rate_limit',msg:'rate limit exceeded'}}));
+  await page.goto('/forgot-password');
+  await page.getByLabel('Email',{exact:true}).fill('student@example.test');
+  await page.getByRole('button',{name:'Gửi hướng dẫn đặt lại mật khẩu'}).click();
+  await expect(page.getByRole('alert')).toContainText('giới hạn');
+  await expect(page.getByRole('status')).toHaveCount(0);
+});
+
+test('password update route denies access without a valid recovery session', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local auth fixture only');
+  await page.goto('/reset-password');
+  await expect(page.getByRole('heading',{name:'Liên kết không còn hợp lệ'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Cập nhật mật khẩu'})).toHaveCount(0);
+  await expect(page.getByRole('link',{name:/Về trang đăng nhập/})).toHaveAttribute('href','/learn');
+});
