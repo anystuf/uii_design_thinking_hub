@@ -125,7 +125,7 @@ test('password recovery rate limit is truthful and never claims an email was sen
   await page.goto('/forgot-password');
   await page.getByLabel('Email',{exact:true}).fill('student@example.test');
   await page.getByRole('button',{name:'Gửi hướng dẫn đặt lại mật khẩu'}).click();
-  await expect(page.getByRole('alert')).toContainText('giới hạn');
+  await expect(page.getByRole('alert').filter({hasText:'Bạn đã yêu cầu email quá nhiều lần'})).toBeVisible();
   await expect(page.getByRole('status')).toHaveCount(0);
 });
 
