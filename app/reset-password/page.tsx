@@ -25,7 +25,8 @@ export default function ResetPasswordPage() {
     let active = true;
     let recoveryEvent = false;
     // Supabase may consume the fragment during client initialization.
-    const recoveryFragment = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('type') === 'recovery';
+    const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const recoveryFragment = fragment.get('type') === 'recovery' && !!fragment.get('access_token') && !!fragment.get('refresh_token');
     try {
       const client = getSupabaseBrowserClient();
       const { data: { subscription } } = client.auth.onAuthStateChange((event, session) => {
