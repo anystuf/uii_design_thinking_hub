@@ -10,6 +10,7 @@ import { warmWorkspaceApi } from "@/lib/authenticated-api";
 const links = [
   { href: "/", label: "Trang chủ", icon: House },
   { href: "/dashboard", label: "Tổng quan", icon: LayoutDashboard },
+  { href: "/classroom", label: "Buổi học", icon: ClipboardCheck },
   { href: "/learn", label: "Khóa học", icon: BookOpen },
   { href: "/studio", label: "Dự án", icon: FolderKanban },
   { href: "/community", label: "Cộng đồng sáng tạo", icon: MessagesSquare },
