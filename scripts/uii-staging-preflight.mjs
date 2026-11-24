@@ -54,13 +54,20 @@ export async function runPreflight() {
   const frontend = assertUiiStagingOrigin(uiOrigin, 'frontend');
   const api = assertUiiStagingOrigin(apiOrigin, 'api');
   await verifyReady(api);
-  const [learning, questions] = await Promise.all([
-    get('/learn', frontend),
-    get('/community/questions', api),
+  // Never authenticate or write from this public preflight. Real role/DB
+  // authorization is handled by the separately gated staging UAT.
+  const frontendRoutes = ['/learn', '/classroom', '/studio', '/evidence', '/review'];
+  const protectedRoutes = ['/auth/me', '/assessments/queue', '/community/questions'];
+  const responses = await Promise.all([
+    ...frontendRoutes.map(path => get(path, frontend).then(response => ({ path, status: response.status, expected: 200 }))),
+    ...protectedRoutes.map(path => get(path, api).then(response => ({ path, status: response.status, expected: 401 }))),
   ]);
-  assert.equal(learning.status, 200, 'UII staging learning route must return HTTP 200');
-  assert.equal(questions.status, 401, 'UII staging Q&A must require auth (401), not missing route (404)');
-  console.log('PASS: UII staging frontend route, API/DB readiness, Q&A route and anonymous auth boundary');
+  for (const item of responses) {
+    assert.equal(item.status, item.expected,
+      'UII pilot preflight ' + item.path + ' expected HTTP ' + item.expected + ', received ' + item.status);
+  }
+  console.log('PASS: UII pilot public routes (5), backend/DB readiness and anonymous authorization boundaries (3).');
+  console.log('NOTE: This read-only check does not prove real login, student writes, teacher feedback or concurrent-class capacity.');
 }
 
 if (process.argv[1]?.endsWith('/uii-staging-preflight.mjs')) {
