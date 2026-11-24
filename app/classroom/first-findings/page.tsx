@@ -145,6 +145,17 @@ export default function FirstFindingsPage() {
     }
   }
 
+  async function verifySaved() {
+    if (!token || !teamId) { window.location.reload(); return; }
+    setChecking(true); setError('');
+    try {
+      const evidence = await authenticatedApi<Evidence[]>('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token);
+      setExisting(evidence.find(isFirstFindingsEvidence) ?? null);
+    } catch {
+      setError('Chưa xác minh được dữ liệu dự án. Không gửi lại trước khi máy chủ phản hồi.');
+    } finally { setChecking(false); }
+  }
+
   const eligible = !!token && role === 'STUDENT' && !!teamId;
   const evidenceHref = teamId ? '/evidence?projectId=' + encodeURIComponent(teamId) : '/evidence';
   const ready = firstFindingsComplete(first, second, teamScope);
@@ -172,7 +183,7 @@ export default function FirstFindingsPage() {
         <Link className="font-bold underline" href="/learn">Đăng nhập để tiếp tục</Link>
       </div>}
       {error && <div role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900">
-        {error} <button type="button" className="ml-2 font-bold underline" onClick={() => window.location.reload()}>Tải lại để kiểm tra</button>
+        {error} <button type="button" className="ml-2 font-bold underline" onClick={() => void verifySaved()}>Kiểm tra lại bản đã lưu</button>
       </div>}
       {loading && <WorkspaceLoading label="Đang tải nhóm dự án..."/>}
       {session && !loading && role !== 'STUDENT' && <section className={panel}>
@@ -188,7 +199,14 @@ export default function FirstFindingsPage() {
       {eligible && !loading && <section className={panel}>
         <label htmlFor="activity2-team" className="block text-sm font-bold">Nhóm thực hiện</label>
         <select id="activity2-team" value={teamId}
-          onChange={e => setTeamId(e.target.value)} className={input}>
+          onChange={e => {
+            if (firstFindingsComplete(first, second, teamScope) &&
+                !window.confirm('Đổi nhóm sẽ xóa nội dung chưa lưu trên biểu mẫu. Tiếp tục?')) return;
+            setTeamId(e.target.value);
+            setFirst({ ...EMPTY_FIRST_FINDINGS_PROBLEM });
+            setSecond({ ...EMPTY_FIRST_FINDINGS_PROBLEM });
+            setTeamScope('');
+          }} className={input}>
           {teams.map(team => <option value={team.id} key={team.id}>{team.title}</option>)}
         </select>
         <p className="mt-3 text-xs leading-6 text-[#526b6b]">Không nhập tên, số điện thoại hoặc dữ liệu nhận diện của người phỏng vấn. Chỉ sử dụng bằng chứng đã được phép chia sẻ riêng tư cho giảng viên.</p>
