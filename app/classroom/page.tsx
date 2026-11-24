@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js';
 import { ArrowRight, BookOpen, CheckCircle2, ClipboardCheck, FileText, FolderKanban, RefreshCcw, ShieldCheck } from 'lucide-react';
 
 import { WorkspaceNav } from '@/components/workspace-nav';
+import { TeacherClassroomBoard } from '@/components/teacher-classroom-board';
 import { WorkspaceLoading } from '@/components/workspace-loading';
 import { authenticatedApi, workspaceProfile } from '@/lib/authenticated-api';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
@@ -233,6 +234,21 @@ export default function ClassroomPage() {
 
         {account && (isTeacher || isStudent) && <>
           <StepGuide student={isStudent}/>
+          {isStudent && <section className="rounded-[22px] border border-[#b9d9cd] bg-[#f2f8f2] p-5 sm:p-6" aria-label="Hoạt động trọng tâm buổi học">
+            <p className="text-xs font-black uppercase tracking-[.15em] text-[#8b4d25]">CHƯƠNG 10 · FIRST FINDINGS</p>
+            <h2 className="mt-2 text-xl font-black">Bắt đầu từ hai vấn đề có thật</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-7 text-[#465f62]">
+              Hoạt động 2 (slide 64–65): mô tả hai vấn đề, nguồn chứng minh, người gặp khó khăn,
+              cách họ đang ứng phó, nguồn lực và giá trị. Một slide tổng hợp, trình bày hai phút.
+            </p>
+            <Link href={teamId ? '/classroom/first-findings?projectId=' + encodeURIComponent(teamId) : '/classroom/first-findings'}
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173445] px-5 py-3 text-sm font-bold text-white">
+              Mở Activity 2 <ArrowRight size={16} aria-hidden="true"/>
+            </Link>
+          </section>}
+          {isTeacher && courseId && !loading && !detailLoading && <TeacherClassroomBoard
+            token={token} courseId={courseId} challenges={challenges}/>}
+
           <section className={card} aria-label="Lựa chọn không gian học">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-lg font-black">{isStudent ? 'Dự án của nhóm' : 'Khóa học đang phụ trách'}</h2>
