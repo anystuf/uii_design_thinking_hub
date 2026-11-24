@@ -138,3 +138,48 @@ test('password update route denies access without a valid recovery session', asy
   await expect(page.getByRole('button',{name:'Cập nhật mật khẩu'})).toHaveCount(0);
   await expect(page.getByRole('link',{name:/Về trang đăng nhập/})).toHaveAttribute('href','/learn');
 });
+
+
+test('recovery link establishes a session and updates the password without exposing tokens in UI', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local mocked recovery session only');
+  const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const accessToken = [
+    encode({alg:'HS256',typ:'JWT'}),
+    encode({sub:'00000000-0000-4000-a000-000000000001',role:'authenticated',aud:'authenticated',exp:Math.floor(Date.now()/1000)+3600}),
+    'fixture-signature'
+  ].join('.');
+  const user = { id:'00000000-0000-4000-a000-000000000001', aud:'authenticated', role:'authenticated',
+    email:'recovery-fixture@example.test', app_metadata:{provider:'email',providers:['email']}, user_metadata:{}, identities:[],
+    created_at:'2026-11-01T00:00:00Z', updated_at:'2026-11-01T00:00:00Z' };
+  let updates = 0;
+  await page.route(url => url.hostname==='example.supabase.co' && url.pathname === '/auth/v1/user', async route => {
+    if (route.request().method()==='PUT') {
+      updates++;
+      expect(route.request().postDataJSON().password).toBe('NewFixturePassword!2026');
+    }
+    await route.fulfill({status:200,json:user});
+  });
+  await page.route(url => url.hostname==='example.supabase.co' && url.pathname.startsWith('/auth/v1/logout'), route => route.fulfill({status:204,body:''}));
+  const hash = new URLSearchParams({access_token:accessToken,refresh_token:'fixture-refresh',
+    expires_in:'3600',expires_at:String(Math.floor(Date.now()/1000)+3600),token_type:'bearer',type:'recovery'});
+  await page.goto('/reset-password#'+hash.toString());
+  await expect(page.getByRole('heading',{name:'Đặt mật khẩu mới'})).toBeVisible({timeout:10000});
+  await page.getByLabel('Mật khẩu mới',{exact:true}).fill('NewFixturePassword!2026');
+  await page.getByLabel('Xác nhận mật khẩu mới').fill('NewFixturePassword!2026');
+  await page.getByRole('button',{name:'Cập nhật mật khẩu'}).click();
+  await expect(page.getByRole('heading',{name:'Đã cập nhật mật khẩu'})).toBeVisible({timeout:15000});
+  expect(updates).toBe(1);
+});
+
+test('password recovery pages disable decorative ink and floating chatbot', async ({page}) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'Local visual fixture only');
+  for (const path of ['/forgot-password','/reset-password']) {
+    await page.goto(path);
+    await page.mouse.move(40,40);
+    await page.mouse.move(320,240,{steps:16});
+    const canvas = page.getByTestId('creative-pointer-trail');
+    await expect(canvas).toHaveAttribute('data-active','false');
+    await expect(page.getByRole('button',{name:/Mở Hỏi UII/})).toHaveCount(0);
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  }
+});
