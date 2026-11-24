@@ -70,13 +70,14 @@ export default function ResetPasswordPage() {
       if (result.error) throw result.error;
       setPassword('');
       setConfirmation('');
+      // The update has succeeded. Best-effort local sign-out should not turn a
+      // successful password change into a false failure if the network stalls.
+      try { await client.auth.signOut({ scope: 'local' }); } catch { /* best effort */ }
       setState('done');
-      // Clear the recovery session; the next login is deliberate.
-      await client.auth.signOut({ scope: 'local' });
     } catch (err) {
       if (err instanceof AuthTimeoutError) {
         setError('Chưa nhận được kết quả. Hãy kiểm tra lại phiên đăng nhập trước khi thử lại.');
-      } else if (state !== 'done') {
+      } else {
         setError('Chưa thể cập nhật mật khẩu. Liên kết có thể đã hết hạn; hãy yêu cầu email mới.');
       }
     } finally {
