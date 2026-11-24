@@ -32,8 +32,8 @@ function formatProblem(problem: FirstFindingsProblem, index: number) {
   return [
     'ACTIVITY 2 — FIRST FINDINGS',
     'VẤN ĐỀ ' + index,
-    ...FIRST_FINDINGS_FIELDS.map(field => field.label + '\\n' + problem[field.key].trim()),
-  ].join('\\n\\n');
+    ...FIRST_FINDINGS_FIELDS.map(field => field.label + '\n' + problem[field.key].trim()),
+  ].join('\n\n');
 }
 
 export function buildFirstFindingsEvidence(
@@ -41,7 +41,7 @@ export function buildFirstFindingsEvidence(
 ) {
   const description = formatProblem(first, 1);
   const reflection = formatProblem(second, 2) +
-    '\\n\\nGIỚI HẠN NGUỒN LỰC CỦA NHÓM\\n' + teamScope.trim();
+    '\n\nGIỚI HẠN NGUỒN LỰC CỦA NHÓM\n' + teamScope.trim();
   if (description.length > 3000 || reflection.length > 3000) {
     throw new Error('Nội dung dài hơn giới hạn lưu trữ; hãy rút gọn từng câu trả lời.');
   }
