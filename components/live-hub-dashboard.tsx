@@ -364,6 +364,7 @@ export function LiveHubDashboard() {
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Link href={student ? (nextCourse ? "/learn?course=" + encodeURIComponent(nextCourse.id) + (nextEnrollment?.progress?.nextLesson ? "&lesson=" + encodeURIComponent(nextEnrollment.progress.nextLesson.id) : "") : "/learn") : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? nextCourse ? "Tiếp tục khóa học" : "Khám phá khóa học" : lecturer ? (data.queue?.length ? "Đánh giá bài nộp" : "Xem công việc giảng dạy") : "Quản trị người dùng"} <ArrowRight size={17} aria-hidden="true"/></Link>
                     <Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Khóa học</Link>
+                    <Link href="/classroom" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><ClipboardCheck size={17} aria-hidden="true"/> Buổi học Design Thinking</Link>
                   </div>
                 </div>
                 <span className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold">{roleName(account.role)}</span>
