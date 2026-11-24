@@ -52,6 +52,17 @@ const initialCriteria: CriterionDraft[] = [
   { title: 'Truyền đạt thiết kế', description: 'Rõ ràng, có logic và truy xuất minh chứng', weight: 15, maxScore: 4 },
 ];
 
+// Project-presentation rubric from the lecturer's classroom handoff.
+// The overall course assessment (discussion 20 / mid-term 30 / poster 30 / report 20)
+// is a distinct grading scheme and is not silently substituted here.
+const classroomProjectCriteria: CriterionDraft[] = [
+  { title: 'Problem', description: 'Mức độ rõ ràng, có cơ sở và đúng nhu cầu của vấn đề', weight: 30, maxScore: 4 },
+  { title: 'Solution', description: 'Tính phù hợp và khả thi của giải pháp đề xuất', weight: 30, maxScore: 4 },
+  { title: 'Creativity', description: 'Tính sáng tạo và cách tiếp cận', weight: 15, maxScore: 4 },
+  { title: 'Presentation', description: 'Trình bày poster, lập luận và minh chứng', weight: 10, maxScore: 4 },
+  { title: 'Q&A', description: 'Trả lời câu hỏi và bảo vệ lựa chọn thiết kế', weight: 15, maxScore: 4 },
+];
+
 export default function ReviewPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -308,6 +319,18 @@ export default function ReviewPage() {
                 <section className={panel + ' space-y-4'}>
                   <h3 className="text-xl font-bold">Rubric draft editor</h3>
                   <p className="text-sm text-slate-600">Tổng trọng số phải bằng 100%. Published rubric không thể sửa trực tiếp.</p>
+                  <div className="rounded-xl border border-[#d3e5d8] bg-[#f2f8f2] p-4">
+                    <p className="text-sm font-bold">Mẫu rubric dự án · lớp cô Thanh</p>
+                    <p className="mt-1 text-xs leading-5 text-[#516765]">
+                      Problem 30% · Solution 30% · Creativity 15% · Presentation 10% · Q&A 15%.
+                      Khác với cơ cấu điểm môn học (Discussion 20% · Mid-term 30% · Poster 30% · Report 20%).
+                    </p>
+                    <button type="button" className={minor + ' mt-3'} disabled={busy}
+                      onClick={() => setDraftCriteria(classroomProjectCriteria.map(item => ({ ...item })))}>
+                      Dùng mẫu 5 tiêu chí dự án
+                    </button>
+                    <p className="mt-2 text-xs text-[#516765]">Chỉ thay đổi bản nháp trên màn hình, chưa lưu hoặc xuất bản.</p>
+                  </div>
                   {draftCriteria.map((c, i) => (
                     <div key={i} className="rounded-xl border bg-[#f9fbfe] p-4">
                       <div className="mb-3 flex items-center justify-between">
