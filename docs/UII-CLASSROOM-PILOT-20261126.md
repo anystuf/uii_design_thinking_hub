@@ -23,6 +23,19 @@ Set two verified UII origins and run npm run pilot:check:
 
 PASS means: frontend routes render, database-ready signal works, and anonymous calls to protected backend endpoints receive 401. It is not authenticated acceptance.
 
+
+## First Findings: operator walkthrough for 26 Nov (slide 64–65)
+**Original source:** https://docs.google.com/presentation/d/1QJ-pOnCyIV3usjCqs77Sf_J_aJFAAemB/edit (slide 64–65)
+- Lecturer opens /classroom. The authenticated teacher board lists each team in a published Challenge with data-confirmed states: not started / evidence saved / awaiting review / revision / approved.
+- Student opens /classroom → Activity 2 (/classroom/first-findings), selects an authorized team and investigates **two** real-world problems. For **each**: what is it, reference proving it is real, who suffers, what people currently do, what resources they use, and why it is valuable.
+- Student notes the group's own limits (people, time, facilities). The first action saves private versioned evidence, **not** a submitted assignment. No backend migration or new public table is required.
+- Student opens /evidence, attaches the original **one-slide summary** using private storage (PDF/image) or a teacher-accessible link, selects evidence versions and submits a snapshot. The required **2-minute presentation** is an in-class deliverable, not an upload claim.
+- Lecturer opens /review; use the 5-point project rubric **Problem 30 / Solution 30 / Creativity 15 / Presentation 10 / Q&A 15** (worksheet sheet “TIÊU CHÍ”) and publish a rubric version for the correct challenge; then publish REVISION_REQUESTED with written feedback.
+- Student revises private evidence in /evidence and submits a **new** snapshot version; lecturer approves. Refresh /classroom to see changes. Never treat a page visit or initial evidence save as submission/approval.
+- Guest visitors must not see any group title, response, screenshot, member roster or evidence content. Use synthetic interview descriptions for the rehearsal.
+
+**Hard gate:** Activity 2 and the group board can be deployed on Preview without account credentials. Actual write acceptance still requires a verified backup, dedicated UII test users and reviewer permission; CI fixtures do not replace this. Do not enable the full 50-person class on that basis.
+
 ## 1 — Prepare pilot classroom with test accounts
 1. Verify sign-up, email confirmation, sign-in, password recovery and persistent session from a fresh test email. Role comes from the authenticated backend, never from the signup form.
 2. Lecturer opens /classroom, then /console or /studio to choose/publish the course, one Design Challenge and assigned activity template. Do not replace existing classroom content if used by a real course.
