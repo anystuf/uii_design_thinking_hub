@@ -1,22 +1,15 @@
 import Link from "next/link";
 import {
   ArrowDown, ArrowRight, ArrowUpRight, BookOpen, CalendarDays, CheckCircle2,
-  ChevronRight, Compass, HeartHandshake, Lightbulb, MapPin, MousePointer2,
-  PenLine, Play, Rocket, Shapes, Sparkles, Users, WandSparkles, Zap,
+  ChevronRight, Lightbulb, MapPin, MousePointer2,
+  PenLine, Play, Rocket, Sparkles, Users, WandSparkles,
 } from "lucide-react";
 import { DemoPhoto } from "@/components/demo-photo";
+import { NonLinearModes } from "@/components/non-linear-modes";
 import {
   DEMO_COURSES, DEMO_EVENTS, DEMO_EXERCISES, DEMO_PHOTOS, DEMO_PROJECTS,
   DEMO_QUOTES, DEMO_TOOLS,
 } from "@/lib/demo-content";
-
-const modes = [
-  {name:"Empathize",vi:"Lắng nghe con người",bg:"#fee0c6",number:"01",icon:HeartHandshake,phrase:"Listen closely.",query:"empathy"},
-  {name:"Define",vi:"Tìm đúng vấn đề",bg:"#f4c8d8",number:"02",icon:Compass,phrase:"Frame the real need.",query:"framing"},
-  {name:"Ideate",vi:"Mở rộng khả năng",bg:"#e4e3fb",number:"03",icon:Lightbulb,phrase:"Make ideas visible.",query:"ideation"},
-  {name:"Prototype",vi:"Biến ý tưởng thành mẫu",bg:"#d3ee8c",number:"04",icon:Shapes,phrase:"Make to learn.",query:"prototyping"},
-  {name:"Test",vi:"Thử, học và cải tiến",bg:"#c9edfa",number:"05",icon:Zap,phrase:"Learn from reality.",query:"iteration"},
-] as const;
 
 function Eyebrow({children,dark=false}:{children:React.ReactNode;dark?:boolean}) {
   return <p className={"text-[11px] font-black uppercase tracking-[0.19em] "+(dark?"text-[#7a2d13]":"text-[#ffc88c]")}>{children}</p>;
@@ -112,19 +105,7 @@ export function UIIPublicLanding() {
               <SectionTitle eyebrow="01 / THE WAY WE LEARN" title="Một hành trình. Không có lối đi cố định." desc="Năm chế độ tư duy có thể di chuyển qua lại. Bạn bắt đầu từ câu hỏi, hành động nhỏ, rồi quay lại cải tiến khi có thêm minh chứng."/>
               <Link href="/demo" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#203d45] px-5 text-sm font-extrabold hover:bg-white">Khám phá học thử <ArrowUpRight size={17}/></Link>
             </div>
-            <div className="grid gap-3 md:grid-cols-5">
-              {modes.map((mode,i) => {
-                const Icon = mode.icon;
-                return <Link href={"/demo?course="+mode.query} key={mode.name} className="group relative min-h-56 overflow-hidden rounded-[24px] border border-[#213b3b]/10 p-5 transition duration-300 hover:-translate-y-2 hover:shadow-xl" style={{backgroundColor:mode.bg}}>
-                  <div className="flex items-start justify-between"><span className="text-sm font-black">MODE / {mode.number}</span><ArrowUpRight size={19} className="opacity-50 transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:opacity-100"/></div>
-                  <div className="my-7 grid size-14 place-items-center rounded-full border-2 border-[#1b3640]/30 bg-white/50"><Icon size={26} aria-hidden="true"/></div>
-                  <h3 className="text-2xl font-black tracking-tight">{mode.name}</h3>
-                  <p className="mt-1 text-xs font-bold">{mode.vi}</p>
-                  <p className="mt-4 text-xs italic text-[#34464e]">{mode.phrase}</p>
-                  {i===2 && <svg aria-hidden="true" className="pointer-events-none absolute -right-2 bottom-5 h-20 w-20 text-[#e95742]/65" viewBox="0 0 90 90" fill="none"><path d="M10 63Q0 12 45 24T70 75Q35 85 10 63" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round"/></svg>}
-                </Link>;
-              })}
-            </div>
+            <NonLinearModes />
             <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl bg-white p-5 text-sm font-semibold text-[#415962] sm:p-6">
               <span><MousePointer2 className="mr-2 inline text-[#ed513c]" size={19}/> Con trỏ hành trình dẫn đường — bạn có thể quay lại bất kỳ chế độ nào.</span>
               <span className="shrink-0 rounded-full bg-[#e9f5df] px-3 py-1.5 text-xs font-black text-[#276045]">NON-LINEAR</span>
