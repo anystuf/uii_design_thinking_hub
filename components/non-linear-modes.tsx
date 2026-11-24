@@ -26,7 +26,7 @@ function ModeCard({ mode, className = "" }: { mode: Mode; className?: string }) 
     <Link
       href={"/demo?course=" + mode.query}
       className={
-        "group relative z-10 block min-h-[172px] rounded-[27px] border border-[#213b3b]/10 p-5 text-[#132a35] " +
+        "group z-10 block min-h-[172px] rounded-[27px] border border-[#213b3b]/10 p-5 text-[#132a35] " +
         "shadow-[0_16px_38px_rgba(16,47,57,.09)] transition duration-300 " +
         "hover:-translate-y-1.5 hover:shadow-[0_24px_45px_rgba(16,47,57,.16)] " +
         "focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#173445] " +
