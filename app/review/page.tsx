@@ -56,11 +56,11 @@ const initialCriteria: CriterionDraft[] = [
 // The overall course assessment (discussion 20 / mid-term 30 / poster 30 / report 20)
 // is a distinct grading scheme and is not silently substituted here.
 const classroomProjectCriteria: CriterionDraft[] = [
-  { title: 'Problem', description: 'Mức độ rõ ràng, có cơ sở và đúng nhu cầu của vấn đề', weight: 30, maxScore: 4 },
-  { title: 'Solution', description: 'Tính phù hợp và khả thi của giải pháp đề xuất', weight: 30, maxScore: 4 },
-  { title: 'Creativity', description: 'Tính sáng tạo và cách tiếp cận', weight: 15, maxScore: 4 },
-  { title: 'Presentation', description: 'Trình bày poster, lập luận và minh chứng', weight: 10, maxScore: 4 },
-  { title: 'Q&A', description: 'Trả lời câu hỏi và bảo vệ lựa chọn thiết kế', weight: 15, maxScore: 4 },
+  { title: 'Vấn đề (Problem)', description: 'Thấu cảm qua quan sát, phỏng vấn; hiểu hoàn cảnh và khó khăn người dùng. Thu thập, tổng hợp, phân tích dữ kiện để chứng minh vấn đề có thật và cấp thiết; xác định nguyên nhân cốt lõi, lập luận Problem Statement.', weight: 30, maxScore: 4 },
+  { title: 'Giải pháp (Solution)', description: 'Khởi tạo ý tưởng, so sánh với giải pháp hiện hữu và tìm hiểu chuyên môn. Lập luận dựa trên thấu cảm, phù hợp quan điểm, điều kiện và bối cảnh người dùng; nêu kế hoạch mẫu thử, thử nghiệm, tính khả thi và nguồn lực.', weight: 30, maxScore: 4 },
+  { title: 'Tính sáng tạo (Creativity)', description: 'Mẫu thử trực quan hóa ý tưởng; cách thử nghiệm sáng tạo, hiệu quả để người dùng hiểu và phản hồi. Đánh giá cách tiếp cận vấn đề và đề xuất giải pháp.', weight: 15, maxScore: 4 },
+  { title: 'Thuyết trình (Presentation)', description: 'Trình bày lưu loát, mạch lạc, ngắn gọn; biết nhấn mạnh thông tin quan trọng, có giá trị.', weight: 10, maxScore: 4 },
+  { title: 'Vấn đáp (Q&A)', description: 'Tư duy phản biện, khả năng thuyết phục và lập luận có minh chứng rõ ràng.', weight: 15, maxScore: 4 },
 ];
 
 export default function ReviewPage() {
