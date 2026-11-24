@@ -33,6 +33,8 @@ export function CreativePointerTrail() {
     let staticClear: ReturnType<typeof setTimeout> | undefined;
 
     const disabled = () =>
+      // Decorative ink must not cross authentication forms or recovery links.
+      ["/login", "/forgot-password", "/reset-password"].includes(window.location.pathname) ||
       document.documentElement.dataset.uiiFocusMode === "true" ||
       document.visibilityState === "hidden";
 
