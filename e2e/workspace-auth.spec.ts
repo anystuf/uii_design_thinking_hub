@@ -131,6 +131,8 @@ test('password recovery rate limit is truthful and never claims an email was sen
 
 test('password update route denies access without a valid recovery session', async ({page}) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local auth fixture only');
+  await page.goto('/reset-password#type=recovery');
+  await expect(page.getByRole('heading',{name:'Liên kết không còn hợp lệ'})).toBeVisible();
   await page.goto('/reset-password');
   await expect(page.getByRole('heading',{name:'Liên kết không còn hợp lệ'})).toBeVisible();
   await expect(page.getByRole('button',{name:'Cập nhật mật khẩu'})).toHaveCount(0);
