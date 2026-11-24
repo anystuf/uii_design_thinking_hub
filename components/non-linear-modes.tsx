@@ -52,7 +52,80 @@ function ModeCard({ mode, className = "" }: { mode: Mode; className?: string }) 
   );
 }
 
-/** The ribbon is decorative: each mode is an ordinary keyboard-accessible link. */
+/** The ribbon and its arrows share the same cubic Bézier geometry. */
+type Point = readonly [number, number];
+type Cubic = { start: Point; c1: Point; c2: Point; end: Point };
+
+const RIBBON_CURVES: readonly Cubic[] = [
+  { start: [188, 259], c1: [188, 95], c2: [360, 70], end: [539, 258] },
+  { start: [539, 258], c1: [691, 414], c2: [712, 417], end: [855, 258] },
+  { start: [855, 258], c1: [1035, 72], c2: [1202, 93], end: [1202, 259] },
+  { start: [1202, 259], c1: [1202, 432], c2: [1035, 456], end: [855, 258] },
+  { start: [855, 258], c1: [705, 91], c2: [683, 105], end: [539, 258] },
+  { start: [539, 258], c1: [361, 448], c2: [188, 432], end: [188, 259] },
+];
+
+const ribbonPath = [
+  "M188 259",
+  ...RIBBON_CURVES.map(({ c1, c2, end }) => "C" + c1.join(" ") + " " + c2.join(" ") + " " + end.join(" ")),
+].join(" ");
+
+function ribbonSample(segment: number, t: number) {
+  const { start, c1, c2, end } = RIBBON_CURVES[segment];
+  const u = 1 - t;
+  const coordinate = (axis: number) =>
+    u ** 3 * start[axis] + 3 * u ** 2 * t * c1[axis] +
+    3 * u * t ** 2 * c2[axis] + t ** 3 * end[axis];
+  const derivative = (axis: number) =>
+    3 * u ** 2 * (c1[axis] - start[axis]) +
+    6 * u * t * (c2[axis] - c1[axis]) +
+    3 * t ** 2 * (end[axis] - c2[axis]);
+
+  return {
+    x: coordinate(0),
+    y: coordinate(1),
+    angle: Math.atan2(derivative(1), derivative(0)) * 180 / Math.PI,
+  };
+}
+
+/** A chevron is anchored on the centerline, aligned with the path tangent. */
+function RibbonDirection({ segment, t }: { segment: number; t: number }) {
+  const { x, y, angle } = ribbonSample(segment, t);
+  return (
+    <g
+      data-testid="uii-ribbon-arrow"
+      data-segment={segment}
+      data-curve-t={t}
+      transform={"translate(" + x.toFixed(3) + " " + y.toFixed(3) + ") rotate(" + angle.toFixed(3) + ")"}
+    >
+      <path d="M-11 -11 L1 0 L-11 11" stroke="#fff" strokeWidth="6"
+        strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    </g>
+  );
+}
+
+/** Contrasting iteration icon in the open center of the infinity shape. */
+function IterationSymbol({ cx, cy, compact = false }: { cx: number; cy: number; compact?: boolean }) {
+  const scale = compact ? 1.18 : 1.65;
+  return (
+    <g data-testid="uii-infinity-center">
+      <circle
+        cx={cx} cy={cy} r={compact ? 25 : 38}
+        fill="#faf8f1" fillOpacity=".99"
+        stroke="#718e9a" strokeWidth={compact ? 2 : 2.8}
+      />
+      <g transform={"translate(" + (cx - 12 * scale) + " " + (cy - 12 * scale) + ") scale(" + scale + ")"}>
+        <path
+          d="M20 11a8.1 8.1 0 0 0-15.5-2 M4 4v5h5 M4 13a8.1 8.1 0 0 0 15.5 2 M20 20v-5h-5"
+          stroke="#345868" strokeWidth="2.4"
+          strokeLinecap="round" strokeLinejoin="round" fill="none"
+        />
+      </g>
+    </g>
+  );
+}
+
+/** Decorative graphic; the five learning modes remain keyboard-accessible links. */
 function InfinityRibbon({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
@@ -70,9 +143,7 @@ function InfinityRibbon({ compact = false }: { compact?: boolean }) {
           d="M68 105 C68 18 165 18 255 105 S435 192 528 105 C528 18 435 18 345 105 S165 192 68 105"
           stroke="url(#uii-infinity-compact)" strokeWidth="29" strokeLinecap="round" strokeLinejoin="round"
         />
-        <path d="m130 59 13 10 -5 17 M453 149 l-13 -10 5 -17" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="300" cy="105" r="24" fill="#faf8f1" fillOpacity=".85" />
-        <path d="M289 101a12 12 0 0 1 20-5m0 0v-8m0 8h-8M311 109a12 12 0 0 1-20 5m0 0v8m0-8h8" stroke="#59727e" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <IterationSymbol cx={300} cy={105} compact />
       </svg>
     );
   }
@@ -95,26 +166,16 @@ function InfinityRibbon({ compact = false }: { compact?: boolean }) {
           <stop offset="1" stopColor="#96d9fa" />
         </linearGradient>
       </defs>
-      <path
-        d="M188 259 C188 95 360 70 539 258 C691 414 712 417 855 258 C1035 72 1202 93 1202 259 C1202 432 1035 456 855 258 C705 91 683 105 539 258 C361 448 188 432 188 259"
-        stroke="#cbd7d0" strokeWidth="79" strokeLinecap="round" opacity=".21"
-      />
-      <path
-        d="M188 259 C188 95 360 70 539 258 C691 414 712 417 855 258 C1035 72 1202 93 1202 259 C1202 432 1035 456 855 258 C705 91 683 105 539 258 C361 448 188 432 188 259"
-        stroke="url(#uii-infinity-ribbon)" strokeWidth="69" strokeLinecap="round" strokeLinejoin="round"
-      />
-      <g stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" opacity=".94">
-        <path d="m226 149 14 11 -3 19 m-20 -27 14 11 -3 19" />
-        <path d="m445 406 -14 -12 8 -18 m-18 32 -14 -12 8 -18" />
-        <path d="m978 134 15 9 -2 20 m-20 -25 15 9 -2 20" />
-        <path d="m1155 335 -12 15 -18 -7 m28 7 -12 15 -18 -7" />
-        <path d="m898 409 -16 -9 3 -18 m-23 20 -16 -9 3 -18" />
-      </g>
-      <circle cx="695" cy="259" r="37" fill="white" fillOpacity=".18" />
-      <path
-        d="M677 251a21 21 0 0 1 35-6m0 0v-13m0 13h-13M713 268a21 21 0 0 1-35 6m0 0v13m0-13h13"
-        stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"
-      />
+      <path d={ribbonPath} stroke="#cbd7d0" strokeWidth="79" strokeLinecap="round"
+        strokeLinejoin="round" opacity=".21" />
+      <path data-testid="uii-infinity-ribbon-path" d={ribbonPath}
+        stroke="url(#uii-infinity-ribbon)" strokeWidth="69"
+        strokeLinecap="round" strokeLinejoin="round" />
+      <RibbonDirection segment={0} t={0.22} />
+      <RibbonDirection segment={5} t={0.19} />
+      <RibbonDirection segment={2} t={0.26} />
+      <RibbonDirection segment={3} t={0.75} />
+      <IterationSymbol cx={695} cy={259} />
     </svg>
   );
 }
