@@ -108,3 +108,48 @@ test("non-linear journey does not overlap or overflow at tablet and phone widths
     }
   }
 });
+
+
+test("infinity arrows follow the actual ribbon geometry and center iteration symbol is legible", async ({ page }, testInfo) => {
+  test.skip(!!process.env.E2E_BASE_URL, "Local fixture only");
+  for (const width of [1280, 1440, 1920]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    const svg = page.getByTestId("uii-infinity-journey");
+    await expect(svg).toBeVisible();
+    await expect(svg.getByTestId("uii-ribbon-arrow")).toHaveCount(4);
+    await expect(svg.getByTestId("uii-infinity-center")).toHaveCount(1);
+
+    const geometry = await svg.evaluate((node) => {
+      const path = node.querySelector('[data-testid="uii-infinity-ribbon-path"]') as SVGPathElement;
+      const arrows = Array.from(node.querySelectorAll('[data-testid="uii-ribbon-arrow"]')) as SVGGElement[];
+      const center = node.querySelector('[data-testid="uii-infinity-center"]') as SVGGElement;
+      const length = path.getTotalLength();
+      const points = Array.from({ length: 1401 }, (_, i) => path.getPointAtLength(length * i / 1400));
+      const errors = arrows.map((arrow) => {
+        const matrix = arrow.transform.baseVal.consolidate()?.matrix;
+        if (!matrix) return Infinity;
+        const { x, y } = new DOMPoint(0, 0).matrixTransform(matrix);
+        return Math.min(...points.map(p => Math.hypot(p.x - x, p.y - y)));
+      });
+      const circle = center.querySelector("circle") as SVGCircleElement;
+      const icon = center.querySelector("path") as SVGPathElement;
+      return {
+        errors,
+        centerCircleRadius: Number(circle.getAttribute("r")),
+        centerFillOpacity: Number(circle.getAttribute("fill-opacity")),
+        iconStroke: icon.getAttribute("stroke"),
+        iconSize: icon.getBBox().width,
+      };
+    });
+    for (const deviation of geometry.errors) {
+      expect(deviation, "arrow center should be attached to the ribbon curve").toBeLessThan(3);
+    }
+    expect(geometry.centerCircleRadius).toBeGreaterThanOrEqual(30);
+    expect(geometry.centerFillOpacity).toBeGreaterThanOrEqual(0.95);
+    expect(geometry.iconStroke).toBe("#345868");
+    expect(geometry.iconSize).toBeGreaterThan(10);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.locator("#how").screenshot({ path: testInfo.outputPath("infinity-arrows-" + width + ".png") });
+  }
+});
