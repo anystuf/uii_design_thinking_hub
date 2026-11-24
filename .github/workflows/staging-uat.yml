@@ -1,20 +1,38 @@
-name: Authenticated staging acceptance
+name: UII authenticated staging acceptance
+
 on:
   workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: uii-staging-authenticated-uat
+  cancel-in-progress: false
+
 jobs:
   acceptance:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     environment: staging-uat
+    env:
+      # Explicit targets prevent credentials being sent to an old or unrelated site.
+      E2E_STAGING_FRONTEND_ORIGIN: ${{ vars.E2E_STAGING_FRONTEND_ORIGIN }}
+      E2E_STAGING_API_ORIGIN: ${{ vars.E2E_STAGING_API_ORIGIN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci
+      - name: Verify approved UII targets and staging API before test writes
+        run: node scripts/uii-staging-preflight.mjs
       - run: npx playwright install --with-deps chrome
-      - run: npm run test:staging
+      - name: Real role and evidence acceptance (dedicated UII test accounts only)
+        run: npm run test:staging
         env:
           E2E_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.E2E_SUPABASE_PUBLISHABLE_KEY }}
           E2E_STUDENT_B_EMAIL: ${{ secrets.E2E_STUDENT_B_EMAIL }}
