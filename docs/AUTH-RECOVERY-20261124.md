@@ -8,6 +8,7 @@ Change control: keep PR #20 draft; never merge into main or import classroom dat
 
 - The actual login/registration experience is /learn (LearningAuthForm).
 - /login previously had no App Router page; a compatibility page redirects /login to /learn.
+- /forgot-password is a separate request form with neutral account-existence messaging; it sends recovery emails to the stable UII /reset-password route. /reset-password only enables updateUser after Supabase supplies a recovery session. Browser tests cover requests, rate limits and invalid sessions; real email reset remains an operator UAT gate.
 - e2e/login-compat.spec.ts covers the legacy link without duplicating authentication logic.
 - lib/auth-redirect.ts chooses the named UII staging host for preview-origin confirmations and preserves local development URLs.
 - Supabase browser client uses supabase-js implicit client auth with detectSessionInUrl, not an SSR code-exchange route. Do not configure a /auth/callback or /auth/confirm URL unless that route is first implemented and tested.
@@ -19,17 +20,18 @@ Change control: keep PR #20 draft; never merge into main or import classroom dat
 
 1. Open **Authentication > URL Configuration** for the UII staging LMS project, not for ATH_Research.
 2. Set the Site URL to the approved UII staging origin: https://uii-design-thinking-hub-staging.vercel.app
-3. Add exact allowed redirect URL https://uii-design-thinking-hub-staging.vercel.app/learn. Add other specific UII paths only if a real flow uses them. Do not rely on a localhost default.
+3. Add exact allowed redirect URLs https://uii-design-thinking-hub-staging.vercel.app/learn and https://uii-design-thinking-hub-staging.vercel.app/reset-password. Do not rely on a localhost default. Do not rely on a localhost default.
 4. Inspect the Confirm signup email template and ensure its link honors redirectTo (the standard Supabase ConfirmationURL template typically does; custom templates using SiteURL can override the redirect behavior). Do not include personal data in screenshots or issue comments.
 5. Check the frontend's NEXT_PUBLIC_SUPABASE_URL is the correct UII LMS project URL and its browser credential is only a publishable/anon key. Keep service-role and database credentials server-side.
 6. If templates were customized to call an /auth/confirm route, stop: that route is not part of the current client-side implementation and needs a reviewed code+test change first.
 7. Test on a dedicated fresh UII test account: signup -> confirmation link -> public UII origin /learn -> authenticated session -> dashboard -> sign out. Confirm link never targets localhost, and verify both desktop and mobile.
-8. Verify resend, rate limits, OAuth (only if enabled), protected routes and Student/Lecturer/Admin authorization. Do not grant elevated roles from editable user metadata.
+8. Verify resend, password-reset email -> /reset-password -> update -> sign-in, rate limits, OAuth (only if enabled), protected routes and Student/Lecturer/Admin authorization. Do not grant elevated roles from editable user metadata.
 9. Collect only non-secret evidence: tested deployment SHA, expected origin/path, test run link, HTTP result, reviewer and acceptance timestamp. Never log confirmation tokens, session cookies, passwords or student identities.
 
 ## Backend and data compatibility gate
 
 - Render workspace/service must be explicitly confirmed by the operator before any service selection or deployment.
+- The manual UII authenticated staging workflow now requires explicit `E2E_STAGING_FRONTEND_ORIGIN` and `E2E_STAGING_API_ORIGIN` GitHub environment variables. A read-only preflight verifies exact approved UII origins, /learn, API DB readiness, and protected Q&A before real UAT account credentials are used. The old USI frontend URL is not accepted.
 - Identify Render build SHA, API origin and current health/ready; compare against the candidate SHA.
 - Review the UII staging LMS schema and Prisma migration history before applying the community questions migration.
 - Only after backup and review: deploy a compatible Render API; GET /community/questions without a bearer token must return 401, not 404. An authorized UAT user must be able to read and write within its access scope; cross-team access must remain denied.
@@ -42,6 +44,8 @@ Change control: keep PR #20 draft; never merge into main or import classroom dat
 | --- | --- | --- |
 | Source branch and pull request | Candidate branch; PR #20 Draft | GitHub |
 | Legacy /login link | Implemented in source | app/login/page.tsx; e2e/login-compat.spec.ts |
+| Password-recovery flow | Implemented in source; LIVE email not verified | app/forgot-password/page.tsx; app/reset-password/page.tsx; e2e/workspace-auth.spec.ts |
+| UII staging UAT target guard | Implemented in source; manual UAT not run | scripts/uii-staging-preflight.mjs; playwright.staging.config.ts; staging-uat.yml |
 | Frontend CI at final SHA | Pending | GitHub Actions run URL |
 | Supabase UII LMS connection | VERIFIED: read-only, ACTIVE_HEALTHY | Project ref dpapvhvceuoegztxfuuu |
 | Supabase Site URL and email template | NOT VERIFIED | Operator check |
