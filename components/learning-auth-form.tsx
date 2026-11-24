@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import Link from "next/link";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { AuthTimeoutError, withAuthDeadline } from "@/lib/auth-timeout";
 import { authRedirectUrl } from "@/lib/auth-redirect";
@@ -157,7 +158,7 @@ export function LearningAuthForm() {
       <p className="mt-4 break-all rounded-xl bg-[#f1f6f3] p-3 text-sm font-bold text-[#173445]">{confirmationEmail}</p>
       <ol className="mt-5 list-inside list-decimal space-y-3 text-sm leading-6 text-[#405e66]">
         <li>Mở hộp thư của email trên; kiểm tra cả Spam và Quảng cáo.</li>
-        <li>Nếu nhận được email UII / Supabase, bấm liên kết xác nhận.</li>
+        <li>Nếu nhận được email xác nhận từ UII, bấm liên kết xác nhận.</li>
         <li>Quay lại trang UII và chọn Đăng nhập. Nếu đã xác nhận trước đó, bạn có thể đăng nhập ngay.</li>
       </ol>
       {requestedRole !== "STUDENT" && <p className="mt-4 rounded-xl bg-[#fff5e8] p-3 text-xs leading-6 text-[#72502e]">
@@ -235,6 +236,7 @@ export function LearningAuthForm() {
         </button>
         {timedOut && <button type="button" onClick={() => window.location.reload()} className="min-h-11 w-full rounded-md border px-4 py-2 text-sm font-semibold">Tải lại trang</button>}
       </form>
+      {!signUp && <Link href="/forgot-password" className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#153b77] underline">Quên mật khẩu?</Link>}
       <button type="button" disabled={!!pending || timedOut} className="mt-2 min-h-11 text-left text-sm font-semibold text-[#153b77] underline" onClick={() => {
         setSignUp(value => !value); setPassword(""); setConfirmation(""); setError(""); setMessage(""); setConfirmationError(false); setVisible(false);
       }}>{signUp ? "Đã có tài khoản? Đăng nhập" : "Chưa có tài khoản? Đăng ký"}</button>
