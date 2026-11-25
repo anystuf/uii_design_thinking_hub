@@ -233,6 +233,17 @@ export default function ClassroomPage() {
         </section>}
 
         {account && (isTeacher || isStudent) && <>
+          <section className="rounded-[24px] border border-[#173445] bg-[#173445] p-5 text-white shadow-sm sm:p-7" aria-label="Bước tiếp theo dành cho bạn">
+            <p className="text-xs font-bold tracking-widest text-[#b4d9cd]">{checking ? 'ĐANG CẬP NHẬT' : next.stage}</p>
+            <h2 className="mt-2 text-2xl font-black">{checking ? 'Đang xác minh tiến độ…' : next.title}</h2>
+            <p className="mt-2 mb-5 max-w-2xl text-sm leading-7 text-[#e0edec]">
+              {checking ? 'Hệ thống đang kiểm tra dữ liệu thật trước khi gợi ý hành động.' : next.detail}
+            </p>
+            {!checking && <Link href={next.href}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#f8d0ad] px-5 py-3 text-sm font-bold text-[#173445] hover:bg-white">
+              Thực hiện bước này <ArrowRight size={17} aria-hidden="true"/>
+            </Link>}
+          </section>
           <StepGuide student={isStudent}/>
           {isStudent && <section className="rounded-[22px] border border-[#b9d9cd] bg-[#f2f8f2] p-5 sm:p-6" aria-label="Hoạt động trọng tâm buổi học">
             <p className="text-xs font-black uppercase tracking-[.15em] text-[#8b4d25]">CHƯƠNG 10 · FIRST FINDINGS</p>
@@ -276,17 +287,6 @@ export default function ClassroomPage() {
             </p>
           </section>
           {detailError && <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">{detailError}</p>}
-          <section className="rounded-[24px] border border-[#173445] bg-[#173445] p-5 text-white shadow-sm sm:p-7" aria-label="Bước tiếp theo dành cho bạn">
-            <p className="text-xs font-bold tracking-widest text-[#b4d9cd]">{checking ? 'ĐANG CẬP NHẬT' : next.stage}</p>
-            <h2 className="mt-2 text-2xl font-black">{checking ? 'Đang xác minh tiến độ…' : next.title}</h2>
-            <p className="mt-2 mb-5 max-w-2xl text-sm leading-7 text-[#e0edec]">
-              {checking ? 'Hệ thống đang kiểm tra dữ liệu thật trước khi gợi ý hành động.' : next.detail}
-            </p>
-            {!checking && <Link href={next.href}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#f8d0ad] px-5 py-3 text-sm font-bold text-[#173445] hover:bg-white">
-              Thực hiện bước này <ArrowRight size={17} aria-hidden="true"/>
-            </Link>}
-          </section>
           <section className={card}>
             <h2 className="mb-4 text-lg font-black">Các không gian của chu trình</h2>
             <div className="grid gap-3 sm:grid-cols-3">
