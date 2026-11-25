@@ -85,7 +85,7 @@ export function TeacherClassroomBoard({ token, challenges, courseId }: {
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         <p className="text-xs font-black uppercase tracking-widest text-[#a94716]">LECTURER · TEAM PROGRESS</p>
-        <h2 className="mt-2 text-xl font-black">Team progress dự án</h2>
+        <h2 className="mt-2 text-xl font-black">Project team progress</h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-[#49616a]">
           Displays only submissions and evidence confirmed by the API. It does not infer grades or student understanding.
         </p>
