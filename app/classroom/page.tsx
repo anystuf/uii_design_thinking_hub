@@ -220,6 +220,9 @@ export default function ClassroomPage() {
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[#4a6062]">
             Một bước tiếp theo rõ ràng. Mọi trạng thái lấy từ dữ liệu lớp học; chưa lưu thì không đánh dấu hoàn thành.
           </p>
+          <Link href="/pilot" className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#0e6857] underline underline-offset-4">
+            Hướng dẫn thử nghiệm cho sinh viên và giảng viên <ArrowRight size={16} aria-hidden="true"/>
+          </Link>
         </div>
 
         {error && <div role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900">
