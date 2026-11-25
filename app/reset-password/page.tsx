@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowRight, CheckCircle2, KeyRound } from 'lucide-react';
 
 import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
-type RecoveryState = 'checking' | 'ready' | 'invalid' | 'done';
+type RecoveryState = 'checking' | 'confirm' | 'ready' | 'invalid' | 'done';
 
 /**
  * This route receives a Supabase password-recovery redirect.
@@ -20,12 +20,30 @@ export default function ResetPasswordPage() {
   const [confirmation, setConfirmation] = useState('');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
+  const recoveryTokenHash = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
     let recoveryEvent = false;
-    // Supabase may consume the fragment during client initialization.
+    // A custom recovery email can link directly here with a token hash.
+    // Do not exchange this single-use token until the person explicitly clicks.
+    // Email link scanners that prefetch a URL must not consume it automatically.
     const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const recoveryToken = recoveryTokenHash.current ??
+      (fragment.get('type') === 'recovery' ? fragment.get('token_hash') : null);
+    if (recoveryToken && /^[a-zA-Z0-9_-]{8,512}$/.test(recoveryToken)) {
+      recoveryTokenHash.current = recoveryToken;
+      window.history.replaceState(window.history.state, '', window.location.pathname);
+      setState('confirm');
+      return;
+    }
+    if (fragment.get('error_code') === 'otp_expired' || fragment.get('error') === 'access_denied') {
+      window.history.replaceState(window.history.state, '', window.location.pathname);
+      setState('invalid');
+      return;
+    }
+    // Standard Supabase ConfirmationURL links remain backward compatible:
+    // the browser SDK consumes the resulting authenticated recovery session.
     const recoveryAccessToken = fragment.get('type') === 'recovery' && fragment.get('refresh_token')
       ? fragment.get('access_token') : null;
     try {
@@ -54,6 +72,31 @@ export default function ResetPasswordPage() {
       setState('invalid');
     }
   }, []);
+
+  async function confirmRecoveryLink() {
+    if (pending || !recoveryTokenHash.current) return;
+    const token = recoveryTokenHash.current;
+    setPending(true);
+    setError('');
+    try {
+      const { data, error: verificationError } = await withAuthDeadline(() =>
+        getSupabaseBrowserClient().auth.verifyOtp({ token_hash: token, type: 'recovery' })
+      );
+      if (verificationError || !data.session) {
+        recoveryTokenHash.current = null;
+        setState('invalid');
+        return;
+      }
+      recoveryTokenHash.current = null;
+      setState('ready');
+    } catch {
+      // Never treat an unverified token or a timeout as authentication.
+      recoveryTokenHash.current = null;
+      setState('invalid');
+    } finally {
+      setPending(false);
+    }
+  }
 
   async function updatePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,6 +139,18 @@ export default function ResetPasswordPage() {
           {state === 'done' ? <CheckCircle2 size={28} aria-hidden="true"/> : <KeyRound size={28} aria-hidden="true"/>}
         </div>
         <p className="text-xs font-black uppercase tracking-widest text-emerald-800">UII Design Thinking Hub</p>
+        {state === 'confirm' && (
+          <>
+            <h1 className="mt-3 text-2xl font-black">Confirm password recovery</h1>
+            <p className="mt-3 text-sm leading-6">
+              This link has not been used. Select Continue to verify it securely and choose a new password.
+            </p>
+            <button type="button" disabled={pending} onClick={() => void confirmRecoveryLink()}
+              className="mt-6 min-h-11 rounded-xl bg-[#173762] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+              {pending ? 'Verifying…' : 'Continue to reset password'}
+            </button>
+          </>
+        )}
         {state === 'checking' && (
           <>
             <h1 className="mt-3 text-2xl font-black">Checking recovery link…</h1>
@@ -105,9 +160,9 @@ export default function ResetPasswordPage() {
         {state === 'invalid' && (
           <>
             <h1 className="mt-3 text-2xl font-black">Invalid or expired link</h1>
-            <p role="alert" className="mt-3 text-sm leading-6">Return to sign-in and choose Forgot password to request a new link.</p>
-            <Link href="/learn" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173762] px-5 py-2.5 text-sm font-bold text-white">
-              Back to sign in <ArrowRight size={17} aria-hidden="true"/>
+            <p role="alert" className="mt-3 text-sm leading-6">The link has expired, has been used already, or was rejected. Request a fresh email and open only the newest link.</p>
+            <Link href="/forgot-password?reason=expired" className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173762] px-5 py-2.5 text-sm font-bold text-white">
+              Request a new recovery email <ArrowRight size={17} aria-hidden="true"/>
             </Link>
           </>
         )}
