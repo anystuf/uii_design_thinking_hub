@@ -20,6 +20,7 @@ function ExerciseActivity({ exercise, onComplete }: { exercise: DemoExercise; on
   const [answer,setAnswer] = useState<number|null>(null);
   const [thought,setThought] = useState("");
   const [showHint,setShowHint] = useState(false);
+  const [activityNotes,setActivityNotes] = useState<string[]>([]);
   const isQuiz=exercise.kind==="QUIZ";
   const correct=isQuiz && answer!==null && answer===exercise.correctIndex;
 
@@ -32,13 +33,13 @@ function ExerciseActivity({ exercise, onComplete }: { exercise: DemoExercise; on
     <p className="text-[15px] leading-7 text-[#49606b]">{exercise.prompt}</p>
     {isQuiz && exercise.options && <fieldset className="space-y-3">
       <legend className="mb-3 text-sm font-extrabold">Chọn phương án phù hợp nhất</legend>
-      {exercise.options.map((option,i)=><label key={option} className={"flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 py-3 text-sm font-semibold leading-6 transition "+(answer===i?"border-[#e0583a] bg-[#fff1e7]":"border-[#e4e9e4] bg-white hover:border-[#c3d9ce]")}>
-        <input type="radio" name={exercise.id} checked={answer===i} onChange={()=>setAnswer(i)} className="size-4 accent-[#b74428]"/>
-        <span><strong className="mr-2 text-[#ae492f]">{String.fromCharCode(65+i)}.</strong>{option}</span>
+      {exercise.options.map((option,i)=><label key={option} className={"flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 px-4 py-3 text-sm font-semibold leading-6 transition "+(answer===i?(correct?"border-[#298363] bg-[#e6f5ed]":"border-[#d49b41] bg-[#fff2dd]"):"border-[#e4e9e4] bg-white hover:border-[#c3d9ce]")}>
+        <input type="radio" name={exercise.id} checked={answer===i} onChange={()=>setAnswer(i)} className={"size-4 "+(correct?"accent-[#237a53]":"accent-[#ad7430]")}/>
+        <span><strong className={"mr-2 "+(answer===i&&correct?"text-[#237a53]":"text-[#7b5635]")}>{String.fromCharCode(65+i)}.</strong>{option}</span>
       </label>)}
       {answer!==null && <div role="status" className={"rounded-2xl p-4 text-sm leading-6 "+(correct?"bg-[#e6f5df] text-[#225439]":"bg-[#fff0de] text-[#754321]")}>
         <strong className="block">{correct?"Chính xác!":"Thử lại nhé — bạn đang học, không phải thi."}</strong>
-        {correct ? exercise.feedback : "Gợi ý: chọn hành động tạo ra thông tin mới từ con người và thử nghiệm thực tế."}
+        {correct ? exercise.feedback : "Gợi ý: " + (exercise.hint ?? "Đối chiếu phương án với bằng chứng từ người dùng.")}
       </div>}
     </fieldset>}
     {exercise.kind==="WRITTEN" && <div>
@@ -55,17 +56,25 @@ function ExerciseActivity({ exercise, onComplete }: { exercise: DemoExercise; on
       <Link href="/learn" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full border border-[#22513f] px-4 text-xs font-black text-[#22513f]">Mở Learning Hub <ArrowRight size={15}/></Link>
     </div>}
     {exercise.kind==="ACTIVITY" && <div className="rounded-2xl bg-[#f9e8cc] p-5">
-      <strong className="inline-flex items-center gap-2 text-base"><PenLine size={20}/> Crazy 8s — Phác họa trước, đánh giá sau</strong>
-      <div className="mt-4 grid grid-cols-4 gap-2" aria-label="Tám ô phác họa gợi ý">
-        {Array.from({length:8},(_,i)=><div key={i} className="grid aspect-square place-items-center rounded-lg border-2 border-dashed border-[#b49a70] bg-[#fffdf3] text-xs font-black text-[#8c7757]">{i+1}</div>)}
+      <strong className="inline-flex items-center gap-2 text-base"><PenLine size={20}/>{exercise.activity?.title ?? "Hoạt động nhóm"}</strong>
+      <p className="mt-2 text-sm leading-6 text-[#65533c]">{exercise.activity?.instruction ?? exercise.prompt}</p>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Ô thực hành trực tiếp trong bản demo">
+        {(exercise.activity?.labels ?? ["Ghi chú 1", "Ghi chú 2", "Ghi chú 3", "Ghi chú 4"]).map((label,i)=><label key={label} className="flex min-w-0 flex-col gap-2 rounded-xl border border-[#d0b78b] bg-[#fffdf3] p-3 text-xs font-bold text-[#6d573a]">
+          <span>{label}</span>
+          <textarea aria-label={label} rows={3} maxLength={350} value={activityNotes[i] ?? ""}
+            onChange={event=>setActivityNotes(previous=>{const next=[...previous];next[i]=event.target.value;return next;})}
+            placeholder="Ghi ý tưởng của bạn…" className="min-h-24 w-full resize-y rounded-lg border border-[#d6c7ab] bg-white p-2 text-sm font-normal leading-5 text-[#173341]"/>
+        </label>)}
       </div>
-      <p className="mt-4 text-xs leading-6">Lấy giấy thật, chia thành tám ô và thử tám phương án khác nhau. Không có đồng hồ ép buộc.</p>
+      <p className="mt-4 text-xs leading-6 text-[#64523d]">
+        Đầu ra gợi ý: {exercise.activity?.output ?? exercise.deliverable}. Bản nháp chỉ ở màn hình demo; rời bài sẽ mất nội dung, không gửi lên máy chủ.
+      </p>
     </div>}
     <details className="rounded-2xl border border-[#dbe5dc] bg-white p-4" open={showHint}>
       <summary onClick={event=>{event.preventDefault();setShowHint(p=>!p)}} className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-extrabold text-[#2a5960]">
         <Lightbulb size={18}/> {showHint?"Ẩn gợi ý":"Cần một gợi ý nhỏ?"}
       </summary>
-      {showHint&&<p className="mt-2 text-sm leading-7 text-[#45616b]">Bạn không cần làm hoàn hảo ngay. Hãy viết ra giả thuyết hiện tại, tìm một điều có thể quan sát và hỏi “Mình đang dựa trên bằng chứng nào?”</p>}
+      {showHint&&<p className="mt-2 text-sm leading-7 text-[#45616b]">{exercise.hint ?? "Bắt đầu bằng một bằng chứng nhỏ, rồi nêu điều cần kiểm chứng."}</p>}
     </details>
     <div className="flex flex-wrap gap-3">
       <button type="button" onClick={onComplete} disabled={isQuiz&&!correct} className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#173b4b] px-6 text-sm font-black text-white hover:bg-[#254c5e] disabled:cursor-not-allowed disabled:opacity-40">
@@ -167,7 +176,7 @@ export function DemoPlayground() {
           <section className="rounded-[26px] border border-[#e6e9e1] bg-white p-5 shadow-sm sm:p-8">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><span className="text-xs font-black uppercase tracking-widest text-[#ae5738]">LESSON {String(chapterIndex+1).padStart(2,"0")} / {courseExercises.length}</span><span className="rounded-full bg-[#e7f1fa] px-3 py-1.5 text-[11px] font-black text-[#315874]">Tự học không áp lực thời gian</span></div>
             <div className="mb-7 rounded-[20px] bg-[#f4f5ef] p-5 sm:p-6">
-              <div className="flex items-start gap-3"><BookOpen className="mt-1 shrink-0 text-[#cf603f]" size={22}/><div><h3 className="text-lg font-black">Learn · Điều quan trọng cần nhớ</h3><p className="mt-2 text-sm leading-7 text-[#52686c]">{course.summary} Trước khi chọn cách giải quyết, hãy hỏi người dùng đang trải qua điều gì và cần bằng chứng nào để kiểm chứng ý tưởng.</p></div></div>
+              <div className="flex items-start gap-3"><BookOpen className="mt-1 shrink-0 text-[#cf603f]" size={22}/><div><h3 className="text-lg font-black">Learn · Điều quan trọng cần nhớ</h3><p className="mt-2 text-sm leading-7 text-[#52686c]">{course.summary} Trong bài “{course.chapters[chapterIndex]}”, hãy xác định một quan sát, một giả định và điều bạn muốn học qua thử nghiệm.</p></div></div>
             </div>
             <ExerciseActivity key={exercise.id} exercise={exercise} onComplete={finish}/>
             {completed.includes(exercise.id)&&<p className="mt-5 rounded-2xl bg-[#e6f4e0] p-3 text-xs font-black text-[#316543]"><CheckCircle2 className="mr-2 inline" size={15}/> Bạn đã thử bài này trong phiên demo. Kết quả không được lưu vào LMS.</p>}
