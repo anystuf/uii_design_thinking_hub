@@ -265,7 +265,7 @@ export default function ClassroomPage() {
 
           <section className={card} aria-label="Choose your workspace">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-black">{isStudent ? 'Your team's project' : 'Your courses'}</h2>
+              <h2 className="text-lg font-black">{isStudent ? 'Your team’s project' : 'Your courses'}</h2>
               <button type="button" onClick={() => setRefresh(n => n + 1)}
                 className={secondaryStyle}><RefreshCcw size={16} aria-hidden="true"/> Refresh status</button>
             </div>
