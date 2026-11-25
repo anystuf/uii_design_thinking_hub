@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft, Mail } from 'lucide-react';
 
-import { authRedirectUrl } from '@/lib/auth-redirect';
+import { passwordRecoveryRedirectUrl } from '@/lib/auth-redirect';
 import { AuthTimeoutError, withAuthDeadline } from '@/lib/auth-timeout';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     setError('');
     setBusy(true);
     try {
-      const redirectTo = authRedirectUrl(window.location.origin, '/reset-password');
+      const redirectTo = passwordRecoveryRedirectUrl(window.location.origin);
       const result = await withAuthDeadline(() =>
         getSupabaseBrowserClient().auth.resetPasswordForEmail(email.trim(), { redirectTo })
       );
