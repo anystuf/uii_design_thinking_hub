@@ -323,7 +323,7 @@ export default function ClassroomPage() {
           <p>Mentors can use project spaces according to their assigned permissions.</p>
           <div className="mt-4"><ActionLink href="/studio">Open Studio</ActionLink></div>
         </section>}
-        {account && <div className="text-xs text-[#647579]">Account: {account.role === 'STUDENT' ? 'Student' : account.role === 'LECTURER' ? 'Lecturer' : account.role === 'ADMIN' ? 'Administrator' : 'Mentor'} · Dữ liệu chỉ hiển thị sau xác minh đăng nhập.</div>}
+        {account && <div className="text-xs text-[#647579]">Account: {account.role === 'STUDENT' ? 'Student' : account.role === 'LECTURER' ? 'Lecturer' : account.role === 'ADMIN' ? 'Administrator' : 'Mentor'} · Data is displayed only after your session has been verified.</div>}
       </main>
     </div>
   );
