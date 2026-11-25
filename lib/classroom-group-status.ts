@@ -21,10 +21,10 @@ export function groupPilotStatus(
 }
 
 export const PILOT_GROUP_LABELS: Record<PilotGroupStatus, string> = {
-  UNKNOWN: 'Chưa xác minh',
-  NOT_STARTED: 'Chưa lưu minh chứng',
-  EVIDENCE: 'Có minh chứng · chưa nộp',
-  SUBMITTED: 'Đã nộp · chờ phản hồi',
-  REVISION_REQUESTED: 'Cần cải tiến',
-  APPROVED: 'Đã phê duyệt',
+  UNKNOWN: 'Not verified',
+  NOT_STARTED: 'Not started',
+  EVIDENCE: 'Evidence saved · not submitted',
+  SUBMITTED: 'Submitted · awaiting review',
+  REVISION_REQUESTED: 'Revision requested',
+  APPROVED: 'Approved',
 };
