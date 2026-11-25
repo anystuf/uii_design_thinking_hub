@@ -118,7 +118,7 @@ export default function FirstFindingsPage() {
     event.preventDefault();
     if (!token || role !== 'STUDENT' || !teamId || checking || saving || existing || error) return;
     if (!firstFindingsComplete(first, second, teamScope)) {
-      setError('Complete both problems and your team's resource constraints.');
+      setError('Complete both problems and your team’s resource constraints.');
       return;
     }
     setSaving(true); setError('');
