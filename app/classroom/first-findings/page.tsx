@@ -28,7 +28,7 @@ function ProblemEditor({ value, number, change }: {
 }) {
   return <fieldset className={panel}>
     <legend className="mb-1 text-lg font-extrabold">Problem {number}</legend>
-    <p className="mb-5 text-sm text-[#49616a]">Start with people's lived experience—not a preselected solution.</p>
+    <p className="mb-5 text-sm text-[#49616a]">Start with people’s lived experience—not a preselected solution.</p>
     <div className="grid gap-4 sm:grid-cols-2">
       {FIRST_FINDINGS_FIELDS.map(field =>
         <label key={field.key} className="block text-sm font-bold">
