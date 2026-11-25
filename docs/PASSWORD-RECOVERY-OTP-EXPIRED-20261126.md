@@ -8,15 +8,17 @@ Incident reported 26 November 2026. Reported URL:
 - Correct Supabase Auth project: `dpapvhvceuoegztxfuuu` (`usi-design-thinking-hub`), **not** `aignaxmirbbnfuutvvdg` (ATH_Research).
 - Vercel's `NEXT_PUBLIC_SUPABASE_URL` matches the UII LMS project.
 - UII Auth logs (2026-11-25 UTC) show `POST /recover` 200 at 18:36:10, `/verify` 303 with login at 18:36:18, and `/verify` 303 with error `One-time token not found` at 18:36:23. This is consistent with opening the same single-use email link more than once (including email scanner prefetch). The log alone cannot identify who clicked.
+- Forgot-password now explicitly chooses `https://uii-dt-thanh-pilot.vercel.app/reset-password` as the canonical recovery destination when called from the named preview, staging, or pilot URLs. Signup/OAuth stay on their existing redirect policy. The pilot URL must be in Supabase's allowed redirects list; until the dashboard setting is saved, Supabase may still fall back to the configured Site URL.
 - Existing browser client uses `detectSessionInUrl: true`. The recovery request already supplies `redirectTo` pointing to the named staging host and `/reset-password`. A link landing at the old preview root instead of the reset screen suggests either Site URL fallback or a hardcoded/rebuilt email template; this is **not confirmed** until URL Configuration and recovery template are inspected.
 - Supabase project was healthy during read-only inspection. No LMS records, auth configuration or secrets changed.
 
 ## Application-side protection in candidate branch
 
-1. Handle `/#error=access_denied&error_code=otp_expired` by showing `/forgot-password?reason=expired` with a safe retry, not the public landing page.
-2. Handle a new recovery email template that links directly to `/reset-password#token_hash=...&type=recovery`: do **not** consume it on page load, strip its fragment immediately, and verify it only when the user explicitly presses **Continue to reset password**. This prevents automatic email-link GET/prefetch from consuming the OTP.
-3. Preserve compatibility with existing Supabase `ConfirmationURL` recovery links, including `PASSWORD_RECOVERY` sessions. A generic signed-in user cannot update passwords through the recovery form without a recovery event/session.
-4. UI uses English and does not reveal account existence.
+1. Route recovery requests from older UII preview and staging URLs to the maintained pilot `/reset-password`, without changing signup and OAuth redirects.
+2. Handle `/#error=access_denied&error_code=otp_expired` by showing `/forgot-password?reason=expired` with a safe retry, not the public landing page.
+3. Handle a new recovery email template that links directly to `/reset-password#token_hash=...&type=recovery`: do **not** consume it on page load, strip its fragment immediately, and verify it only when the user explicitly presses **Continue to reset password**. This prevents automatic email-link GET/prefetch from consuming the OTP.
+4. Preserve compatibility with existing Supabase `ConfirmationURL` recovery links, including `PASSWORD_RECOVERY` sessions. A generic signed-in user cannot update passwords through the recovery form without a recovery event/session.
+5. UI uses English and does not reveal account existence.
 
 ## Required Supabase Dashboard operator action (not available through connected tools)
 
