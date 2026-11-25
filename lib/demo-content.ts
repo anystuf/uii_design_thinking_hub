@@ -35,23 +35,23 @@ export const DEMO_PHOTOS = {
 } as const;
 
 export const DEMO_COURSES: readonly DemoCourse[] = [
-  {id:"foundations",title:"Design Thinking Foundations",summary:"Nắm tư duy lấy con người làm trung tâm qua năm chế độ và thử thách nhỏ.",level:"Foundation",duration:"4 tuần",focus:"From curiosity to impact",photo:DEMO_PHOTOS.workshop,accent:"#c6ebff",
-   chapters:["Tư duy thiết kế lấy con người làm trung tâm","Hiểu người dùng và bối cảnh","Viết vấn đề cần giải quyết","Tư duy phân kỳ và lựa chọn","Làm nguyên mẫu giấy","Thử nghiệm và phản tư"],
+  {id:"foundations",title:"Design Thinking Foundations",summary:"Learn human-centred design through five stages and small practical challenges.",level:"Foundation",duration:"4 weeks",focus:"From curiosity to impact",photo:DEMO_PHOTOS.workshop,accent:"#c6ebff",
+   chapters:["Human-centred Design Thinking","Understanding users and context","Framing the right problem","Divergence and convergence","Paper prototyping","Testing and reflection"],
    skills:["Empathy","Problem framing","Iteration"]},
-  {id:"empathy",title:"Empathy & Research",summary:"Tập phỏng vấn, quan sát và nhận diện insight thay vì đoán nhu cầu.",level:"Foundation",duration:"2 tuần",focus:"See differently",photo:DEMO_PHOTOS.stickyNotes,accent:"#ffdcc3",
-   chapters:["Đạo đức nghiên cứu người dùng","Chuẩn bị phỏng vấn mở","Quan sát trong bối cảnh","Viết ghi chú không thiên kiến","Nhóm dữ liệu và insight","Chia sẻ phát hiện với nhóm"],
+  {id:"empathy",title:"Empathy & Research",summary:"Practise interviews, observation, and insight synthesis instead of guessing needs.",level:"Foundation",duration:"2 weeks",focus:"See differently",photo:DEMO_PHOTOS.stickyNotes,accent:"#ffdcc3",
+   chapters:["User research ethics","Preparing open interviews","Contextual observation","Writing unbiased notes","Clustering data and insights","Sharing findings with your team"],
    skills:["Interviewing","Research ethics","Synthesis"]},
-  {id:"framing",title:"Problem Framing & POV",summary:"Biến dữ liệu thực địa thành POV và câu hỏi How Might We có sức mở.",level:"Intermediate",duration:"2 tuần",focus:"Ask better questions",photo:DEMO_PHOTOS.chalkboard,accent:"#e5ddfa",
-   chapters:["Dấu hiệu của vấn đề thật","Tách nhu cầu và giải pháp","Tạo empathy map từ dữ liệu","Viết POV có bằng chứng","How Might We trong thực tế","Soát lại giả định cùng nhóm"],
+  {id:"framing",title:"Problem Framing & POV",summary:"Turn real observations into evidence-based POV and How Might We questions.",level:"Intermediate",duration:"2 weeks",focus:"Ask better questions",photo:DEMO_PHOTOS.chalkboard,accent:"#e5ddfa",
+   chapters:["Signs of a real problem","Needs versus solutions","Evidence-based empathy map","Writing an evidence-based POV","How Might We in practice","Revisiting team assumptions"],
    skills:["POV","HMW","Synthesis"]},
-  {id:"ideation",title:"Ideation Sprint",summary:"Tạo thật nhiều ý tưởng, phát triển phương án rồi chọn điều đáng thử.",level:"Intermediate",duration:"1 tuần",focus:"Make space for ideas",photo:DEMO_PHOTOS.classroom,accent:"#d6f4b8",
-   chapters:["Nguyên tắc phân kỳ","Crazy 8s với phác thảo","Brainwriting không áp lực","Kết hợp và biến đổi ý tưởng","Ma trận chọn thử nghiệm","Pitch một phương án"],
+  {id:"ideation",title:"Ideation Sprint",summary:"Generate many ideas, develop alternatives, and select a testable approach.",level:"Intermediate",duration:"1 week",focus:"Make space for ideas",photo:DEMO_PHOTOS.classroom,accent:"#d6f4b8",
+   chapters:["Principles of divergent thinking","Sketching with Crazy 8s","Low-pressure brainwriting","Combining and adapting ideas","Selecting ideas for testing","Pitching a solution"],
    skills:["Divergent thinking","Sketching","Decision-making"]},
-  {id:"prototyping",title:"Rapid Prototyping",summary:"Biến ý tưởng thành mẫu giấy, storyboard hoặc trải nghiệm đủ để thử.",level:"Intermediate",duration:"2 tuần",focus:"Make it to learn",photo:DEMO_PHOTOS.teamwork,accent:"#ffdf8c",
-   chapters:["Giả định rủi ro nhất","Sketch trải nghiệm bốn khung","Paper prototype","Đóng vai dịch vụ","Chuẩn bị kịch bản thao tác","Chụp và trình bày nguyên mẫu"],
+  {id:"prototyping",title:"Rapid Prototyping",summary:"Turn ideas into paper prototypes, storyboards, or experiences worth testing.",level:"Intermediate",duration:"2 weeks",focus:"Make it to learn",photo:DEMO_PHOTOS.teamwork,accent:"#ffdf8c",
+   chapters:["Your riskiest assumption","Four-frame experience sketch","Paper prototype","Service role-play","Preparing task scenarios","Documenting and presenting prototypes"],
    skills:["Storyboarding","Prototyping","Assumption testing"]},
-  {id:"iteration",title:"Testing & Iteration",summary:"Thiết kế thử nghiệm, quan sát người dùng và cải tiến dựa trên bằng chứng.",level:"Intermediate",duration:"2 tuần",focus:"Learn from reality",photo:DEMO_PHOTOS.meeting,accent:"#ffc8d2",
-   chapters:["Lập kế hoạch thử nghiệm","Viết tác vụ không dẫn dắt","Quan sát thay vì giảng giải","Tổng hợp phản hồi","Ưu tiên thay đổi","Quay lại thử nghiệm vòng mới"],
+  {id:"iteration",title:"Testing & Iteration",summary:"Design tests, observe users, and improve through evidence.",level:"Intermediate",duration:"2 weeks",focus:"Learn from reality",photo:DEMO_PHOTOS.meeting,accent:"#ffc8d2",
+   chapters:["Planning a user test","Writing neutral tasks","Observe without coaching","Synthesizing feedback","Prioritizing improvements","Retesting a new iteration"],
    skills:["Usability testing","Feedback","Reflection"]},
 ];
 
@@ -77,308 +77,308 @@ type QuizConfig = {prompt: string; options: readonly [string,string,string,strin
 const QUIZ_SCENARIOS: Record<string, Record<number, QuizConfig>> = {
   "foundations": {
     "0": {
-      "prompt": "Nhóm thấy sinh viên ít sử dụng khu tự học dù trường vừa cải tạo. Bước đầu giúp hiểu vấn đề nhất là gì?",
+      "prompt": "Students rarely use a renovated study area. What should the team do first?",
       "options": [
-        "Quan sát hành vi người dùng thực tế",
-        "Làm ngay ứng dụng đặt chỗ",
-        "Giả định do sinh viên lười học",
-        "Tăng thêm bàn ghế mà không hỏi ai"
+        "Observe how students actually use the space",
+        "Immediately build a booking app",
+        "Assume students are simply unmotivated",
+        "Buy more desks without talking to anyone"
       ],
       "correctIndex": 0,
-      "feedback": "Quan sát giúp xác định thực tế người học gặp khó khăn gì; việc có nhiều ghế chưa chứng minh được nhu cầu. Hãy ghi lại một quan sát có thể kiểm chứng.",
-      "hint": "Đừng chọn giải pháp trước. Bước nào mang lại bằng chứng trực tiếp từ người sử dụng không gian?"
+      "feedback": "Observation reveals real barriers. New furniture alone does not prove what students need. Record a specific, testable observation.",
+      "hint": "Which action gives direct evidence from the people using the space?"
     },
     "1": {
-      "prompt": "Trong lần phỏng vấn đầu, nhóm muốn hiểu vì sao sinh viên tránh thư viện. Câu hỏi nào giúp tránh dẫn dắt?",
+      "prompt": "Your team wants to understand why students avoid the library. Which question is least leading?",
       "options": [
-        "Thư viện ồn nên bạn không thích, đúng không?",
-        "Lần gần nhất bạn chọn chỗ học ở đâu và vì sao?",
-        "Bạn có ủng hộ app mới không?",
-        "Có phải bạn muốn thư viện mở muộn hơn?"
+        "The library is noisy, isn't it?",
+        "Tell me about the last place you chose to study and why.",
+        "Would you support our new app?",
+        "Do you wish the library stayed open later?"
       ],
       "correctIndex": 1,
-      "feedback": "Một câu hỏi mở về trải nghiệm gần nhất tạo cơ hội phát hiện nhu cầu ngoài giả định của nhóm.",
-      "hint": "Hãy chọn câu hỏi khiến người trả lời kể một trải nghiệm đã xảy ra, không chỉ đồng ý với giả thuyết."
+      "feedback": "Asking about a recent experience creates space for unexpected needs and avoids suggesting an answer.",
+      "hint": "Invite the participant to describe something that actually happened."
     },
     "5": {
-      "prompt": "Người thử nguyên mẫu mất nhiều thời gian tìm nút đặt chỗ. Nhóm nên phản ứng thế nào?",
+      "prompt": "During prototype testing, someone cannot find the booking button. What should the team do?",
       "options": [
-        "Giải thích nút nằm ở đâu ngay lập tức",
-        "Xem đây là lỗi người dùng",
-        "Quan sát, hỏi lại sau tác vụ và ghi nhận bằng chứng",
-        "Xóa ngay toàn bộ nguyên mẫu"
+        "Immediately point out the button",
+        "Blame the participant",
+        "Observe, ask after the task, and record evidence",
+        "Delete the whole prototype"
       ],
       "correctIndex": 2,
-      "feedback": "Phản ứng tốt nhất là quan sát và ghi lại điểm vướng trước khi quyết định thay đổi.",
-      "hint": "Trong kiểm thử, điều cần học là hành vi thực tế; đừng huấn luyện người thử để họ vượt qua lỗi."
+      "feedback": "Watch and document the point of friction before deciding what to change.",
+      "hint": "A test is about real behaviour, not teaching participants where to click."
     }
   },
   "empathy": {
     "0": {
-      "prompt": "Nhóm định phỏng vấn sinh viên về áp lực học tập. Cách xử lý thông tin nào phù hợp nhất?",
+      "prompt": "Your team interviews students about academic stress. Which approach best protects participants?",
       "options": [
-        "Ghi hình và đăng lên nhóm công khai",
-        "Xin đồng ý, chỉ lưu dữ liệu cần thiết và ẩn danh ghi chú",
-        "Thu số điện thoại để tiện đối chiếu dù không cần",
-        "Gắn tên thật vào mọi trích dẫn"
+        "Record interviews and post them publicly",
+        "Obtain consent, collect only needed information, and anonymize notes",
+        "Collect phone numbers just in case",
+        "Attach full names to every quote"
       ],
       "correctIndex": 1,
-      "feedback": "Nghiên cứu thấu cảm cần tôn trọng sự đồng ý, quyền riêng tư và giới hạn dữ liệu thu thập.",
-      "hint": "Người được phỏng vấn cần biết dữ liệu sẽ được dùng thế nào và có quyền từ chối."
+      "feedback": "Empathy research requires informed consent, privacy, and data minimization.",
+      "hint": "Participants must know how their information will be used and be free to decline."
     },
     "1": {
-      "prompt": "Khi phỏng vấn người ít dùng căn tin trường, câu hỏi nào ít áp đặt nhất?",
+      "prompt": "Which interview question is least biased when learning why people avoid the campus cafeteria?",
       "options": [
-        "Bạn thấy căn tin quá đắt đúng không?",
-        "Nếu căn tin có app, bạn có dùng không?",
-        "Kể lần gần nhất bạn quyết định ăn ở đâu và điều gì ảnh hưởng lựa chọn.",
-        "Bạn có đồng ý menu hiện tại quá ít món?"
+        "The cafeteria is too expensive, right?",
+        "Would you use our cafeteria app?",
+        "Tell me about the last time you decided where to eat and what influenced you.",
+        "Don't you agree there are too few menu items?"
       ],
       "correctIndex": 2,
-      "feedback": "Khai thác một lần ra quyết định cụ thể sẽ giúp nhóm nghe được nhu cầu chưa dự kiến.",
-      "hint": "Câu hỏi tốt không tiết lộ kết luận của người hỏi."
+      "feedback": "A concrete decision story can reveal needs the team did not anticipate.",
+      "hint": "Avoid inserting your own conclusion into the question."
     },
     "5": {
-      "prompt": "Hai người được phỏng vấn đưa ra trải nghiệm trái ngược. Nhóm nên báo cáo thế nào?",
+      "prompt": "Two participants describe opposite experiences. How should the team report them?",
       "options": [
-        "Giữ cả hai góc nhìn, nêu bối cảnh và điều chưa xác minh",
-        "Loại một trường hợp cho kết luận đẹp hơn",
-        "Chỉ báo cáo điều phù hợp với giải pháp sẵn có",
-        "Gộp chúng thành một ý kiến chung"
+        "Keep both perspectives, explain their contexts, and flag what remains unverified",
+        "Discard the inconvenient interview",
+        "Only include evidence supporting the existing idea",
+        "Merge them into a false consensus"
       ],
       "correctIndex": 0,
-      "feedback": "Một insight đáng tin cậy phải phân biệt phát hiện, sự khác biệt và giả định chưa kiểm tra.",
-      "hint": "Dữ liệu mâu thuẫn có thể mở ra nhóm nhu cầu hoặc bối cảnh mới, không phải lỗi cần xóa."
+      "feedback": "Credible insights distinguish observations, differences, and assumptions still to be tested.",
+      "hint": "Contradictions may reveal different user segments rather than bad data."
     }
   },
   "framing": {
     "0": {
-      "prompt": "Sinh viên thường đến lớp muộn. Phát biểu nào thể hiện vấn đề thay vì giải pháp?",
+      "prompt": "Students often arrive late to class. Which statement defines a problem rather than a solution?",
       "options": [
-        "Xây app nhắc giờ bằng AI",
-        "Người đi xe buýt thiếu thông tin chính xác về thời điểm xe đến, khiến họ khó lên kế hoạch",
-        "Mua một màn hình LED cho mỗi bến",
-        "Bắt buộc mọi sinh viên đến sớm 30 phút"
+        "Build an AI reminder app",
+        "Bus riders lack reliable arrival information, making planning difficult",
+        "Buy displays for every stop",
+        "Require everyone to arrive 30 minutes early"
       ],
       "correctIndex": 1,
-      "feedback": "Tuyên bố tốt xác định đối tượng, nhu cầu và khó khăn có thể kiểm chứng thay vì khóa vào một sản phẩm.",
-      "hint": "Hãy tìm câu mô tả người gặp khó khăn và nhu cầu của họ, chưa yêu cầu một công nghệ cụ thể."
+      "feedback": "A useful problem statement identifies people, needs, and evidence without locking in one product.",
+      "hint": "Describe who struggles and why before naming a technology."
     },
     "1": {
-      "prompt": "Nhóm cho rằng sinh viên muốn 'ứng dụng xịn hơn'. Bằng chứng nào giúp kiểm tra nhận định?",
+      "prompt": "The team claims students want a 'better app'. Which evidence would test that assumption?",
       "options": [
-        "Ghi nhận cách sinh viên thực hiện tác vụ hiện tại và các điểm vướng",
-        "Bỏ phiếu giữa các thành viên nhóm",
-        "Chọn màu giao diện mới",
-        "Xem app của đối thủ rồi sao chép"
+        "Observe how students complete the current task and where they get stuck",
+        "Vote among team members",
+        "Choose new interface colours",
+        "Copy a competitor's app"
       ],
       "correctIndex": 0,
-      "feedback": "Bằng chứng về hành vi thực và bối cảnh giúp chuyển từ ý thích mơ hồ sang nhu cầu có cơ sở.",
-      "hint": "Một ý kiến thuận tiện cho nhóm chưa đủ là vấn đề của người dùng."
+      "feedback": "Real behaviour and context turn vague preferences into testable user needs.",
+      "hint": "A team preference is not proof of a user's problem."
     },
     "5": {
-      "prompt": "Nhóm viết câu HMW và nhận ra nó ngầm bắt buộc dùng chatbot. Nên làm gì?",
+      "prompt": "A How Might We question already assumes the solution must be a chatbot. What next?",
       "options": [
-        "Giữ vì chatbot đang phổ biến",
-        "Thêm nhiều tính năng chatbot",
-        "Viết lại HMW xoay quanh nhu cầu, sau đó kiểm tra giả định với người dùng",
-        "Chuyển luôn sang lập trình"
+        "Keep it because chatbots are popular",
+        "Add more chatbot features",
+        "Reframe around the user need and validate assumptions",
+        "Start coding immediately"
       ],
       "correctIndex": 2,
-      "feedback": "HMW tốt mở ra nhiều hướng giải quyết; nó không nên đóng khung một giải pháp quá sớm.",
-      "hint": "Hỏi liệu câu HMW còn có thể dẫn đến giải pháp không phải chatbot hay không."
+      "feedback": "A good HMW question opens multiple solution paths instead of preselecting one.",
+      "hint": "Could your HMW also lead to a solution without a chatbot?"
     }
   },
   "ideation": {
     "0": {
-      "prompt": "Buổi lên ý tưởng đầu tiên chỉ có hai ý tưởng khá giống nhau. Nên làm gì để mở rộng không gian giải pháp?",
+      "prompt": "A brainstorming session produces only two similar ideas. What should the team do?",
       "options": [
-        "Chọn ngay ý tưởng đầu tiên",
-        "Để trưởng nhóm quyết định",
-        "Dừng vì đã đủ hai ý tưởng",
-        "Tách pha tạo ý tưởng khỏi pha đánh giá, mời mỗi thành viên đề xuất phương án khác nhau"
+        "Choose the first idea now",
+        "Let the team leader decide",
+        "Stop because two is enough",
+        "Separate generating ideas from evaluating them, and invite diverse proposals"
       ],
       "correctIndex": 3,
-      "feedback": "Phân kỳ trước hội tụ giúp giảm thiên kiến bám vào phương án đầu và mở rộng góc nhìn.",
-      "hint": "Khi mới tạo ý tưởng, trì hoãn phán xét có ích hơn xếp hạng ngay."
+      "feedback": "Divergent thinking before convergence reduces anchoring on the first proposed solution.",
+      "hint": "Early judgement usually limits the range of options."
     },
     "1": {
-      "prompt": "Khi dùng Crazy 8s, một thành viên dành hết thời gian vẽ hoàn hảo một ý tưởng. Cách hỗ trợ phù hợp?",
+      "prompt": "During Crazy 8s, a teammate spends the whole time perfecting one drawing. What helps?",
       "options": [
-        "Khuyến khích phác thảo nhanh nhiều cách khác nhau trước khi chọn",
-        "Chuyển sang làm bản trình chiếu đẹp",
-        "Dừng để cả nhóm chấm ý tưởng đó",
-        "Yêu cầu mọi người sao chép tranh đầu tiên"
+        "Encourage quick sketches of several different approaches",
+        "Make a polished slide deck",
+        "Stop and score the first drawing",
+        "Ask everyone to copy it"
       ],
       "correctIndex": 0,
-      "feedback": "Crazy 8s tạo sự đa dạng bằng nhiều phác thảo nhanh; chất lượng thẩm mỹ không phải mục tiêu của vòng này.",
-      "hint": "Trong pha phân kỳ, số lượng góc tiếp cận quan trọng hơn độ trau chuốt của một ý tưởng."
+      "feedback": "Crazy 8s is about generating multiple fast ideas, not perfecting one illustration.",
+      "hint": "In divergence, variety matters more than polished visuals."
     },
     "5": {
-      "prompt": "Nhóm có ba ý tưởng, cần chọn một ý tưởng thử trong một ngày. Cách thuyết phục hợp lý nhất?",
+      "prompt": "Your team must choose one idea to test tomorrow. What makes the strongest pitch?",
       "options": [
-        "Ý tưởng có logo đẹp nhất",
-        "Nêu nhu cầu người dùng, giả định quan trọng và phép thử nhỏ có thể thực hiện",
-        "Ý tưởng mà người nói tự tin nhất",
-        "Ý tưởng dùng nhiều công nghệ nhất"
+        "The prettiest logo",
+        "A user need, a key assumption, and a small feasible experiment",
+        "The most confident speaker",
+        "The most sophisticated technology"
       ],
       "correctIndex": 1,
-      "feedback": "Một pitch tốt không chỉ truyền cảm hứng mà còn chỉ ra điều cần học từ thử nghiệm tiếp theo.",
-      "hint": "Ưu tiên phương án có khả năng mang lại học hỏi nhanh, thay vì chỉ hấp dẫn khi trình bày."
+      "feedback": "A strong pitch identifies what the experiment can teach, not just why an idea sounds exciting.",
+      "hint": "Prioritize a hypothesis that can be learned from quickly."
     }
   },
   "prototyping": {
     "0": {
-      "prompt": "Nhóm thiết kế dịch vụ tìm phòng học. Giả định nào đáng ưu tiên kiểm tra bằng nguyên mẫu đầu tiên?",
+      "prompt": "Your team prototypes a study-room finder. Which assumption should be tested first?",
       "options": [
-        "Màu logo nào đẹp hơn",
-        "Số lượng slide giới thiệu",
-        "Sinh viên có hiểu cách tìm và xác nhận phòng phù hợp hay không",
-        "Tên ứng dụng có dễ đọc hay không"
+        "Which logo colour looks best",
+        "How many introduction slides to use",
+        "Whether students can find and confirm a suitable room",
+        "Whether the product name is catchy"
       ],
       "correctIndex": 2,
-      "feedback": "Nguyên mẫu nên kiểm tra giả định rủi ro đối với hành vi cốt lõi trước khi đánh bóng thương hiệu.",
-      "hint": "Nếu giả định này sai, giá trị chính của giải pháp có còn tồn tại?"
+      "feedback": "Test the riskiest assumption about the core task before polishing branding.",
+      "hint": "If this assumption fails, does the main solution still have value?"
     },
     "1": {
-      "prompt": "Khi làm storyboard cho ứng dụng hỗ trợ sinh viên mới, yếu tố nào cần thể hiện?",
+      "prompt": "Which elements belong in a storyboard for a first-year student support service?",
       "options": [
-        "Chỉ ảnh chụp trang chủ",
-        "Bối cảnh, hành động người dùng, điểm quyết định và kết quả ở từng khung",
-        "Một danh sách chức năng kỹ thuật",
-        "Số lượng thành viên phát triển"
+        "Only the home screen",
+        "Context, user actions, decision points, and outcomes in sequence",
+        "A technical feature list",
+        "The team member roster"
       ],
       "correctIndex": 1,
-      "feedback": "Storyboard mô tả trải nghiệm xuyên suốt, giúp nhóm nhìn ra lỗ hổng mà giao diện riêng lẻ không cho thấy.",
-      "hint": "Hãy kể một tình huống sử dụng theo thời gian, không chỉ vẽ màn hình."
+      "feedback": "A storyboard follows an experience through time and surfaces gaps between individual screens.",
+      "hint": "Tell a complete user story rather than showing isolated pages."
     },
     "5": {
-      "prompt": "Nhóm đã hoàn thành nguyên mẫu giấy. Làm gì để học từ buổi thử nghiệm?",
+      "prompt": "Your paper prototype is finished. How will you learn from a test?",
       "options": [
-        "Chỉ chụp ảnh nguyên mẫu hoàn chỉnh",
-        "Chỉ hỏi 'bạn có thích không?'",
-        "Yêu cầu người dùng luôn hoàn thành tác vụ",
-        "Ghi lại phiên bản nguyên mẫu, tác vụ thử, hành vi quan sát và thay đổi cần làm"
+        "Photograph only the final prototype",
+        "Only ask 'Did you like it?'",
+        "Force every participant to finish the task",
+        "Record the prototype version, task, observations, and changes to test next"
       ],
       "correctIndex": 3,
-      "feedback": "Minh chứng về thử nghiệm và phiên bản tạo căn cứ cho vòng cải tiến, không chỉ cho phần trình bày đẹp.",
-      "hint": "Tài liệu tốt cho phép nhóm quay lại hiểu vì sao đã thay đổi một chi tiết."
+      "feedback": "Documenting the version, task, and evidence makes later improvements traceable.",
+      "hint": "Could the team explain why each change was made later?"
     }
   },
   "iteration": {
     "0": {
-      "prompt": "Nhóm cần kiểm tra biểu mẫu đăng ký sự kiện. Nhiệm vụ thử nghiệm nào ít dẫn dắt nhất?",
+      "prompt": "Which usability task is least leading when testing an event registration form?",
       "options": [
-        "Hãy đăng ký một buổi workshop vào thứ Sáu bằng thông tin giả lập",
-        "Hãy nhấn nút màu xanh ở góc phải",
-        "Bạn thấy giao diện dễ dùng đúng không?",
-        "Hãy thao tác đúng như bản hướng dẫn này"
+        "Register for a Friday workshop using fictional details",
+        "Click the blue button in the top-right corner",
+        "You find this easy to use, don't you?",
+        "Follow each step exactly as I demonstrate"
       ],
       "correctIndex": 0,
-      "feedback": "Tác vụ nêu mục tiêu nhưng không chỉ ra từng nút; nhờ đó người thử bộc lộ điểm khó hiểu.",
-      "hint": "Nhiệm vụ tốt mô tả điều người dùng muốn hoàn thành, không mô tả cách thực hiện."
+      "feedback": "A neutral task describes the goal without telling participants which controls to use.",
+      "hint": "Describe the desired outcome, not the steps."
     },
     "1": {
-      "prompt": "Người thử bối rối ở bước chọn giờ. Người quan sát nên làm gì?",
+      "prompt": "A participant pauses at the time selection step. What should the observer do?",
       "options": [
-        "Chỉ ngay nơi nhấn cho người dùng",
-        "Giải thích vì sao giao diện hợp lý",
-        "Ghi nhận điểm dừng và hỏi lại sau khi người dùng hoàn thành hoặc dừng tác vụ",
-        "Bỏ qua vì chỉ một người gặp"
+        "Point immediately to the right button",
+        "Explain why the interface is logical",
+        "Record the hesitation and ask about it afterward",
+        "Ignore the issue because only one person struggled"
       ],
       "correctIndex": 2,
-      "feedback": "Quan sát khách quan trước khi hướng dẫn giúp tránh che giấu lỗi của nguyên mẫu.",
-      "hint": "Người thử không cần được chứng minh là đã biết dùng sản phẩm."
+      "feedback": "Neutral observation avoids hiding problems by coaching the participant.",
+      "hint": "You are testing the design, not the participant's ability."
     },
     "5": {
-      "prompt": "Ba lượt thử đều không hiểu nút xác nhận. Cách quyết định vòng cải tiến nào hợp lý?",
+      "prompt": "Three test participants misunderstand the confirmation button. What is a sound next iteration?",
       "options": [
-        "Giữ nguyên vì đã thiết kế xong",
-        "Chỉnh nút theo bằng chứng, nêu giả thuyết thay đổi và thử lại với người dùng",
-        "Đổi logo để tạo cảm giác mới",
-        "Chỉ thêm một đoạn giải thích dài"
+        "Keep it unchanged because development is done",
+        "Revise based on observations, state a hypothesis, and retest",
+        "Replace the logo",
+        "Add a long instruction paragraph without testing"
       ],
       "correctIndex": 1,
-      "feedback": "Build → Measure → Learn → Improve đòi hỏi thay đổi dựa trên bằng chứng rồi kiểm tra lại tác động.",
-      "hint": "Kết quả thử nghiệm là dữ liệu để học, không phải một phán quyết rằng nhóm đã thất bại."
+      "feedback": "Build–measure–learn requires changes supported by evidence and verified in a new test.",
+      "hint": "Testing is a learning cycle, not a pass/fail judgement."
     }
   }
 };
 
 const ACTIVITY_CASES: Record<string, NonNullable<DemoExercise["activity"]>> = {
   "foundations": {
-    "title": "Crazy 8s — tám cách tiếp cận",
+    "title": "Crazy 8s — eight approaches",
     "labels": [
-      "Ý tưởng 1",
-      "Ý tưởng 2",
-      "Ý tưởng 3",
-      "Ý tưởng 4",
-      "Ý tưởng 5",
-      "Ý tưởng 6",
-      "Ý tưởng 7",
-      "Ý tưởng 8"
+      "Idea 1",
+      "Idea 2",
+      "Idea 3",
+      "Idea 4",
+      "Idea 5",
+      "Idea 6",
+      "Idea 7",
+      "Idea 8"
     ],
-    "instruction": "Gõ phác thảo bằng vài từ cho mỗi ô; chọn ý tưởng khác nhau trước khi đánh giá.",
-    "output": "Tám ý tưởng ngắn và một ý tưởng đáng thử."
+    "instruction": "Sketch each approach in a few words. Explore different options before judging.",
+    "output": "Eight quick ideas and one worth testing."
   },
   "empathy": {
-    "title": "Empathy Map — điều gì là bằng chứng?",
+    "title": "Empathy Map — observation vs assumption",
     "labels": [
-      "Người dùng nói",
-      "Người dùng làm",
-      "Điều nhóm suy đoán",
-      "Câu hỏi cần kiểm chứng"
+      "What the user says",
+      "What the user does",
+      "What the team assumes",
+      "Questions to verify"
     ],
-    "instruction": "Phân biệt câu nói/hành vi được ghi nhận với suy luận chưa kiểm chứng.",
-    "output": "Bản đồ 4 vùng với ghi chú thấu cảm."
+    "instruction": "Separate observed statements and behaviours from unverified inferences.",
+    "output": "A four-quadrant empathy map."
   },
   "framing": {
-    "title": "How Might We — mở lại vấn đề",
+    "title": "How Might We — open the problem",
     "labels": [
-      "HMW 1: góc nhu cầu",
-      "HMW 2: góc bối cảnh",
-      "HMW 3: góc cơ hội",
-      "Giả định cần kiểm chứng"
+      "HMW 1 · user need",
+      "HMW 2 · context",
+      "HMW 3 · opportunity",
+      "Key assumption"
     ],
-    "instruction": "Viết ba câu bắt đầu bằng 'Làm thế nào chúng ta có thể…' mà không khóa vào giải pháp.",
-    "output": "Ba câu HMW và giả định quan trọng."
+    "instruction": "Write three 'How might we…' questions without locking in a solution.",
+    "output": "Three HMW questions and one key assumption."
   },
   "ideation": {
-    "title": "Crazy 8s — ý tưởng đa dạng",
+    "title": "Crazy 8s — diverse ideas",
     "labels": [
-      "Ý tưởng 1",
-      "Ý tưởng 2",
-      "Ý tưởng 3",
-      "Ý tưởng 4",
-      "Ý tưởng 5",
-      "Ý tưởng 6",
-      "Ý tưởng 7",
-      "Ý tưởng 8"
+      "Idea 1",
+      "Idea 2",
+      "Idea 3",
+      "Idea 4",
+      "Idea 5",
+      "Idea 6",
+      "Idea 7",
+      "Idea 8"
     ],
-    "instruction": "Mỗi ô một hướng khác nhau. Đừng dừng lại để chấm điểm trong vòng phân kỳ.",
-    "output": "Tám ý tưởng khác biệt."
+    "instruction": "Try a different direction in each cell. Save evaluation until after divergence.",
+    "output": "Eight distinct ideas."
   },
   "prototyping": {
-    "title": "Storyboard — hành trình thử mẫu",
+    "title": "Storyboard — prototype journey",
     "labels": [
-      "1. Bối cảnh",
-      "2. Người dùng bắt đầu",
-      "3. Điểm khó khăn/quyết định",
-      "4. Kết quả cần quan sát"
+      "1. Context",
+      "2. Starting action",
+      "3. Difficulty or decision",
+      "4. Observable outcome"
     ],
-    "instruction": "Phác bằng chữ một trải nghiệm có thể diễn thành nguyên mẫu giấy.",
-    "output": "Storyboard bốn khung."
+    "instruction": "Describe an experience as four frames that could be prototyped on paper.",
+    "output": "A four-frame storyboard."
   },
   "iteration": {
-    "title": "Feedback Canvas — điều gì đã học?",
+    "title": "Feedback Canvas — what changed?",
     "labels": [
-      "Điều người dùng làm được",
-      "Điểm người dùng gặp khó",
-      "Bằng chứng quan sát",
-      "Thay đổi để thử vòng sau"
+      "What worked",
+      "What was confusing",
+      "Observed evidence",
+      "Next change to test"
     ],
-    "instruction": "Tách quan sát thực tế khỏi phán đoán rồi xác định một cải tiến có thể thử.",
-    "output": "Bảng phản hồi và một giả thuyết cải tiến."
+    "instruction": "Separate observations from interpretation, then choose one improvement to test.",
+    "output": "A feedback canvas and a testable improvement."
   }
 };
 
