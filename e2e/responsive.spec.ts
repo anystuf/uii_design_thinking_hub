@@ -13,7 +13,7 @@ for (const route of routes) {
       await page.goto(route);
       await expect(page.locator('main')).toBeVisible();
       await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).margin)).toBe('0px');
-      if (route === '/learn') await expect(page.getByRole('button', { name: 'Đăng nhập', exact: true })).toBeVisible();
+      if (route === '/learn') await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
       await expect.soft.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       if ([320, 768, 1440].includes(width)) {
         await page.screenshot({ path: testInfo.outputPath(`screen-${width}.png`), fullPage: true });
