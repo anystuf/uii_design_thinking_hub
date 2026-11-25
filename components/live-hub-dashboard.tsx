@@ -347,7 +347,7 @@ export function LiveHubDashboard() {
               className="min-h-11 rounded-xl border px-4"
               onClick={() => setReload((n) => n + 1)}
             >
-              Refresh hồ sơ
+              Refresh profile
             </button>
           </Panel>
         )}
@@ -358,12 +358,12 @@ export function LiveHubDashboard() {
               <div className="relative flex flex-wrap items-end justify-between gap-6">
                 <div className="max-w-2xl">
                   <p className="mb-2 text-sm font-semibold text-slate-200">Hello, {account.fullName}</p>
-                  <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Không gian học tập</p>
-                  <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">{student ? <>Today, <span className="text-[#ffb47f]">what should you do next?</span></> : <>Hello {account.fullName.split(" ").slice(-1)[0] || "bạn"}, <span className="text-[#ff9b59]">keep making a difference.</span></>}</h1>
-                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Start in Classroom: see your current task, work with your team, save deliverables, and receive feedback. Other tools are available when needed." : lecturer ? "Dẫn dắt những ý tưởng, đồng hành cùng sinh viên và đưa ra phản hồi giá trị." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
+                  <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Learning workspace</p>
+                  <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">{student ? <>Today, <span className="text-[#ffb47f]">what should you do next?</span></> : <>Hello {account.fullName.split(" ").slice(-1)[0] || "there"}, <span className="text-[#ff9b59]">keep making a difference.</span></>}</h1>
+                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Start in Classroom: see your current task, work with your team, save deliverables, and receive feedback. Other tools are available when needed." : lecturer ? "Guide ideas, support students, and offer actionable feedback." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Link href={student ? "/classroom" : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? "See today's task" : lecturer ? (data.queue?.length ? "Review submissions" : "View teaching tasks") : "Manage users"} <ArrowRight size={17} aria-hidden="true"/></Link>
-                    {!student && <><Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Khóa học</Link>
+                    {!student && <><Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Courses</Link>
                     <Link href="/classroom" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><ClipboardCheck size={17} aria-hidden="true"/> Design Thinking Classroom</Link></>}
                   </div>
                 </div>
@@ -372,7 +372,7 @@ export function LiveHubDashboard() {
             </section>
             <section aria-labelledby="classic-overview-title">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="classic-overview-title" className="mt-1 text-2xl font-extrabold">Dashboard hôm nay</h2></div>
+                <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="classic-overview-title" className="mt-1 text-2xl font-extrabold">Today's dashboard</h2></div>
                 <button aria-label="Refresh dashboard data" disabled={loading} className="min-h-11 rounded-xl border bg-white px-4 font-semibold hover:border-orange-300" onClick={() => setReload((n) => n + 1)}>Refresh</button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -394,7 +394,7 @@ export function LiveHubDashboard() {
               <h2 id="classic-modules-title" className="mb-4 mt-1 text-2xl font-extrabold">{student ? "More tools when needed" : "Explore workspaces"}</h2>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
-                  { href: "/learn", title: "Khóa học", subtitle: "Learn methods, practise skills, and save progress.", icon: GraduationCap, tint: "bg-blue-50 text-blue-700", number: "01" },
+                  { href: "/learn", title: "Courses", subtitle: "Learn methods, practise skills, and save progress.", icon: GraduationCap, tint: "bg-blue-50 text-blue-700", number: "01" },
                   { href: "/studio", title: "Design Studio", subtitle: "Complete challenges with your team.", icon: Layers3, tint: "bg-violet-50 text-violet-700", number: "02" },
                   { href: "/evidence", title: "Evidence & iteration", subtitle: "Save evidence and submission versions.", icon: BookOpen, tint: "bg-orange-50 text-orange-700", number: "03" },
                   { href: account.role === "STUDENT" ? "/notifications" : "/review", title: student ? "Feedback" : "Review & Feedback", subtitle: "Learn from feedback and improve deliverables.", icon: RotateCcw, tint: "bg-emerald-50 text-emerald-700", number: "04" },
@@ -455,7 +455,7 @@ export function LiveHubDashboard() {
                     <p>Courses could not be loaded. Please try again.</p>
                   ) : data.enrollments.length === 0 ? (
                     <p>
-                      Bạn chưa ghi danh khóa học nào. Chọn Browse courses để
+                      You have not enrolled in any courses. Select Browse courses to
                       get started.
                     </p>
                   ) : (
@@ -511,7 +511,7 @@ export function LiveHubDashboard() {
               </Panel>
             )}
             {admin && (
-              <Panel title="Manage users và quyền truy cập">
+              <Panel title="Manage accounts & permissions">
                 <p className="mb-4">
                   View accounts and roles verified by the system.
                 </p>
@@ -524,13 +524,13 @@ export function LiveHubDashboard() {
             )}
             {(lecturer || admin) && (
               <Panel
-                title={lecturer ? "Courses I manage" : "Dashboard khóa học"}
+                title={lecturer ? "Courses I manage" : "Course overview"}
               >
                 <p className="mb-4">
                   {ownedCourses === null
                     ? "Courses could not be loaded."
                     : ownedCourses?.length +
-                      " khóa học trong phạm vi permissions."}
+                      " accessible courses."}
                 </p>
                 <ul className="mb-4 space-y-3">
                   {ownedCourses?.slice(0, 5).map((course) => (
@@ -610,12 +610,12 @@ export function LiveHubDashboard() {
                   {lecturer ? "Manage challenges and teams" : "Open projects and teams"}
                 </Action>
               </Panel>
-              <Panel title="Feedback và nhắc hạn">
+              <Panel title="Feedback & reminders">
                 {data.notifications === null ? (
                   <p>Notifications could not be loaded.</p>
                 ) : data.notifications.length === 0 ? (
                   <p className="mb-4">
-                    Chưa có thông báo. Feedback và nhắc hạn được gửi đến bạn sẽ
+                    Chưa có thông báo. Feedback & reminders được gửi đến bạn sẽ
                     appear here.
                   </p>
                 ) : (
@@ -640,7 +640,7 @@ export function LiveHubDashboard() {
               <p className="mt-2 text-sm text-slate-600">Revisit any stage whenever you learn something new.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                 {[
-                  { name: "Empathize", vi: "Empathize con người", icon: Users, tone: "bg-blue-50 text-blue-700" },
+                  { name: "Empathize", vi: "Understand people", icon: Users, tone: "bg-blue-50 text-blue-700" },
                   { name: "Define", vi: "Define", icon: GraduationCap, tone: "bg-violet-50 text-violet-700" },
                   { name: "Ideate", vi: "Generate diverse ideas", icon: Lightbulb, tone: "bg-amber-50 text-amber-800" },
                   { name: "Prototype", vi: "Make ideas tangible", icon: Layers3, tone: "bg-emerald-50 text-emerald-700" },
@@ -670,7 +670,7 @@ export function LiveHubDashboard() {
           </>
         )}
         <footer className="border-t py-4 text-xs text-slate-600">
-          UII Design Thinking Hub · Môi trường thử nghiệm
+          UII Design Thinking Hub · Pilot environment
         </footer>
       </main>
     </div>
