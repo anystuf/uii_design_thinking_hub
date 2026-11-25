@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { passwordRecoveryRedirectUrl } from '../lib/auth-redirect';
 
 test('expired Supabase recovery redirects to a new-email request instead of the homepage', async ({ page }) => {
   test.skip(!!process.env.E2E_BASE_URL, 'Local browser fixture only');
@@ -27,4 +28,15 @@ test('custom token-hash recovery requires an explicit user click before consumin
   await expect(page.getByRole('heading', { name: 'Invalid or expired link' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Request a new recovery email' })).toHaveAttribute('href', '/forgot-password?reason=expired');
   expect(verifications).toBe(1);
+});
+
+test('recovery email destinations stay on the maintained pilot instead of preview', () => {
+  expect(passwordRecoveryRedirectUrl('https://uii-design-thinking-hub-preview.vercel.app'))
+    .toBe('https://uii-dt-thanh-pilot.vercel.app/reset-password');
+  expect(passwordRecoveryRedirectUrl('https://uii-design-thinking-hub-staging.vercel.app'))
+    .toBe('https://uii-dt-thanh-pilot.vercel.app/reset-password');
+  expect(passwordRecoveryRedirectUrl('https://uii-dt-thanh-pilot.vercel.app'))
+    .toBe('https://uii-dt-thanh-pilot.vercel.app/reset-password');
+  expect(passwordRecoveryRedirectUrl('http://localhost:3100'))
+    .toBe('http://localhost:3100/reset-password');
 });
