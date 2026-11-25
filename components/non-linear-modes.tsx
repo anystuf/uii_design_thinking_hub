@@ -52,7 +52,7 @@ function ModeCard({ mode, className = "" }: { mode: Mode; className?: string }) 
   );
 }
 
-/** The ribbon and its arrows share the same cubic Bézier geometry. */
+/** The ribbon and its arrows share the same cubic Bezier geometry. */
 type Point = readonly [number, number];
 type Cubic = { start: Point; c1: Point; c2: Point; end: Point };
 
