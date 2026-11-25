@@ -38,10 +38,10 @@ function ActionLink({ href, children, secondary = false }: { href: string; child
 
 function StepGuide({ student }: { student: boolean }) {
   const steps = student
-    ? ['Tham gia khóa học & nhóm', 'Làm hoạt động', 'Lưu minh chứng', 'Nộp bài', 'Nhận phản hồi & cải tiến']
-    : ['Mở khóa học', 'Giao thử thách', 'Công bố rubric', 'Xem bài nộp', 'Phản hồi & yêu cầu cải tiến'];
+    ? ['Join course & team', 'Complete activity', 'Save evidence', 'Submit work', 'Get feedback & revise']
+    : ['Open course', 'Assign challenge', 'Publish rubric', 'Review submissions', 'Give feedback & request revisions'];
   return (
-    <ol aria-label="Chu trình học tập thực tế" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+    <ol aria-label="Classroom learning journey" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
       {steps.map((step, index) => (
         <li key={step} className="rounded-2xl border border-[#d7dfda] bg-white p-3.5">
           <span className="text-xs font-black tracking-wide text-[#a94716]">{String(index + 1).padStart(2, '0')}</span>
@@ -88,17 +88,17 @@ export default function ClassroomPage() {
       void withAuthDeadline(() => auth.getSession())
         .then(({ data, error: authError }) => {
           if (!active) return;
-          if (authError) setError('Không xác minh được phiên đăng nhập. Hãy thử đăng nhập lại.');
+          if (authError) setError('Unable to verify your sign-in session. Please sign in again.');
           setSession(data.session);
           setAuthReady(true);
         })
-        .catch(() => { if (active) { setError('Không kết nối được dịch vụ xác thực.'); setAuthReady(true); } });
+        .catch(() => { if (active) { setError('Could not connect to the authentication service.'); setAuthReady(true); } });
       const { data: { subscription } } = auth.onAuthStateChange((_event, next) => {
         if (active) setSession(next);
       });
       return () => { active = false; subscription.unsubscribe(); };
     } catch {
-      setError('Dịch vụ đăng nhập chưa được cấu hình.');
+      setError('Authentication is not configured.');
       setAuthReady(true);
     }
   }, []);
@@ -140,7 +140,7 @@ export default function ClassroomPage() {
           setCourseId(prior => owned.some(c => c.id === prior) ? prior : owned[0]?.id ?? '');
         }
       } catch {
-        if (active) setError('Chưa tải được dữ liệu lớp học. Hãy thử lại; hệ thống chưa xác nhận tiến độ.');
+        if (active) setError('Classroom data could not be loaded. Retry; progress has not been verified.');
       } finally {
         if (active) setLoading(false);
       }
@@ -167,7 +167,7 @@ export default function ClassroomPage() {
         submissionStatus: latest?.status ?? null,
       });
     }).catch(() => {
-      if (active) setDetailError('Một số dữ liệu dự án chưa tải được. Hãy thử tải lại, không nộp bài trùng.');
+      if (active) setDetailError('Some project data could not be loaded. Refresh before submitting to avoid duplicates.');
     }).finally(() => { if (active) setDetailLoading(false); });
     return () => { active = false; };
   }, [token, isStudent, teamId, refresh]);
@@ -185,7 +185,7 @@ export default function ClassroomPage() {
         const rubrics = await authenticatedApi<Rubric[]>('/challenges/' + encodeURIComponent(published.id) + '/rubrics', token);
         if (active) setRubricCount(rubrics.filter(r => r.versions?.some(v => v.status === 'PUBLISHED')).length);
       }).catch(() => {
-        if (active) setDetailError('Chưa tải được thử thách hoặc rubric từ API.');
+        if (active) setDetailError('Could not load challenges or rubrics from the API.');
       }).finally(() => { if (active) setDetailLoading(false); });
     return () => { active = false; };
   }, [token, isTeacher, courseId, refresh]);
@@ -211,73 +211,73 @@ export default function ClassroomPage() {
 
   return (
     <div className="uii-workspace min-h-screen bg-[#faf8f1] text-[#173445]">
-      <WorkspaceNav title="Buổi học Design Thinking" role={account?.role}
+      <WorkspaceNav title="Design Thinking Classroom" role={account?.role}
         guest={authReady && !session} onSignOut={account ? () => void signOut() : undefined}/>
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-4 py-7 sm:px-6">
         <div>
           <p className="text-xs font-black tracking-[.15em] text-[#a94716]">UII DESIGN THINKING HUB · CLASSROOM</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Buổi học của bạn</h1>
+          <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Your Classroom</h1>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[#4a6062]">
-            Một bước tiếp theo rõ ràng. Mọi trạng thái lấy từ dữ liệu lớp học; chưa lưu thì không đánh dấu hoàn thành.
+            One clear next step. All progress comes from verified classroom data; unsaved work is never marked complete.
           </p>
           <Link href="/pilot" className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-[#0e6857] underline underline-offset-4">
-            Hướng dẫn thử nghiệm cho sinh viên và giảng viên <ArrowRight size={16} aria-hidden="true"/>
+            Pilot guide for students and lecturers <ArrowRight size={16} aria-hidden="true"/>
           </Link>
         </div>
 
         {error && <div role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900">
-          {error} <button type="button" onClick={() => setRefresh(n => n + 1)} className="ml-2 font-bold underline">Thử lại</button>
+          {error} <button type="button" onClick={() => setRefresh(n => n + 1)} className="ml-2 font-bold underline">Try again</button>
         </div>}
-        {(!authReady || checking && !account) && <WorkspaceLoading label="Đang kiểm tra tài khoản và trạng thái lớp học…"/>}
+        {(!authReady || checking && !account) && <WorkspaceLoading label="Checking account and classroom status…"/>}
         {authReady && !session && <section className={card}>
-          <h2 className="text-xl font-black">Đăng nhập để bắt đầu</h2>
-          <p className="mt-2 mb-4 text-sm">Bạn cần có tài khoản UII được xác minh để xem hoạt động, nhóm và bài nộp của mình.</p>
-          <ActionLink href="/learn">Đăng nhập UII</ActionLink>
+          <h2 className="text-xl font-black">Sign in to begin</h2>
+          <p className="mt-2 mb-4 text-sm">You need a verified UII account to view your activities, team, and submissions.</p>
+          <ActionLink href="/learn">Sign in to UII</ActionLink>
         </section>}
 
         {account && (isTeacher || isStudent) && <>
-          <section className="rounded-[24px] border border-[#173445] bg-[#173445] p-5 text-white shadow-sm sm:p-7" aria-label="Bước tiếp theo dành cho bạn">
-            <p className="text-xs font-bold tracking-widest text-[#b4d9cd]">{checking ? 'ĐANG CẬP NHẬT' : next.stage}</p>
-            <h2 className="mt-2 text-2xl font-black">{checking ? 'Đang xác minh tiến độ…' : next.title}</h2>
+          <section className="rounded-[24px] border border-[#173445] bg-[#173445] p-5 text-white shadow-sm sm:p-7" aria-label="Your next step">
+            <p className="text-xs font-bold tracking-widest text-[#b4d9cd]">{checking ? 'UPDATING' : next.stage}</p>
+            <h2 className="mt-2 text-2xl font-black">{checking ? 'Verifying progress…' : next.title}</h2>
             <p className="mt-2 mb-5 max-w-2xl text-sm leading-7 text-[#e0edec]">
-              {checking ? 'Hệ thống đang kiểm tra dữ liệu thật trước khi gợi ý hành động.' : next.detail}
+              {checking ? 'The system is checking actual records before suggesting the next step.' : next.detail}
             </p>
             {!checking && <Link href={next.href}
               className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#f8d0ad] px-5 py-3 text-sm font-bold text-[#173445] hover:bg-white">
-              Thực hiện bước này <ArrowRight size={17} aria-hidden="true"/>
+              Continue with this step <ArrowRight size={17} aria-hidden="true"/>
             </Link>}
           </section>
           <StepGuide student={isStudent}/>
-          {isStudent && <section className="rounded-[22px] border border-[#b9d9cd] bg-[#f2f8f2] p-5 sm:p-6" aria-label="Hoạt động trọng tâm buổi học">
-            <p className="text-xs font-black uppercase tracking-[.15em] text-[#8b4d25]">CHƯƠNG 10 · FIRST FINDINGS</p>
-            <h2 className="mt-2 text-xl font-black">Bắt đầu từ hai vấn đề có thật</h2>
+          {isStudent && <section className="rounded-[22px] border border-[#b9d9cd] bg-[#f2f8f2] p-5 sm:p-6" aria-label="Today's featured activity">
+            <p className="text-xs font-black uppercase tracking-[.15em] text-[#8b4d25]">CHAPTER 10 · FIRST FINDINGS</p>
+            <h2 className="mt-2 text-xl font-black">Start with two real-world problems</h2>
             <p className="mt-2 max-w-2xl text-sm leading-7 text-[#465f62]">
-              Hoạt động 2 (slide 64–65): mô tả hai vấn đề, nguồn chứng minh, người gặp khó khăn,
-              cách họ đang ứng phó, nguồn lực và giá trị. Một slide tổng hợp, trình bày hai phút.
+              Activity 2 (slides 64–65): describe two problems, supporting sources, affected people,
+              their current responses, resources, and value. Prepare one summary slide and a two-minute presentation.
             </p>
             <Link href={teamId ? '/classroom/first-findings?projectId=' + encodeURIComponent(teamId) : '/classroom/first-findings'}
               className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173445] px-5 py-3 text-sm font-bold text-white">
-              Mở Activity 2 <ArrowRight size={16} aria-hidden="true"/>
+              Open Activity 2 <ArrowRight size={16} aria-hidden="true"/>
             </Link>
           </section>}
           {isTeacher && courseId && !loading && !detailLoading && <TeacherClassroomBoard
             token={token} courseId={courseId} challenges={challenges}/>}
 
-          <section className={card} aria-label="Lựa chọn không gian học">
+          <section className={card} aria-label="Choose your workspace">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-black">{isStudent ? 'Dự án của nhóm' : 'Khóa học đang phụ trách'}</h2>
+              <h2 className="text-lg font-black">{isStudent ? 'Your team's project' : 'Your courses'}</h2>
               <button type="button" onClick={() => setRefresh(n => n + 1)}
-                className={secondaryStyle}><RefreshCcw size={16} aria-hidden="true"/> Cập nhật trạng thái</button>
+                className={secondaryStyle}><RefreshCcw size={16} aria-hidden="true"/> Refresh status</button>
             </div>
             {isStudent && teams.length > 0 && <div className="mt-3">
-              <label htmlFor="pilot-project" className="block text-sm font-bold">Chọn dự án</label>
+              <label htmlFor="pilot-project" className="block text-sm font-bold">Select project</label>
               <select id="pilot-project" className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
                 value={teamId} onChange={event => setTeamId(event.target.value)}>
                 {teams.map(t => <option value={t.id} key={t.id}>{t.title}</option>)}
               </select>
             </div>}
             {isTeacher && eligibleCourses.length > 0 && <div className="mt-3">
-              <label htmlFor="pilot-course" className="block text-sm font-bold">Chọn khóa học</label>
+              <label htmlFor="pilot-course" className="block text-sm font-bold">Select course</label>
               <select id="pilot-course" className="mt-2 min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm"
                 value={courseId} onChange={event => setCourseId(event.target.value)}>
                 {eligibleCourses.map(c => <option value={c.id} key={c.id}>{c.title}</option>)}
@@ -285,45 +285,45 @@ export default function ClassroomPage() {
             </div>}
             <p className="mt-3 text-sm text-[#506468]">
               {isStudent
-                ? activeTeam ? 'Giai đoạn hiện tại: ' + activeTeam.currentStage : 'Chưa có nhóm dự án trong tài khoản.'
-                : activeCourse ? 'Trạng thái khóa học: ' + activeCourse.status : 'Chưa có khóa học thuộc quyền giảng dạy.'}
+                ? activeTeam ? 'Current stage: ' + activeTeam.currentStage : 'No project team is linked to your account.'
+                : activeCourse ? 'Course status: ' + activeCourse.status : 'No courses are assigned to your lecturer account.'}
             </p>
           </section>
           {detailError && <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">{detailError}</p>}
           <section className={card}>
-            <h2 className="mb-4 text-lg font-black">Các không gian của chu trình</h2>
+            <h2 className="mb-4 text-lg font-black">Your learning journey</h2>
             <div className="grid gap-3 sm:grid-cols-3">
               <Link href="/studio" className="rounded-xl border p-4 hover:bg-[#f1f6f2]">
                 <FolderKanban aria-hidden="true" size={22}/>
-                <span className="mt-2 block font-bold">1. Thực hành dự án</span>
-                <span className="mt-1 block text-xs leading-5 text-[#506468]">Thử thách, nhóm và hoạt động</span>
+                <span className="mt-2 block font-bold">1. Project practice</span>
+                <span className="mt-1 block text-xs leading-5 text-[#506468]">Challenges, teams, and activities</span>
               </Link>
               <Link href={activeTeam ? '/evidence?projectId=' + encodeURIComponent(activeTeam.id) : '/evidence'}
                 className="rounded-xl border p-4 hover:bg-[#f1f6f2]">
                 <FileText aria-hidden="true" size={22}/>
-                <span className="mt-2 block font-bold">2. Minh chứng & bài nộp</span>
-                <span className="mt-1 block text-xs leading-5 text-[#506468]">Lưu phiên bản và nộp bài</span>
+                <span className="mt-2 block font-bold">2. Evidence & submissions</span>
+                <span className="mt-1 block text-xs leading-5 text-[#506468]">Save versions and submit work</span>
               </Link>
               <Link href={isTeacher ? '/review' : '/notifications'} className="rounded-xl border p-4 hover:bg-[#f1f6f2]">
                 {isTeacher ? <ClipboardCheck aria-hidden="true" size={22}/> : <CheckCircle2 aria-hidden="true" size={22}/>}
-                <span className="mt-2 block font-bold">3. Phản hồi & cải tiến</span>
-                <span className="mt-1 block text-xs leading-5 text-[#506468]">Nhận đánh giá và hành động tiếp</span>
+                <span className="mt-2 block font-bold">3. Feedback & improvement</span>
+                <span className="mt-1 block text-xs leading-5 text-[#506468]">See feedback and take the next step</span>
               </Link>
             </div>
             <div className="mt-5 flex flex-wrap gap-3 text-sm">
-              <ActionLink href="/learn" secondary><BookOpen size={16} aria-hidden="true"/> Khóa học</ActionLink>
-              {isTeacher && <ActionLink href="/review" secondary><ShieldCheck size={16} aria-hidden="true"/> Bộ tiêu chí chấm</ActionLink>}
+              <ActionLink href="/learn" secondary><BookOpen size={16} aria-hidden="true"/> Courses</ActionLink>
+              {isTeacher && <ActionLink href="/review" secondary><ShieldCheck size={16} aria-hidden="true"/> Assessment rubric</ActionLink>}
             </div>
           </section>
           <p className="text-xs leading-6 text-[#607579]">
-            Chỉ tài khoản có quyền mới xem được nhóm và minh chứng. Không tải lên thông tin nhận diện người được phỏng vấn nếu chưa có sự đồng ý. Trạng thái cần chỉnh sửa và phê duyệt do backend quyết định.
+            Only authorized users may view team data and evidence. Do not upload identifying interview information without consent. Revision and approval states come from the backend.
           </p>
         </>}
         {account && !isStudent && !isTeacher && <section className={card}>
-          <p>Vai trò Mentor hiện sử dụng không gian dự án theo quyền được cấp.</p>
-          <div className="mt-4"><ActionLink href="/studio">Mở Studio</ActionLink></div>
+          <p>Mentors can use project spaces according to their assigned permissions.</p>
+          <div className="mt-4"><ActionLink href="/studio">Open Studio</ActionLink></div>
         </section>}
-        {account && <div className="text-xs text-[#647579]">Tài khoản: {account.role === 'STUDENT' ? 'Sinh viên' : account.role === 'LECTURER' ? 'Giảng viên' : account.role === 'ADMIN' ? 'Quản trị viên' : 'Mentor'} · Dữ liệu chỉ hiển thị sau xác minh đăng nhập.</div>}
+        {account && <div className="text-xs text-[#647579]">Account: {account.role === 'STUDENT' ? 'Student' : account.role === 'LECTURER' ? 'Lecturer' : account.role === 'ADMIN' ? 'Administrator' : 'Mentor'} · Dữ liệu chỉ hiển thị sau xác minh đăng nhập.</div>}
       </main>
     </div>
   );
