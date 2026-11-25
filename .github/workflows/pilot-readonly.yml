@@ -15,7 +15,7 @@ concurrency:
 jobs:
   source-and-api-readiness:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     env:
       E2E_STAGING_FRONTEND_ORIGIN: https://uii-dt-thanh-pilot.vercel.app
       E2E_STAGING_API_ORIGIN: https://usi-design-thinking-api-staging.onrender.com
@@ -34,3 +34,12 @@ jobs:
         run: npm run lint
       - name: Check preview pages and API authorization (read only)
         run: npm run pilot:check
+      - name: Install Chrome for fixture-only learner and recovery journey tests
+        run: npx playwright install --with-deps chrome
+      - name: Test student learning, First Findings, password recovery and pilot UX
+        run: npx playwright test e2e/pilot-instructions.spec.ts e2e/recovery-hardening.spec.ts e2e/classroom-first-findings.spec.ts e2e/student-feedback-learning.spec.ts --reporter=line
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: local-layout-check
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+          NEXT_PUBLIC_GOOGLE_SIGN_IN: "true"
