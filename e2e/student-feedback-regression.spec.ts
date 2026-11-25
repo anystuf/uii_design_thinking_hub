@@ -22,7 +22,7 @@ test("student feedback: one clear classroom action, other spaces still discovera
   await page.route("http://localhost:4000/**", async route => {
     const path = new URL(route.request().url()).pathname;
     let body: unknown = [];
-    if (path === "/auth/me") body = { id: "fixture-student", fullName: "Sinh viên thử nghiệm", role: "STUDENT" };
+    if (path === "/auth/me") body = { id: "fixture-student", fullName: "Sample student", role: "STUDENT" };
     if (path === "/courses/my-enrollments") body = [];
     if (path === "/projects") body = [];
     if (path === "/notifications") body = [];
@@ -30,15 +30,15 @@ test("student feedback: one clear classroom action, other spaces still discovera
     await route.fulfill({ json: body, headers: { "Access-Control-Allow-Origin": "*" } });
   });
   await page.goto("/dashboard");
-  const hero = page.getByRole("region", { name: "Chào mừng và hành động chính" });
-  await expect(hero.getByRole("heading", { name: /Hôm nay, bạn cần làm gì/ })).toBeVisible();
-  await expect(hero.getByRole("link", { name: "Xem nhiệm vụ hôm nay" })).toHaveAttribute("href", "/classroom");
+  const hero = page.getByRole("region", { name: "Welcome and primary action" });
+  await expect(hero.getByRole("heading", { name: /Today, what should you do next/ })).toBeVisible();
+  await expect(hero.getByRole("link", { name: "See today's task" })).toHaveAttribute("href", "/classroom");
   await expect(hero.getByRole("link")).toHaveCount(1);
 
-  const sidebar = page.getByRole("navigation", { name: "Điều hướng không gian học tập" });
-  await expect(sidebar.getByRole("link", { name: "Buổi học" })).toBeVisible();
-  await expect(sidebar.getByRole("link", { name: "Minh chứng & phản hồi" })).toBeVisible();
-  await expect(sidebar.getByRole("link", { name: "Cộng đồng sáng tạo" })).toBeHidden();
-  await sidebar.getByText("Tiện ích khác").click();
-  await expect(sidebar.getByRole("link", { name: "Cộng đồng sáng tạo" })).toBeVisible();
+  const sidebar = page.getByRole("navigation", { name: "Workspace navigation" });
+  await expect(sidebar.getByRole("link", { name: "Classroom" })).toBeVisible();
+  await expect(sidebar.getByRole("link", { name: "Evidence & Feedback" })).toBeVisible();
+  await expect(sidebar.getByRole("link", { name: "Community" })).toBeHidden();
+  await sidebar.getByText("More tools").click();
+  await expect(sidebar.getByRole("link", { name: "Community" })).toBeVisible();
 });
