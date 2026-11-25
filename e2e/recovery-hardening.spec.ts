@@ -6,7 +6,7 @@ test('expired Supabase recovery redirects to a new-email request instead of the 
   await page.goto('/#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired');
   await expect(page).toHaveURL(/\/forgot-password\?reason=expired$/);
   await expect(page.getByRole('heading', { name: 'Reset password' })).toBeVisible();
-  await expect(page.getByRole('alert')).toContainText('already been used');
+  await expect(page.getByRole('alert').filter({ hasText: 'previous recovery link' })).toContainText('already been used');
   await expect(page.getByRole('button', { name: 'Send reset instructions' })).toBeVisible();
 });
 
