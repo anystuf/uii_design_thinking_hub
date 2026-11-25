@@ -74,7 +74,7 @@ export function UIIPublicLanding() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/demo" className="inline-flex min-h-12 items-center gap-3 rounded-full bg-[#ba3024] px-7 py-3 text-sm font-black text-white shadow-[0_8px_0_#d63a2b] transition hover:-translate-y-0.5 hover:bg-[#94251e]">Try a lesson <ArrowRight size={18}/></Link>
                 <Link href="/demo#studio-self-guided" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#d6e0d5] bg-white/90 px-6 text-sm font-black text-[#173445] hover:bg-white">Try self-guided Design Studio <ArrowRight size={17}/></Link>
-                <Link href="/learn" className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-[#163445] bg-white px-7 py-3 text-sm font-extrabold text-[#163445] hover:bg-[#faf8f1]">Khám phá khóa học <BookOpen size={17}/></Link>
+                <Link href="/learn" className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-[#163445] bg-white px-7 py-3 text-sm font-extrabold text-[#163445] hover:bg-[#faf8f1]">Explore courses <BookOpen size={17}/></Link>
               </div>
               <div className="mt-11 flex flex-wrap items-center gap-3">
                 <DemoFlag/>
@@ -183,8 +183,8 @@ export function UIIPublicLanding() {
 
         <section id="practice" className="bg-[#173345] px-5 py-20 text-white sm:px-9 xl:px-14">
           <div className="mx-auto grid max-w-[1390px] items-center gap-9 lg:grid-cols-[1fr_auto]">
-            <div><Eyebrow>05 / TRY IT NOW</Eyebrow><h2 className="mt-4 max-w-[860px] text-[clamp(2.1rem,4.5vw,4.7rem)] font-black leading-[1.08] tracking-[-.05em]">Làm một exercises nhỏ. <span className="text-[#ffc27b]">Discover a new perspective.</span></h2><p className="mt-5 max-w-[620px] text-sm leading-7 text-[#d6e4e9]">Try a quiz, write a reflection, or sketch a prototype. The demo works in your browser without affecting LMS grades or storing account data.</p></div>
-            <Link href="/demo" className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#f5c96c] px-8 text-sm font-black text-[#173345] transition hover:-translate-y-1 hover:bg-[#ffdf94]">Bắt đầu exercises demo <Play fill="currentColor" size={17}/></Link>
+            <div><Eyebrow>05 / TRY IT NOW</Eyebrow><h2 className="mt-4 max-w-[860px] text-[clamp(2.1rem,4.5vw,4.7rem)] font-black leading-[1.08] tracking-[-.05em]">Try a small exercise. <span className="text-[#ffc27b]">Discover a new perspective.</span></h2><p className="mt-5 max-w-[620px] text-sm leading-7 text-[#d6e4e9]">Try a quiz, write a reflection, or sketch a prototype. The demo works in your browser without affecting LMS grades or storing account data.</p></div>
+            <Link href="/demo" className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-[#f5c96c] px-8 text-sm font-black text-[#173345] transition hover:-translate-y-1 hover:bg-[#ffdf94]">Start a demo exercise <Play fill="currentColor" size={17}/></Link>
           </div>
         </section>
 
@@ -232,7 +232,7 @@ export function UIIPublicLanding() {
 
       <footer className="bg-[#132b3b] px-5 py-10 text-white sm:px-9 xl:px-14">
         <div className="mx-auto flex max-w-[1390px] flex-wrap items-start justify-between gap-6">
-          <div><p className="text-xl font-black">UII <span className="text-[#e96a4a]">✳</span> Design Thinking Hub</p><p className="mt-3 max-w-lg text-xs leading-6 text-[#c4d1d6]">UII đang trong giai đoạn xây dựng, thử nghiệm. Courses, dự án, hình thức đánh giá và sự kiện trên landing page được minh họa riêng, không tự động tạo trong hệ thống LMS.</p></div>
+          <div><p className="text-xl font-black">UII <span className="text-[#e96a4a]">✳</span> Design Thinking Hub</p><p className="mt-3 max-w-lg text-xs leading-6 text-[#c4d1d6]">UII is under development and testing. Courses, projects, assessments, and events shown here are examples and are not automatically added to the LMS.</p></div>
           <div className="flex flex-wrap gap-5 text-xs font-bold"><Link href="/learn">Sign in</Link><Link href="/demo">Demo exercises</Link><Link href="/dashboard">Dashboard</Link><a href="https://unsplash.com/license" target="_blank" rel="noreferrer">Photography: Unsplash / original creators</a><a href="https://unsplash.com/photos/people-in-a-design-meeting-in-an-office-boardroom-pzFzd1AD8Ow" target="_blank" rel="noreferrer">Team photo: Mapbox (Unsplash)</a></div>
         </div>
       </footer>
