@@ -56,21 +56,21 @@ export const DEMO_COURSES: readonly DemoCourse[] = [
 ];
 
 const QUIZ_OPTIONS = [
-  ["Quan sát hành vi người dùng thực tế","Đoán điều người dùng cần","Chọn công nghệ trước","Chỉ hỏi người trong nhóm"],
-  ["Bắt đầu bằng câu hỏi mở","Chỉ hỏi Có/Không","Giới thiệu sẵn giải pháp","Yêu cầu người dùng đồng ý"],
-  ["Tập trung vào nhu cầu có bằng chứng","Chốt giải pháp ngay","Bỏ qua lời người dùng","Dựa hoàn toàn vào giả định"],
-  ["Tạo nhiều góc nhìn rồi hội tụ","Chọn ý tưởng đầu tiên","Tránh phương án khác biệt","Chỉ dùng giải pháp AI"],
-  ["Dùng mẫu đủ để học","Lập trình toàn bộ sản phẩm","Làm logo trước","Không hỏi ý kiến ai"],
-  ["Quan sát và ghi nhận phản hồi","Giải thích hộ người dùng","Chỉ thu lời khen","Không sửa mẫu"],
+  ["Observe real user behaviour","Guess what users need","Choose technology first","Only ask team members"],
+  ["Start with open-ended questions","Only ask yes/no questions","Present the solution first","Ask users to agree"],
+  ["Focus on evidenced user needs","Commit to a solution immediately","Ignore user feedback","Rely only on assumptions"],
+  ["Explore diverse perspectives, then converge","Choose the first idea","Avoid unusual alternatives","Only consider AI solutions"],
+  ["Build a prototype sufficient to learn","Code the entire product","Design the logo first","Avoid asking anyone"],
+  ["Observe and document feedback","Explain the interface for the user","Collect compliments only","Never change the prototype"],
 ] as const;
 
 const EXERCISE_PROMPTS = [
-  "Theo tinh thần Design Thinking, hành động nào giúp nhóm hiểu vấn đề tốt nhất?",
-  "Khi bắt đầu nghiên cứu, bạn nên chọn cách hỏi nào?",
-  "Một vấn đề được định nghĩa tốt cần dựa trên điều gì?",
-  "Khi tạo ý tưởng ban đầu, nhóm nên làm gì?",
-  "Với nguyên mẫu đầu tiên, ưu tiên quan trọng nhất là gì?",
-  "Khi một người thử nghiệm gặp khó khăn, nhóm cần làm gì?",
+  "Which action best helps a team understand a Design Thinking problem?",
+  "How should you ask questions at the start of user research?",
+  "What should a well-defined problem be based on?",
+  "What should a team do during early ideation?",
+  "What matters most in an initial prototype?",
+  "What should the team do when a participant struggles in testing?",
 ] as const;
 
 type QuizConfig = {prompt: string; options: readonly [string,string,string,string]; correctIndex: number; feedback: string; hint: string};
@@ -388,29 +388,29 @@ export const DEMO_EXERCISES: readonly DemoExercise[] = DEMO_COURSES.flatMap((cou
     const quiz = QUIZ_SCENARIOS[course.id]?.[chapterIndex];
     const activity = ACTIVITY_CASES[course.id];
     const prompt = kind === "QUIZ" ? (quiz?.prompt ?? EXERCISE_PROMPTS[chapterIndex]) :
-      kind === "WRITTEN" ? `Với chủ đề "${chapter}" trong khóa ${course.title}, hãy mô tả một tình huống cụ thể, phân biệt bằng chứng với giả định và nêu một điều cần xác minh (150–200 từ).` :
+      kind === "WRITTEN" ? `For "${chapter}" in ${course.title}, describe a concrete situation, distinguish evidence from assumptions, and identify something to verify (150–200 words).` :
       kind === "ACTIVITY" ? activity.instruction :
-      `Với chủ đề "${chapter}" trong khóa ${course.title}, hãy tạo một bản mẫu nhỏ, ghi giả định rủi ro nhất và cách quan sát người dùng thử nó.`;
+      `For "${chapter}" in ${course.title}, build a small prototype, identify the riskiest assumption, and explain how to observe someone testing it.`;
     return {
       id: course.id + "-ex-" + (chapterIndex + 1),
       courseId: course.id,
       chapterIndex,
       title: (chapterIndex + 1).toString().padStart(2,"0") + " · " + chapter,
       kind, prompt,
-      deliverable: kind === "QUIZ" ? "Chọn một đáp án, nhận phản hồi ngay." :
-        kind === "WRITTEN" ? "Bản phản tư ngắn (demo, không lưu)." :
+      deliverable: kind === "QUIZ" ? "Choose an answer and receive immediate feedback." :
+        kind === "WRITTEN" ? "Short reflection (demo only, not saved)." :
         kind === "ACTIVITY" ? activity.output :
-        "Ảnh/bản vẽ nguyên mẫu, giả định và kịch bản kiểm thử.",
+        "Prototype sketch, key assumption, and test scenario.",
       ...(kind === "QUIZ" ? {
         options: quiz?.options ?? QUIZ_OPTIONS[chapterIndex],
         correctIndex: quiz?.correctIndex ?? 0,
-        feedback: quiz?.feedback ?? "Hãy ghi lại bằng chứng bạn cần kiểm tra trong dự án.",
-        hint: quiz?.hint ?? "Dựa trên dữ liệu người dùng thay vì giả định ban đầu.",
+        feedback: quiz?.feedback ?? "Record the evidence you need to verify in your project.",
+        hint: quiz?.hint ?? "Use evidence from users rather than your initial assumptions.",
       } : {
         hint: kind === "WRITTEN"
-          ? `Hãy bắt đầu từ một tình huống của chủ đề "${chapter}". Viết một điều bạn thực sự quan sát được, một suy đoán và một câu hỏi để kiểm chứng.`
+          ? `Start with a real situation related to "${chapter}". Write one observation, one inference, and one question to investigate.`
           : kind === "PROJECT"
-            ? `Với "${chapter}", chỉ cần bản thử đơn giản nhất có thể kiểm tra giả định quan trọng; mô tả một tác vụ cho người dùng thay vì xây sản phẩm hoàn chỉnh.`
+            ? `For "${chapter}", build the simplest prototype that can test a key assumption; describe a user task instead of a complete product.`
             : activity.instruction,
         ...(kind === "ACTIVITY" ? { activity } : {}),
       }),
@@ -419,38 +419,38 @@ export const DEMO_EXERCISES: readonly DemoExercise[] = DEMO_COURSES.flatMap((cou
 );
 
 export const DEMO_PROJECTS: readonly DemoProject[] = [
-  {title:"Campus Study-Space Finder",team:"Nhóm Nova (demo)",theme:"Student experience",mode:"PROTOTYPE",summary:"Giúp sinh viên tìm được nơi học yên tĩnh phù hợp.",photo:DEMO_PHOTOS.stickyNotes},
-  {title:"Sustainable Canteen",team:"Nhóm Green Fork (demo)",theme:"Sustainability",mode:"TEST",summary:"Giảm lãng phí đồ ăn và thời gian chờ ở căng tin.",photo:DEMO_PHOTOS.teamwork},
-  {title:"Smart Student Support",team:"Nhóm HelpHub (demo)",theme:"Service design",mode:"IDEATE",summary:"Thiết kế quy trình hướng dẫn sinh viên mới không bị lạc thông tin.",photo:DEMO_PHOTOS.classroom},
-  {title:"Inclusive Wayfinding",team:"Nhóm Pathmakers (demo)",theme:"Accessibility",mode:"EMPATHIZE",summary:"Giúp khách lần đầu ghé trường tự tin tìm đúng nơi.",photo:DEMO_PHOTOS.chalkboard},
-  {title:"Community Garden",team:"Nhóm Growing Together (demo)",theme:"Community impact",mode:"DEFINE",summary:"Thiết kế lịch chia sẻ nguồn lực và chăm sóc khu vườn chung.",photo:DEMO_PHOTOS.workshop},
-  {title:"Library Quiet Zones",team:"Nhóm Open Doors (demo)",theme:"Learning space",mode:"TEST",summary:"Cải thiện trải nghiệm tìm chỗ tự học và giảm tiếng ồn.",photo:DEMO_PHOTOS.stickyNotes},
-  {title:"Accessible Course Notes",team:"Nhóm Focus First (demo)",theme:"Inclusive learning",mode:"PROTOTYPE",summary:"Thử cấu trúc ghi chú ngắn gọn cho người học dễ mất tập trung.",photo:DEMO_PHOTOS.meeting},
-  {title:"Safe School Commute",team:"Nhóm Move Smart (demo)",theme:"Urban mobility",mode:"IDEATE",summary:"Giảm khó khăn khi di chuyển tới trường bằng góc nhìn người dùng.",photo:DEMO_PHOTOS.teamwork},
+  {title:"Campus Study-Space Finder",team:"Team Nova (demo)",theme:"Student experience",mode:"PROTOTYPE",summary:"Help students find a suitable quiet place to study.",photo:DEMO_PHOTOS.stickyNotes},
+  {title:"Sustainable Canteen",team:"Team Green Fork (demo)",theme:"Sustainability",mode:"TEST",summary:"Reduce food waste and cafeteria queue times.",photo:DEMO_PHOTOS.teamwork},
+  {title:"Smart Student Support",team:"Team HelpHub (demo)",theme:"Service design",mode:"IDEATE",summary:"Design a clear orientation for new students.",photo:DEMO_PHOTOS.classroom},
+  {title:"Inclusive Wayfinding",team:"Team Pathmakers (demo)",theme:"Accessibility",mode:"EMPATHIZE",summary:"Help first-time visitors navigate campus confidently.",photo:DEMO_PHOTOS.chalkboard},
+  {title:"Community Garden",team:"Team Growing Together (demo)",theme:"Community impact",mode:"DEFINE",summary:"Coordinate shared resources and care for a community garden.",photo:DEMO_PHOTOS.workshop},
+  {title:"Library Quiet Zones",team:"Team Open Doors (demo)",theme:"Learning space",mode:"TEST",summary:"Improve study space discovery and reduce noise.",photo:DEMO_PHOTOS.stickyNotes},
+  {title:"Accessible Course Notes",team:"Team Focus First (demo)",theme:"Inclusive learning",mode:"PROTOTYPE",summary:"Test concise, accessible study notes for easily distracted learners.",photo:DEMO_PHOTOS.meeting},
+  {title:"Safe School Commute",team:"Team Move Smart (demo)",theme:"Urban mobility",mode:"IDEATE",summary:"Reduce commuting difficulties from the user's perspective.",photo:DEMO_PHOTOS.teamwork},
 ];
 
 export const DEMO_TOOLS: readonly DemoTool[] = [
-  {name:"Interview Guide",mode:"Empathize",minutes:20,kind:"Tool",intro:"Chuẩn bị ba câu hỏi mở và một kịch bản phỏng vấn.",output:"3 câu hỏi mở"},
-  {name:"Observation Log",mode:"Empathize",minutes:15,kind:"Worksheet",intro:"Phân biệt điều thấy/nghe với điều suy đoán.",output:"Bảng quan sát"},
-  {name:"Empathy Map",mode:"Empathize",minutes:25,kind:"Canvas",intro:"Tổng hợp lời nói, hành vi, suy nghĩ và cảm xúc.",output:"Bản đồ thấu cảm"},
-  {name:"POV Builder",mode:"Define",minutes:10,kind:"Template",intro:"Viết người dùng + nhu cầu + insight có bằng chứng.",output:"1 POV"},
-  {name:"HMW Reframing",mode:"Define",minutes:12,kind:"Activity",intro:"Mở ra cơ hội thiết kế mà chưa khóa vào một giải pháp.",output:"3 câu HMW"},
-  {name:"Crazy 8s",mode:"Ideate",minutes:8,kind:"Activity",intro:"Thử tám ý tưởng trước khi đánh giá.",output:"8 phác thảo"},
-  {name:"Idea Selection",mode:"Ideate",minutes:15,kind:"Canvas",intro:"Đối chiếu tác động tới người dùng và tính khả thi.",output:"Ma trận lựa chọn"},
-  {name:"Storyboard",mode:"Prototype",minutes:20,kind:"Template",intro:"Mô tả trải nghiệm bằng bốn khung.",output:"Storyboard"},
-  {name:"Prototype Checklist",mode:"Prototype",minutes:10,kind:"Tool",intro:"Giữ nguyên mẫu nhỏ, dễ hiểu và kiểm chứng được.",output:"Checklist kiểm thử"},
-  {name:"Feedback Canvas",mode:"Test",minutes:15,kind:"Canvas",intro:"Ghi nhận điều hiệu quả, điều vướng và bước cải tiến.",output:"Bản phản hồi"},
+  {name:"Interview Guide",mode:"Empathize",minutes:20,kind:"Tool",intro:"Prepare three open-ended questions and an interview plan.",output:"Three open-ended questions"},
+  {name:"Observation Log",mode:"Empathize",minutes:15,kind:"Worksheet",intro:"Separate observations from assumptions.",output:"Observation log"},
+  {name:"Empathy Map",mode:"Empathize",minutes:25,kind:"Canvas",intro:"Map what users say, do, think, and feel.",output:"Empathy map"},
+  {name:"POV Builder",mode:"Define",minutes:10,kind:"Template",intro:"Describe a user, their need, and an evidenced insight.",output:"1 POV"},
+  {name:"HMW Reframing",mode:"Define",minutes:12,kind:"Activity",intro:"Open up opportunities without committing to one solution.",output:"Three HMW questions"},
+  {name:"Crazy 8s",mode:"Ideate",minutes:8,kind:"Activity",intro:"Sketch eight ideas before evaluating them.",output:"Eight sketches"},
+  {name:"Idea Selection",mode:"Ideate",minutes:15,kind:"Canvas",intro:"Compare user impact with feasibility.",output:"Selection matrix"},
+  {name:"Storyboard",mode:"Prototype",minutes:20,kind:"Template",intro:"Describe an experience in four frames.",output:"Storyboard"},
+  {name:"Prototype Checklist",mode:"Prototype",minutes:10,kind:"Tool",intro:"Keep the prototype small, clear, and testable.",output:"Testing checklist"},
+  {name:"Feedback Canvas",mode:"Test",minutes:15,kind:"Canvas",intro:"Capture what worked, what was confusing, and what to improve.",output:"Feedback record"},
 ];
 
 export const DEMO_EVENTS: readonly DemoEvent[] = [
-  {date:"12/01/2027",title:"Design Sprint Bootcamp",format:"On campus · Demo",description:"Workshop một ngày với phỏng vấn, ideation và nguyên mẫu nhanh."},
-  {date:"19/01/2027",title:"Human-Centered AI Lab",format:"Hybrid · Demo",description:"Thảo luận cách AI hỗ trợ nghiên cứu mà không thay thế sự thấu cảm."},
-  {date:"26/01/2027",title:"Prototype Feedback Day",format:"On campus · Demo",description:"Hoạt động thử nguyên mẫu và cho phản hồi xây dựng."},
-  {date:"02/02/2027",title:"Student Project Showcase",format:"On campus · Demo",description:"Giới thiệu sản phẩm dự án và quá trình cải tiến."},
+  {date:"12/01/2027",title:"Design Sprint Bootcamp",format:"On campus · Demo",description:"A one-day workshop with interviews, ideation, and rapid prototyping."},
+  {date:"19/01/2027",title:"Human-Centered AI Lab",format:"Hybrid · Demo",description:"Explore how AI supports research without replacing empathy."},
+  {date:"26/01/2027",title:"Prototype Feedback Day",format:"On campus · Demo",description:"Prototype testing and constructive feedback practice."},
+  {date:"02/02/2027",title:"Student Project Showcase",format:"On campus · Demo",description:"Showcase project work and the iteration process."},
 ];
 
 export const DEMO_QUOTES = [
-  {role:"Sinh viên (tình huống mẫu)",quote:"Khi có một nhiệm vụ nhỏ và ví dụ rõ ràng, mình dễ bắt đầu thực hành hơn."},
-  {role:"Giảng viên (tình huống mẫu)",quote:"Hành trình học – thực hành – phản hồi giúp lớp bám sát quá trình sáng tạo."},
-  {role:"Mentor (tình huống mẫu)",quote:"Quan trọng không chỉ là ý tưởng, mà là bằng chứng người dùng và điều nhóm học được."},
+  {role:"Student (fictional scenario)",quote:"A small task and a clear example make it easier to get started."},
+  {role:"Lecturer (fictional scenario)",quote:"Learning, practice, and feedback help students follow the creative process."},
+  {role:"Mentor (fictional scenario)",quote:"The idea matters, but so do the user evidence and what the team learned."},
 ] as const;
