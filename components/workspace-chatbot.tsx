@@ -130,7 +130,7 @@ export function WorkspaceChatbot() {
       {!open&&<span className="ml-1 size-2 rounded-full bg-[#a4ebc6]" aria-hidden="true"/>}
     </button>
     {open&&<section id="uii-guide-chat" role="dialog" aria-label="Chatbot hướng dẫn sử dụng UII"
-      className="fixed bottom-[80px] right-3 z-[10020] flex max-h-[min(80dvh,720px)] w-[calc(100vw-1.5rem)] max-w-[420px] flex-col overflow-hidden rounded-[25px] border border-[#d6e1df] bg-white shadow-[0_20px_65px_rgba(15,47,65,.26)] sm:right-4">
+      className="fixed bottom-[80px] right-3 z-[10020] flex max-h-[min(85dvh,840px)] w-[calc(100vw-1.5rem)] max-w-[560px] flex-col overflow-hidden rounded-[25px] border border-[#d6e1df] bg-white shadow-[0_20px_65px_rgba(15,47,65,.26)] sm:right-4">
       <header className="flex shrink-0 items-center gap-3 bg-[#163748] px-4 py-4 text-white">
         <span className="grid size-10 place-items-center rounded-xl bg-white/15"><Bot size={22} aria-hidden="true"/></span>
         <div className="min-w-0 flex-1">
