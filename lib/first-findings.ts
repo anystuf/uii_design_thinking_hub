@@ -13,12 +13,12 @@ export type FirstFindingsProblem = {
 };
 
 export const FIRST_FINDINGS_FIELDS = [
-  { key: 'problem', label: 'Vấn đề cụ thể là gì?', hint: 'Không viết giải pháp mà nhóm đã chọn.' },
-  { key: 'proof', label: 'Làm sao biết vấn đề có thật? Nguồn nào?', hint: 'Ghi quan sát hoặc nguồn dẫn chứng; phân biệt dữ kiện và giả định.' },
-  { key: 'affectedPeople', label: 'Ai đang gặp vấn đề này?', hint: 'Mô tả nhóm người dùng, không ghi tên/số điện thoại người được phỏng vấn.' },
-  { key: 'currentResponse', label: 'Họ đang xử lý khó khăn thế nào?', hint: 'Tìm cả giải pháp họ đang dùng, dù chưa hiệu quả.' },
-  { key: 'resourcesInUse', label: 'Họ đang dùng nguồn lực gì để ứng phó?', hint: 'Thời gian, chi phí, thiết bị, quan hệ hoặc cách làm hiện tại.' },
-  { key: 'value', label: 'Vì sao vấn đề đáng để giải quyết?', hint: 'Giá trị với người dùng và phạm vi nhóm có thể thực hiện.' },
+  { key: 'problem', label: 'What is the specific problem?', hint: 'Describe the problem, not a solution your team has already chosen.' },
+  { key: 'proof', label: 'How do you know this problem is real? What is your source?', hint: 'Include observations or references; distinguish facts from assumptions.' },
+  { key: 'affectedPeople', label: 'Who is affected by this problem?', hint: 'Describe the people affected; do not include interviewees' names or phone numbers.' },
+  { key: 'currentResponse', label: 'How are they currently dealing with this problem?', hint: 'Include existing workarounds, even if they are not effective.' },
+  { key: 'resourcesInUse', label: 'What resources are they using to cope?', hint: 'Consider time, money, equipment, support networks, and current methods.' },
+  { key: 'value', label: 'Why is this problem worth solving?', hint: 'Explain the value for users and what is achievable within your team's scope.' },
 ] as const satisfies ReadonlyArray<{ key: keyof FirstFindingsProblem; label: string; hint: string }>;
 
 export const EMPTY_FIRST_FINDINGS_PROBLEM: FirstFindingsProblem = {
@@ -31,7 +31,7 @@ export const FIRST_FINDINGS_TITLE = 'Activity 2 · First Findings — hai vấn 
 function formatProblem(problem: FirstFindingsProblem, index: number) {
   return [
     'ACTIVITY 2 — FIRST FINDINGS',
-    'VẤN ĐỀ ' + index,
+    'PROBLEM ' + index,
     ...FIRST_FINDINGS_FIELDS.map(field => field.label + '\n' + problem[field.key].trim()),
   ].join('\n\n');
 }
@@ -41,9 +41,9 @@ export function buildFirstFindingsEvidence(
 ) {
   const description = formatProblem(first, 1);
   const reflection = formatProblem(second, 2) +
-    '\n\nGIỚI HẠN NGUỒN LỰC CỦA NHÓM\n' + teamScope.trim();
+    '\n\nTEAM RESOURCES AND CONSTRAINTS\n' + teamScope.trim();
   if (description.length > 3000 || reflection.length > 3000) {
-    throw new Error('Nội dung dài hơn giới hạn lưu trữ; hãy rút gọn từng câu trả lời.');
+    throw new Error('The response exceeds the storage limit. Shorten each answer.');
   }
   return {
     mode: 'DEFINE' as const,
