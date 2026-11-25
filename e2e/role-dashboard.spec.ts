@@ -39,10 +39,10 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
       await route.fulfill({ json: data });
     });
     await page.goto("/dashboard");
-    await expect(page.getByText("Xin chào, Local fixture")).toBeVisible();
+    await expect(page.getByText("Hello, Local fixture")).toBeVisible();
     if (role === "STUDENT") {
       await expect(
-        page.getByRole("link", { name: "Tiếp tục học", exact: true }),
+        page.getByRole("link", { name: "Continue learning", exact: true }),
       ).toHaveAttribute("href", "/learn?course=course&lesson=next");
       await expect(page.getByRole("progressbar")).toHaveAttribute(
         "aria-valuenow",
@@ -51,19 +51,19 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
     }
     if (role === "LECTURER")
       await expect(
-        page.getByRole("link", { name: "Quản lý khóa học", exact: true }),
+        page.getByRole("link", { name: "Manage courses", exact: true }),
       ).toBeVisible();
     if (role === "ADMIN")
       await expect(
-        page.getByRole("link", { name: "Mở quản trị người dùng" }),
+        page.getByRole("link", { name: "Open account management" }),
       ).toHaveAttribute("href", "/admin");
-    await page.getByRole("button", {name:"Trợ giúp", exact:true}).filter({visible:true}).click();
-    const guide = page.getByRole("dialog", {name:"Hướng dẫn sử dụng"});
-    const question = role === "ADMIN" ? "Kiểm tra tài khoản và quyền ở đâu?" :
+    await page.getByRole("button", {name:"Help", exact:true}).filter({visible:true}).click();
+    const guide = page.getByRole("dialog", {name:"How to use the hub"});
+    const question = role === "ADMIN" ? "Where can I review accounts and permissions?" :
       role === "LECTURER" ? "Chấm bài và gửi phản hồi thế nào?" : "Nộp bài và đọc phản hồi ở đâu?";
     await guide.getByRole("button", {name:question, exact:true}).click();
     await expect(guide.getByRole("link")).toHaveAttribute("href", role === "ADMIN" ? "/admin" : role === "LECTURER" ? "/review" : "/evidence");
-    if (role !== "ADMIN") await expect(guide.getByRole("button", {name:"Kiểm tra tài khoản và quyền ở đâu?"})).toHaveCount(0);
+    if (role !== "ADMIN") await expect(guide.getByRole("button", {name:"Where can I review accounts and permissions?"})).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(guide).not.toBeVisible();
     expect(profileRequests).toBe(1);
@@ -82,13 +82,13 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
       if (width < 1024) {
         await page.getByText("Menu", { exact: true }).click();
         const nav = page
-          .getByRole("navigation", { name: "Điều hướng không gian học tập" })
+          .getByRole("navigation", { name: "Workspace navigation" })
           .filter({ visible: true });
         await expect(
-          nav.getByRole("link", { name: "Tổng quan", exact: true }),
+          nav.getByRole("link", { name: "Dashboard", exact: true }),
         ).toHaveAttribute("aria-current", "page");
         await expect(
-          nav.getByRole("link", { name: "Quản trị", exact: true }),
+          nav.getByRole("link", { name: "Administration", exact: true }),
         ).toHaveCount(role === "ADMIN" ? 1 : 0);
         await page.keyboard.press("Escape");
         await page.getByText("Menu", { exact: true }).click();
@@ -96,7 +96,7 @@ for (const role of ["STUDENT", "LECTURER", "ADMIN"]) {
     }
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     if (role === 'STUDENT') {
-      await page.getByRole('link', {name:'Tiếp tục học',exact:true}).click();
+      await page.getByRole('link', {name:'Continue learning',exact:true}).click();
       await expect(page.getByRole('heading',{name:'Design Thinking Foundations',exact:true})).toBeVisible();
       await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow','25');
     }

@@ -27,8 +27,8 @@ function ProblemEditor({ value, number, change }: {
   change: (next: FirstFindingsProblem) => void;
 }) {
   return <fieldset className={panel}>
-    <legend className="mb-1 text-lg font-extrabold">Vấn đề {number}</legend>
-    <p className="mb-5 text-sm text-[#49616a]">Đi từ trải nghiệm thực tế của người dùng, chưa chọn giải pháp.</p>
+    <legend className="mb-1 text-lg font-extrabold">Problem {number}</legend>
+    <p className="mb-5 text-sm text-[#49616a]">Start with people’s lived experience—not a preselected solution.</p>
     <div className="grid gap-4 sm:grid-cols-2">
       {FIRST_FINDINGS_FIELDS.map(field =>
         <label key={field.key} className="block text-sm font-bold">
@@ -71,15 +71,15 @@ export default function FirstFindingsPage() {
       void withAuthDeadline(() => auth.getSession())
         .then(({ data, error: authError }) => {
           if (!active) return;
-          if (authError) setError('Không xác minh được phiên đăng nhập.');
+          if (authError) setError('Could not verify your sign-in session.');
           setSession(data.session); setAuthReady(true);
-        }).catch(() => { if (active) { setAuthReady(true); setError('Không kết nối được dịch vụ xác thực.'); } });
+        }).catch(() => { if (active) { setAuthReady(true); setError('Could not reach the authentication service.'); } });
       const { data: { subscription } } = auth.onAuthStateChange((_event, next) => {
         if (active) setSession(next);
       });
       return () => { active = false; subscription.unsubscribe(); };
     } catch {
-      setAuthReady(true); setError('Dịch vụ xác thực UII chưa được cấu hình.');
+      setAuthReady(true); setError('UII authentication is not configured.');
     }
   }, []);
 
@@ -98,7 +98,7 @@ export default function FirstFindingsPage() {
         const wanted = new URLSearchParams(window.location.search).get('projectId');
         setTeamId(mine.find(item => item.id === wanted)?.id ?? mine[0]?.id ?? '');
       } catch {
-        if (active) setError('Chưa tải được nhóm của bạn. Kiểm tra phiên đăng nhập và thử lại.');
+        if (active) setError('Could not load your teams. Check your session and try again.');
       } finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
@@ -109,7 +109,7 @@ export default function FirstFindingsPage() {
     let active = true; setChecking(true); setExisting(null); setSaved(false); setError('');
     void authenticatedApi<Evidence[]>('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token)
       .then(items => { if (active) setExisting(items.find(isFirstFindingsEvidence) ?? null); })
-      .catch(() => { if (active) setError('Không thể kiểm tra bài đã lưu. Không tạo bản nộp trùng khi chưa xác minh.'); })
+      .catch(() => { if (active) setError('Could not verify existing evidence. Do not create a duplicate submission until it is checked.'); })
       .finally(() => { if (active) setChecking(false); });
     return () => { active = false; };
   }, [token, role, teamId]);
@@ -118,7 +118,7 @@ export default function FirstFindingsPage() {
     event.preventDefault();
     if (!token || role !== 'STUDENT' || !teamId || checking || saving || existing || error) return;
     if (!firstFindingsComplete(first, second, teamScope)) {
-      setError('Hãy trả lời đầy đủ cho cả hai vấn đề và nguồn lực giới hạn của nhóm.');
+      setError('Complete both problems and your team’s resource constraints.');
       return;
     }
     setSaving(true); setError('');
@@ -127,7 +127,7 @@ export default function FirstFindingsPage() {
       const current = await authenticatedApi<Evidence[]>('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token);
       if (current.some(isFirstFindingsEvidence)) {
         setExisting(current.find(isFirstFindingsEvidence) ?? null);
-        setError('Nhóm đã có Activity 2. Mở Minh chứng để tạo phiên bản cải tiến, không tạo bản trùng.');
+        setError('Your team already saved Activity 2. Open Evidence to create a revision instead of a duplicate.');
         return;
       }
       await authenticatedApi('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token, {
@@ -136,10 +136,10 @@ export default function FirstFindingsPage() {
       // A successful HTTP response is not enough: read the persisted version back.
       const after = await authenticatedApi<Evidence[]>('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token);
       const result = after.find(isFirstFindingsEvidence);
-      if (!result) throw new Error('Chưa xác minh được bản lưu. Không gửi lại trước khi tải lại trang.');
+      if (!result) throw new Error('The save could not be verified. Reload before trying again.');
       setExisting(result); setSaved(true);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Không xác nhận được bản lưu; hãy kiểm tra Minh chứng trước khi thử lại.');
+      setError(cause instanceof Error ? cause.message : 'Could not confirm the save. Check Evidence before retrying.');
     } finally {
       setSaving(false);
     }
@@ -152,7 +152,7 @@ export default function FirstFindingsPage() {
       const evidence = await authenticatedApi<Evidence[]>('/projects/' + encodeURIComponent(teamId) + '/versioned-evidence', token);
       setExisting(evidence.find(isFirstFindingsEvidence) ?? null);
     } catch {
-      setError('Chưa xác minh được dữ liệu dự án. Không gửi lại trước khi máy chủ phản hồi.');
+      setError('Could not verify project data. Do not resubmit until the server responds.');
     } finally { setChecking(false); }
   }
 
@@ -165,43 +165,43 @@ export default function FirstFindingsPage() {
       guest={authReady && !session}/>
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-5xl space-y-5 px-4 py-8 sm:px-6">
       <div className="space-y-2">
-        <Link href="/classroom" className="inline-flex min-h-11 items-center text-sm font-bold underline">Quay về Buổi học</Link>
-        <p className="text-xs font-black tracking-widest text-[#a94716]">CHƯƠNG 10 · DESIGN THINKING · SLIDES 64–65</p>
+        <Link href="/classroom" className="inline-flex min-h-11 items-center text-sm font-bold underline">Back to Classroom</Link>
+        <p className="text-xs font-black tracking-widest text-[#a94716]">CHAPTER 10 · DESIGN THINKING · SLIDES 64–65</p>
         <h1 className="text-3xl font-black tracking-tight sm:text-4xl">Activity 2 · First Findings</h1>
-        <p className="max-w-3xl text-sm leading-7 text-[#46616b]">Tìm hiểu <strong>hai vấn đề có thật</strong> của cộng đồng. Chứng minh từ góc nhìn người dùng, trước khi nghĩ đến giải pháp.</p>
+        <p className="max-w-3xl text-sm leading-7 text-[#46616b]">Explore <strong>two real-world problems</strong> affecting your community. Support each one with evidence from users before proposing solutions.</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className={panel}><BookOpen className="mb-2" size={22} aria-hidden="true"/><strong>01 · Khám phá</strong><p className="mt-2 text-sm">Trả lời sáu câu hỏi cho từng vấn đề.</p></div>
-        <div className={panel}><ClipboardList className="mb-2" size={22} aria-hidden="true"/><strong>02 · Minh chứng</strong><p className="mt-2 text-sm">Tạo một slide tổng hợp, chuẩn bị trình bày 2 phút.</p></div>
-        <div className={panel}><ShieldCheck className="mb-2" size={22} aria-hidden="true"/><strong>03 · Nộp & cải tiến</strong><p className="mt-2 text-sm">Lưu bản nháp, nộp snapshot, xem phản hồi của cô.</p></div>
+        <div className={panel}><BookOpen className="mb-2" size={22} aria-hidden="true"/><strong>01 · Discover</strong><p className="mt-2 text-sm">Answer six questions for each problem.</p></div>
+        <div className={panel}><ClipboardList className="mb-2" size={22} aria-hidden="true"/><strong>02 · Evidence</strong><p className="mt-2 text-sm">Create a one-slide summary and prepare a two-minute presentation.</p></div>
+        <div className={panel}><ShieldCheck className="mb-2" size={22} aria-hidden="true"/><strong>03 · Submit & Revise</strong><p className="mt-2 text-sm">Save your work, submit a snapshot, and review lecturer feedback.</p></div>
       </div>
 
-      {!authReady && <WorkspaceLoading label="Đang xác minh tài khoản..."/>}
+      {!authReady && <WorkspaceLoading label="Verifying your account..."/>}
       {authReady && !session && <div className={panel}>
-        <h2 className="text-xl font-black">Đăng nhập bằng tài khoản sinh viên UII</h2>
-        <p className="mt-2 mb-4 text-sm">Hoạt động và minh chứng chỉ được lưu trong dự án mà bạn có quyền tham gia.</p>
-        <Link className="font-bold underline" href="/learn">Đăng nhập để tiếp tục</Link>
+        <h2 className="text-xl font-black">Sign in with your UII student account</h2>
+        <p className="mt-2 mb-4 text-sm">Activities and evidence are saved only to projects you are authorized to access.</p>
+        <Link className="font-bold underline" href="/learn">Sign in to continue</Link>
       </div>}
       {error && <div role="alert" className="rounded-xl border border-rose-300 bg-rose-50 p-4 text-sm text-rose-900">
-        {error} <button type="button" className="ml-2 font-bold underline" onClick={() => void verifySaved()}>Kiểm tra lại bản đã lưu</button>
+        {error} <button type="button" className="ml-2 font-bold underline" onClick={() => void verifySaved()}>Recheck saved evidence</button>
       </div>}
-      {loading && <WorkspaceLoading label="Đang tải nhóm dự án..."/>}
+      {loading && <WorkspaceLoading label="Loading project teams..."/>}
       {session && !loading && role !== 'STUDENT' && <section className={panel}>
-        <p className="font-bold">Biểu mẫu này dành cho sinh viên.</p>
-        <p className="mt-2 text-sm">Giảng viên có thể giao hoạt động trong Studio và theo dõi nhóm tại trang Buổi học.</p>
-        <Link href="/classroom" className="mt-3 inline-flex font-semibold underline">Về bảng giảng viên</Link>
+        <p className="font-bold">This form is for students.</p>
+        <p className="mt-2 text-sm">Lecturers can assign activities in Studio and monitor teams in Classroom.</p>
+        <Link href="/classroom" className="mt-3 inline-flex font-semibold underline">Back to lecturer board</Link>
       </section>}
       {session && role === 'STUDENT' && !loading && !teams.length && <section className={panel}>
-        <h2 className="text-lg font-bold">Bạn chưa có nhóm dự án</h2>
-        <p className="mt-2 text-sm">Vào Studio, tham gia nhóm trong khóa học trước khi lưu bài.</p>
-        <Link className="mt-4 inline-flex font-bold underline" href="/studio">Mở Studio</Link>
+        <h2 className="text-lg font-bold">You have not joined a project team</h2>
+        <p className="mt-2 text-sm">Open Studio and join your course team before saving evidence.</p>
+        <Link className="mt-4 inline-flex font-bold underline" href="/studio">Open Studio</Link>
       </section>}
       {eligible && !loading && <section className={panel}>
-        <label htmlFor="activity2-team" className="block text-sm font-bold">Nhóm thực hiện</label>
+        <label htmlFor="activity2-team" className="block text-sm font-bold">Your team</label>
         <select id="activity2-team" value={teamId}
           onChange={e => {
             if (firstFindingsComplete(first, second, teamScope) &&
-                !window.confirm('Đổi nhóm sẽ xóa nội dung chưa lưu trên biểu mẫu. Tiếp tục?')) return;
+                !window.confirm('Changing teams discards unsaved answers. Continue?')) return;
             setTeamId(e.target.value);
             setFirst({ ...EMPTY_FIRST_FINDINGS_PROBLEM });
             setSecond({ ...EMPTY_FIRST_FINDINGS_PROBLEM });
@@ -209,21 +209,21 @@ export default function FirstFindingsPage() {
           }} className={input}>
           {teams.map(team => <option value={team.id} key={team.id}>{team.title}</option>)}
         </select>
-        <p className="mt-3 text-xs leading-6 text-[#526b6b]">Không nhập tên, số điện thoại hoặc dữ liệu nhận diện của người phỏng vấn. Chỉ sử dụng bằng chứng đã được phép chia sẻ riêng tư cho giảng viên.</p>
+        <p className="mt-3 text-xs leading-6 text-[#526b6b]">Do not include interviewee names, phone numbers, or identifying information. Share only evidence approved for private lecturer review.</p>
       </section>}
 
       {eligible && (checking || saving) && <p role="status" className="rounded-xl bg-[#e8f4ec] p-3 text-sm">
-        {saving ? 'Đang lưu và xác minh phiên bản trên máy chủ…' : 'Đang kiểm tra minh chứng đã lưu…'}
+        {saving ? 'Saving and verifying the version on the server…' : 'Checking existing saved evidence…'}
       </p>}
       {eligible && existing && !checking && <section className={panel}>
-        <div className="flex items-center gap-2 text-emerald-800"><CheckCircle2 size={23} aria-hidden="true"/><h2 className="text-xl font-black">Đã lưu Activity 2 trong dự án</h2></div>
+        <div className="flex items-center gap-2 text-emerald-800"><CheckCircle2 size={23} aria-hidden="true"/><h2 className="text-xl font-black">Activity 2 evidence saved</h2></div>
         <p className="mt-2 text-sm leading-6">
-          {saved ? 'Bản ghi đã được xác nhận từ máy chủ.' : 'Nhóm đã có một bản ghi Activity 2.'}
-          {' '}Đây mới là minh chứng, <strong>chưa có nghĩa bài đã được nộp hoặc chấm</strong>.
+          {saved ? 'The server has confirmed this record.' : 'Your team already has an Activity 2 record.'}
+          {' '}This is saved evidence only; <strong>it has NOT been submitted or assessed</strong>.
         </p>
-        <p className="mt-2 text-sm text-[#526b6b]">Tiếp theo: đính kèm 1 slide (file riêng tư hoặc link được giảng viên truy cập), chọn phiên bản minh chứng, tạo submission snapshot và chuẩn bị phần trình bày 2 phút.</p>
+        <p className="mt-2 text-sm text-[#526b6b]">Next: attach a one-slide summary (private file or lecturer-accessible link), select the right evidence version, submit a snapshot, and prepare your two-minute presentation.</p>
         <Link href={evidenceHref} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173445] px-5 py-3 text-sm font-bold text-white">
-          Đến bước Minh chứng và nộp bài <ArrowRight size={16} aria-hidden="true"/>
+          Continue to Evidence & Submission <ArrowRight size={16} aria-hidden="true"/>
         </Link>
       </section>}
 
@@ -232,23 +232,23 @@ export default function FirstFindingsPage() {
         <ProblemEditor number={2} value={second} change={setSecond}/>
         <section className={panel}>
           <label className="block text-sm font-bold">
-            Nhóm có những nguồn lực và giới hạn gì? (thời gian, nhân sự, thiết bị, chi phí)
+            What resources and constraints does your team have? (time, people, equipment, budget)
             <textarea required rows={4} maxLength={500} className={input + ' resize-y font-normal'} value={teamScope}
               onChange={event => setTeamScope(event.target.value)} />
           </label>
           <div className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-            <strong>Đầu ra trong bài giảng:</strong> 1 slide tổng hợp và bài trình bày 2 phút. Mẫu này chỉ lưu phân tích hai vấn đề; việc upload slide và nộp bài được thực hiện ở bước tiếp theo.
+            <strong>Required deliverables:</strong> One summary slide and a two-minute presentation. This form saves your analysis of two problems only; attaching the slide and submitting happens next.
           </div>
           <button type="submit" disabled={!ready || saving || checking}
             className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173445] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">
-            Lưu minh chứng Activity 2 <ArrowRight size={16} aria-hidden="true"/>
+            Save Activity 2 Evidence <ArrowRight size={16} aria-hidden="true"/>
           </button>
-          <p className="mt-2 text-xs text-[#526b6b]">Không gửi hai lần khi mạng chậm. Sau khi lưu, hệ thống tải lại bản ghi để xác nhận phiên bản.</p>
+          <p className="mt-2 text-xs text-[#526b6b]">Do not submit twice on a slow connection. The system reloads evidence after saving to confirm the version.</p>
         </section>
       </form>}
       {eligible && <p className="text-xs leading-6 text-[#526b6b]">
-        Không có bài mẫu nào được tự động coi là kết quả thật. Việc cô đánh giá và yêu cầu chỉnh sửa vẫn thực hiện ở /review với rubric đã xuất bản.
-        Tiêu đề minh chứng: {FIRST_FINDINGS_TITLE}.
+        Demo work is never treated as verified results. Lecturer assessment and revision requests take place in /review using the published rubric.
+        Evidence: Activity 2 · First Findings — Two Real-World Problems.
       </p>}
     </main>
   </div>;

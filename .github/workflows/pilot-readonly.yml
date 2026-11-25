@@ -1,0 +1,45 @@
+name: UII classroom pilot read-only validation
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/feedback-driven-student-ux-20261125
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uii-pilot-readonly-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-api-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      E2E_STAGING_FRONTEND_ORIGIN: https://uii-dt-thanh-pilot.vercel.app
+      E2E_STAGING_API_ORIGIN: https://usi-design-thinking-api-staging.onrender.com
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Validate origin guardrails without credentials
+        run: node --test tests/uii-staging-origin.test.mjs
+      - name: Lint source and tests
+        run: npm run lint
+      - name: Check preview pages and API authorization (read only)
+        run: npm run pilot:check
+      - name: Install Chrome for fixture-only learner and recovery journey tests
+        run: npx playwright install --with-deps chrome
+      - name: Test student learning, First Findings, password recovery and pilot UX
+        run: npx playwright test e2e/pilot-instructions.spec.ts e2e/recovery-hardening.spec.ts e2e/classroom-first-findings.spec.ts e2e/student-feedback-learning.spec.ts e2e/workspace-auth.spec.ts e2e/login-compat.spec.ts e2e/pilot-a11y.spec.ts --reporter=line
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: local-layout-check
+          NEXT_PUBLIC_API_URL: http://localhost:4000
+          NEXT_PUBLIC_GOOGLE_SIGN_IN: "true"

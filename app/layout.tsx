@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
-import { CreativePointerTrail } from '@/components/creative-pointer-trail';
 import { WorkspaceChatbot } from '@/components/workspace-chatbot';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-sharp', display: 'swap' });
@@ -13,21 +12,20 @@ export const metadata: Metadata = {
     default: 'UII Design Thinking Hub | From Ideas to Impact',
     template: '%s | UII Design Thinking Hub',
   },
-  description: 'UII Design Thinking Hub kết nối đào tạo, Design Thinking, đổi mới sáng tạo, ươm tạo và hợp tác. Bắt đầu với Learning Hub và các dự án thực tế.',
+  description: 'UII Design Thinking Hub brings learning, design thinking, innovation, and collaboration together through hands-on projects.',
   openGraph: {
     title: 'UII Design Thinking Hub — From Ideas to Impact',
-    description: 'Learning · Innovation · Impact. Học qua thử thách và cải tiến dựa trên minh chứng.',
+    description: 'Learning · Innovation · Impact. Learn through challenges and improve with evidence.',
     type: 'website',
-    locale: 'vi_VN',
+    locale: 'en_US',
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
+    <html lang="en">
       <body className={`${inter.variable} ${jakarta.variable} ${playfair.variable}`}>
         {children}
-        <CreativePointerTrail />
         <WorkspaceChatbot />
       </body>
     </html>

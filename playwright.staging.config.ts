@@ -10,7 +10,7 @@ const frontendOrigin = process.env.E2E_STAGING_FRONTEND_ORIGIN;
 if (!frontendOrigin) throw new Error('Set E2E_STAGING_FRONTEND_ORIGIN to the reviewed UII staging frontend before authenticated UAT.');
 const frontend = new URL(frontendOrigin);
 if (frontend.protocol !== 'https:' ||
-    !/^(?:uii-design-thinking-hub-(?:preview|staging)|uii-design-thinking-web-staging-[a-z0-9-]+)\.vercel\.app$/.test(frontend.hostname) ||
+    !/^(?:uii-design-thinking-hub-(?:preview|staging)|uii-dt-thanh-pilot|uii-design-thinking-web-staging-[a-z0-9-]+)\.vercel\.app$/.test(frontend.hostname) ||
     frontend.pathname !== '/' || frontend.search || frontend.hash || frontend.username || frontend.password) {
   throw new Error('Authenticated UAT is restricted to an approved UII Preview or Stable Staging origin.');
 }

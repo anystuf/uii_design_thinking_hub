@@ -18,7 +18,7 @@ export function assertUiiStagingOrigin(value, kind) {
   assert.equal(url.hash, '', kind + ' must not have a fragment');
   if (kind === 'frontend') {
     assert.match(url.hostname,
-      /^(?:uii-design-thinking-hub-(?:preview|staging)|uii-design-thinking-web-staging-[a-z0-9-]+)\.vercel\.app$/,
+      /^(?:uii-design-thinking-hub-(?:preview|staging)|uii-dt-thanh-pilot|uii-design-thinking-web-staging-[a-z0-9-]+)\.vercel\.app$/,
       'Frontend must be a verified UII Preview or Stable Staging domain');
   } else {
     assert.ok([
@@ -56,7 +56,7 @@ export async function runPreflight() {
   await verifyReady(api);
   // Never authenticate or write from this public preflight. Real role/DB
   // authorization is handled by the separately gated staging UAT.
-  const frontendRoutes = ['/learn', '/classroom', '/studio', '/evidence', '/review'];
+  const frontendRoutes = ['/pilot', '/learn', '/forgot-password', '/reset-password', '/classroom', '/classroom/first-findings', '/studio', '/evidence', '/review'];
   const protectedRoutes = ['/auth/me', '/assessments/queue', '/community/questions'];
   const responses = await Promise.all([
     ...frontendRoutes.map(path => get(path, frontend).then(response => ({ path, status: response.status, expected: 200 }))),
@@ -66,7 +66,7 @@ export async function runPreflight() {
     assert.equal(item.status, item.expected,
       'UII pilot preflight ' + item.path + ' expected HTTP ' + item.expected + ', received ' + item.status);
   }
-  console.log('PASS: UII pilot public routes (5), backend/DB readiness and anonymous authorization boundaries (3).');
+  console.log('PASS: UII pilot public routes (9), backend/DB readiness and anonymous authorization boundaries (3).');
   console.log('NOTE: This read-only check does not prove real login, student writes, teacher feedback or concurrent-class capacity.');
 }
 

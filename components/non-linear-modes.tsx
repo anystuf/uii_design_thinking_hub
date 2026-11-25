@@ -10,11 +10,11 @@ import {
 } from "lucide-react";
 
 const modes = [
-  { name: "Empathize", vi: "Lắng nghe con người", bg: "#fee0c6", number: "01", icon: HeartHandshake, phrase: "Listen closely.", query: "empathy" },
-  { name: "Define", vi: "Tìm đúng vấn đề", bg: "#f4c8d8", number: "02", icon: Compass, phrase: "Frame the real need.", query: "framing" },
-  { name: "Ideate", vi: "Mở rộng khả năng", bg: "#e4e3fb", number: "03", icon: Lightbulb, phrase: "Make ideas visible.", query: "ideation" },
-  { name: "Prototype", vi: "Biến ý tưởng thành mẫu", bg: "#d3ee8c", number: "04", icon: Shapes, phrase: "Make to learn.", query: "prototyping" },
-  { name: "Test", vi: "Thử, học và cải tiến", bg: "#c9edfa", number: "05", icon: Zap, phrase: "Learn from reality.", query: "iteration" },
+  { name: "Empathize", vi: "Listen to people", bg: "#fee0c6", number: "01", icon: HeartHandshake, phrase: "Listen closely.", query: "empathy" },
+  { name: "Define", vi: "Find the right problem", bg: "#f4c8d8", number: "02", icon: Compass, phrase: "Frame the real need.", query: "framing" },
+  { name: "Ideate", vi: "Explore possibilities", bg: "#e4e3fb", number: "03", icon: Lightbulb, phrase: "Make ideas visible.", query: "ideation" },
+  { name: "Prototype", vi: "Make ideas tangible", bg: "#d3ee8c", number: "04", icon: Shapes, phrase: "Make to learn.", query: "prototyping" },
+  { name: "Test", vi: "Test, learn, improve", bg: "#c9edfa", number: "05", icon: Zap, phrase: "Learn from reality.", query: "iteration" },
 ] as const;
 
 type Mode = (typeof modes)[number];
@@ -52,7 +52,7 @@ function ModeCard({ mode, className = "" }: { mode: Mode; className?: string }) 
   );
 }
 
-/** The ribbon and its arrows share the same cubic Bézier geometry. */
+/** The ribbon and its arrows share the same cubic Bezier geometry. */
 type Point = readonly [number, number];
 type Cubic = { start: Point; c1: Point; c2: Point; end: Point };
 
@@ -190,12 +190,12 @@ export function NonLinearModes() {
   ] as const;
 
   return (
-    <div aria-label="Năm chế độ tư duy phi tuyến tính">
+    <div aria-label="Five non-linear Design Thinking stages">
       <div className="relative hidden h-[641px] w-full xl:block">
         <InfinityRibbon />
         <div className="pointer-events-none absolute left-1/2 top-6 z-20 -translate-x-1/2 text-center">
           <span className="inline-flex whitespace-nowrap rounded-full bg-[#dcefd7] px-5 py-2.5 text-[13px] font-black text-[#245a43] shadow-sm">
-            QUY TRÌNH PHI TUYẾN TÍNH
+            NON-LINEAR PROCESS
           </span>
           <p className="mt-2 text-sm italic text-[#4c6269]">A non-linear process</p>
           <ArrowLeftRight aria-hidden="true" className="mx-auto mt-2 text-[#889ba0]" size={24} />
@@ -208,9 +208,9 @@ export function NonLinearModes() {
       <div className="xl:hidden">
         <div className="mx-auto max-w-[520px] text-center">
           <span className="inline-flex rounded-full bg-[#dcefd7] px-4 py-2 text-xs font-black text-[#245a43]">
-            QUY TRÌNH PHI TUYẾN TÍNH
+            NON-LINEAR PROCESS
           </span>
-          <p className="mt-2 text-xs italic text-[#4c6269]">Bạn có thể bắt đầu ở bất kỳ chế độ nào.</p>
+          <p className="mt-2 text-xs italic text-[#4c6269]">You can start at any stage.</p>
           <InfinityRibbon compact />
         </div>
         <div className="-mt-1 grid gap-4 sm:grid-cols-2">

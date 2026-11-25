@@ -49,17 +49,17 @@ for (const role of ['STUDENT', 'LECTURER', 'ADMIN'] as const) {
       // Wrap input failures so Playwright call logs cannot echo a secret value.
       try {
         await page.getByLabel('Email', { exact: true }).fill(required(`E2E_${role}_EMAIL`));
-        await page.getByLabel('Mật khẩu', { exact: true }).fill(required(`E2E_${role}_PASSWORD`));
+        await page.getByLabel('Password', { exact: true }).fill(required(`E2E_${role}_PASSWORD`));
       } catch { throw new Error(`Could not fill staging ${role} login fields.`); }
-      await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
-      await expect(page.getByText({ STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên' }[role], { exact: true })).toBeVisible({ timeout: 90000 });
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await expect(page.getByText({ STUDENT: 'Student', LECTURER: 'Lecturer', ADMIN: 'Administrator' }[role], { exact: true })).toBeVisible({ timeout: 90000 });
       await page.reload();
-      await expect(page.getByText({ STUDENT: 'Sinh viên', LECTURER: 'Giảng viên', ADMIN: 'Quản trị viên' }[role], { exact: true })).toBeVisible({ timeout: 90000 });
+      await expect(page.getByText({ STUDENT: 'Student', LECTURER: 'Lecturer', ADMIN: 'Administrator' }[role], { exact: true })).toBeVisible({ timeout: 90000 });
       const users = await send(actor.context, 'GET', '/users');
       expect(users.status()).toBe(role === 'ADMIN' ? 200 : 403);
       if (role === 'STUDENT') expect((await send(actor.context, 'GET', '/assessments/queue')).status()).toBe(403);
-      await page.getByRole('button', { name: /Đăng xuất|Logout/ }).click();
-      await expect(page.getByRole('button', { name: 'Đăng nhập', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: /Sign out|Logout/ }).click();
+      await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
     } finally {
       await actor.client.auth.signOut();
       await actor.context.dispose();

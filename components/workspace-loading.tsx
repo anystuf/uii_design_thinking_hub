@@ -10,6 +10,6 @@ export function WorkspaceLoading({ label }: {label: string}) {
   }, []);
   return <div role="status" className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">
     <p className="font-semibold">{label}</p>
-    {slow && <p className="mt-2 leading-6">Máy chủ đang phản hồi chậm. Trong lúc chờ, bạn có thể mở Trợ giúp để xem hướng dẫn.</p>}
+    {slow && <p className="mt-2 leading-6">The server is responding slowly. You can open Help for guidance while it loads.</p>}
   </div>;
 }

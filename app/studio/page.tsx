@@ -123,7 +123,7 @@ export default function DesignStudioPage() {
       const auth = getSupabaseBrowserClient().auth;
       void withAuthDeadline(() => auth.getSession()).then(({ data }) => {
         if (mounted) { setSession(data.session); setAuthReady(true); }
-      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
+      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Unable to read the sign-in session.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, nextSession) => {
         if (mounted) setSession(nextSession);
       });
@@ -242,7 +242,7 @@ export default function DesignStudioPage() {
       setNewChallengeTitle(''); setNewChallengeBrief('');
       await loadChallenge(created.id);
       setChallenges((list) => [created, ...list]);
-      setNotice('Đã tạo Design Challenge dạng draft.');
+      setNotice('Draft Design Challenge created.');
     });
   }
 
@@ -254,7 +254,7 @@ export default function DesignStudioPage() {
       });
       await loadChallenge(challenge.id);
       setChallenges(await request<Challenge[]>(token, '/courses/' + courseId + '/challenges'));
-      setNotice('Challenge đã được xuất bản.');
+      setNotice('Challenge published.');
     });
   }
 
@@ -267,7 +267,7 @@ export default function DesignStudioPage() {
       });
       setMilestoneTitle(''); setMilestoneDate('');
       await loadChallenge(challenge.id);
-      setNotice('Đã thêm milestone.');
+      setNotice('Milestone added.');
     });
   }
 
@@ -279,7 +279,7 @@ export default function DesignStudioPage() {
       });
       setTemplateToAssign('');
       await loadChallenge(challenge.id);
-      setNotice('Đã gán hoạt động cho challenge.');
+      setNotice('Activity assigned to the challenge.');
     });
   }
 
@@ -293,7 +293,7 @@ export default function DesignStudioPage() {
       setTeams(await request<Team[]>(token, '/challenges/' + challenge.id + '/teams'));
       setMyTeams(await request<Team[]>(token, '/teams/my'));
       await loadTeam(created.id);
-      setNotice('Đã tạo nhóm và project workspace.');
+      setNotice('Team and project workspace created.');
     });
   }
 
@@ -303,7 +303,7 @@ export default function DesignStudioPage() {
       await request(token, '/teams/' + team.id + '/invitations', {
         method: 'POST', body: JSON.stringify({ email: inviteEmail }),
       });
-      setInviteEmail(''); setNotice('Đã gửi lời mời trong hệ thống.');
+      setInviteEmail(''); setNotice('Invitation sent.');
     });
   }
 
@@ -315,7 +315,7 @@ export default function DesignStudioPage() {
       setInvitations(await request<Invitation[]>(token, '/team-invitations/my'));
       setMyTeams(await request<Team[]>(token, '/teams/my'));
       if (challenge) setTeams(await request<Team[]>(token, '/challenges/' + challenge.id + '/teams'));
-      setNotice(accept ? 'Đã tham gia nhóm.' : 'Đã từ chối lời mời.');
+      setNotice(accept ? 'Joined the team.' : 'Invitation declined.');
     });
   }
 
@@ -327,7 +327,7 @@ export default function DesignStudioPage() {
       });
       setTaskTitle(''); setTaskAssigneeId('');
       await loadTeam(team.id);
-      setNotice('Đã tạo task.');
+      setNotice('Task created.');
     });
   }
 
@@ -339,7 +339,7 @@ export default function DesignStudioPage() {
         method: 'PATCH', body: JSON.stringify({ status: next }),
       });
       await loadTeam(team.id);
-      setNotice('Đã cập nhật task.');
+      setNotice('Task updated.');
     });
   }
 
@@ -356,17 +356,17 @@ export default function DesignStudioPage() {
       });
       setActivities((items) => [created, ...items]);
       setActiveActivity(created); setAnswers({}); setDirty(false);
-      setNotice('Đã mở bản nháp hoạt động.');
+      setNotice('Activity draft opened.');
     });
   }
 
   function selectActivity(activity: ProjectActivity) {
-    if (dirty && !window.confirm('Nội dung chưa lưu sẽ bị mất. Tiếp tục?')) return;
+    if (dirty && !window.confirm('Unsaved changes will be lost. Continue?')) return;
     setActiveActivity(activity); setAnswers(activity.content); setDirty(false);
   }
 
   function selectMode(next: Mode) {
-    if (dirty && !window.confirm('Nội dung chưa lưu sẽ bị mất. Chuyển mode?')) return;
+    if (dirty && !window.confirm('Unsaved changes will be lost. Switch stage?')) return;
     setMode(next); setActiveActivity(null); setDirty(false); setAnswers({});
     const params = new URLSearchParams(window.location.search);
     params.set('mode', next);
@@ -422,29 +422,29 @@ export default function DesignStudioPage() {
       });
       setActiveActivity(saved);
       setActivities((items) => items.map((item) => item.id === saved.id ? saved : item));
-      setDirty(false); setNotice(completed ? 'Hoạt động đã hoàn thành.' : 'Bản nháp đã được lưu trên server.');
+      setDirty(false); setNotice(completed ? 'Activity completed.' : 'Draft saved on the server.');
     });
   }
 
   return (
     <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Không gian dự án" role={user?.role} guest={authReady && !session} />
+      <WorkspaceNav title="Project Workspace" role={user?.role} guest={authReady && !session} />
 
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-[#d5edc4] p-5 sm:p-8">
           <div>
             <p className="text-xs font-black uppercase tracking-[.15em] text-[#95402a]">LEARN BY MAKING · PROJECT STUDIO</p>
-            <h1 className="mt-2 text-2xl font-black tracking-tight">Biến ý tưởng thành thứ có thể thử.</h1>
-            <p className="mt-1 text-sm font-semibold text-[#3f5860]">Dự án · Từ thử thách đến nguyên mẫu, minh chứng và cải tiến.</p>
-            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để bắt đầu'}</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight">Turn ideas into something you can test.</h1>
+            <p className="mt-1 text-sm font-semibold text-[#3f5860]">Projects · From challenges to prototypes, evidence, and iteration.</p>
+            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Sign in to begin'}</p>
           </div>
-          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Đang lưu hoặc tải thay đổi…</span>}
+          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle className="animate-spin" size={17}/> Saving or loading changes…</span>}
         </div>
-        {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
+        {session && !user && busy && <WorkspaceLoading label="Verifying your account…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">{notice}</p>}
-        {!authReady && <p>Đang kiểm tra đăng nhập…</p>}
-        {authReady && !session && <div className={card}>Bạn cần đăng nhập trước. <Link href="/learn" className="font-bold text-[#153b77] underline">Mở trang đăng nhập</Link></div>}
+        {!authReady && <p>Checking sign-in…</p>}
+        {authReady && !session && <div className={card}>Sign in to continue. <Link href="/learn" className="font-bold text-[#153b77] underline">Open Sign in</Link></div>}
         {session && user && (
           <>
             {isStudent && <StudioGuidedJourney
@@ -454,14 +454,14 @@ export default function DesignStudioPage() {
             />}
             {isStudent && invitations.length > 0 && (
               <section id="studio-invitations" tabIndex={-1} className={card}>
-                <h3 className="mb-3 flex items-center gap-2 text-lg font-bold"><Users size={18}/> Lời mời tham gia nhóm ({invitations.length})</h3>
+                <h3 className="mb-3 flex items-center gap-2 text-lg font-bold"><Users size={18}/> Team invitations ({invitations.length})</h3>
                 <div className="space-y-3">
                   {invitations.map((invitation) => (
                     <div key={invitation.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f3f7fc] p-3">
                       <span className="text-sm">{invitation.project.title} · {invitation.project.challenge?.title}</span>
                       <div className="flex gap-2">
                         <button disabled={busy} onClick={() => void respond(invitation.id, true)} className={action}>Tham gia</button>
-                        <button disabled={busy} onClick={() => void respond(invitation.id, false)} className={minor}>Từ chối</button>
+                        <button disabled={busy} onClick={() => void respond(invitation.id, false)} className={minor}>Decline</button>
                       </div>
                     </div>
                   ))}
@@ -472,14 +472,14 @@ export default function DesignStudioPage() {
             <div className="grid gap-5 lg:grid-cols-[310px_minmax(0,1fr)]">
               <aside className="space-y-5">
                 <section className={card}>
-                  <label htmlFor="course" className="mb-2 block text-sm font-bold">Khóa học</label>
+                  <label htmlFor="course" className="mb-2 block text-sm font-bold">Courses</label>
                   <select id="course" className={input} value={courseId} onChange={(event) => {
                     setCourseId(event.target.value); setChallenge(null); setTeam(null); setActiveActivity(null);
                   }}>
-                    {!courses.length && <option value="">Chưa ghi danh khóa học</option>}
+                    {!courses.length && <option value="">No enrolled courses</option>}
                     {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                   </select>
-                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-600">Hãy <Link href="/learn" className="underline">ghi danh khóa học</Link> trước khi tham gia thử thách.</p>}
+                  {isStudent && !courses.length && <p className="mt-3 text-sm text-slate-600">Please <Link href="/learn" className="underline">enroll in a course</Link> before joining a challenge.</p>}
                 </section>
                 <section className={card}>
                   <h3 className="mb-3 flex items-center gap-2 font-bold"><Lightbulb size={18}/> Design Challenges</h3>
@@ -491,15 +491,15 @@ export default function DesignStudioPage() {
                         <span className="mt-1 block text-xs text-slate-600">{item.status}</span>
                       </button>
                     ))}
-                    {!challenges.length && <p className="text-sm text-slate-600">Chưa có challenge được hiển thị.</p>}
+                    {!challenges.length && <p className="text-sm text-slate-600">No challenges are available.</p>}
                   </div>
                 </section>
                 {isTeacher && courseId && (
                   <form onSubmit={(event) => void createChallenge(event)} className={card + ' space-y-3'}>
-                    <h3 className="flex items-center gap-2 font-bold"><Plus size={18}/> Tạo challenge</h3>
-                    <input required maxLength={160} className={input} placeholder="Tên challenge" value={newChallengeTitle} onChange={(e) => setNewChallengeTitle(e.target.value)}/>
-                    <textarea required maxLength={6000} rows={4} className={input} placeholder="Bối cảnh và vấn đề người dùng" value={newChallengeBrief} onChange={(e) => setNewChallengeBrief(e.target.value)}/>
-                    <button disabled={busy} className={action}>Tạo challenge nháp</button>
+                    <h3 className="flex items-center gap-2 font-bold"><Plus size={18}/> Create challenge</h3>
+                    <input required maxLength={160} className={input} placeholder="Challenge title" value={newChallengeTitle} onChange={(e) => setNewChallengeTitle(e.target.value)}/>
+                    <textarea required maxLength={6000} rows={4} className={input} placeholder="Context and user problem" value={newChallengeBrief} onChange={(e) => setNewChallengeBrief(e.target.value)}/>
+                    <button disabled={busy} className={action}>Create draft challenge</button>
                   </form>
                 )}
               </aside>
@@ -507,11 +507,11 @@ export default function DesignStudioPage() {
               <div className="min-w-0 space-y-5">
                 {!challenge ? <section className={card + ' py-12 text-center'}>
                   <Lightbulb className="mx-auto mb-3 text-[#ad4007]" size={35}/>
-                  <h3 className="text-xl font-bold">Chọn một thử thách</h3>
-                  <p role="status" className="mt-2 text-sm font-semibold text-[#153b77]">La bàn của bạn: {MODES.find(item => item.id === mode)?.label} · Chọn thử thách để thực hành ở đúng chế độ này.</p>
-                  <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Chọn thử thách từ khóa học, thành lập nhóm và khám phá năm chế độ Design Thinking.</p>
+                  <h3 className="text-xl font-bold">Choose a challenge</h3>
+                  <p role="status" className="mt-2 text-sm font-semibold text-[#153b77]">Your compass: {MODES.find(item => item.id === mode)?.label} · Choose a challenge to practise this stage.</p>
+                  <p className="mx-auto mt-2 max-w-lg text-sm text-slate-600">Choose a course challenge, form a team, and explore the five Design Thinking stages.</p>
                   <details className="mx-auto mt-5 max-w-3xl rounded-xl border border-[#d6e2db] bg-white p-4 text-left">
-                    <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">Xem hai nhóm làm mẫu · chỉ để tham khảo</summary>
+                    <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">View two example teams · for reference only</summary>
                     <div className="mt-3"><SampleTeamGallery stage={mode}/></div>
                   </details>
                 </section> : (
@@ -520,11 +520,11 @@ export default function DesignStudioPage() {
                       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                         <span className="rounded-full bg-[#eaf0fa] px-3 py-1 text-xs font-bold text-[#153b77]">{challenge.status}</span>
                         {canManageChallenge && challenge.status === 'DRAFT' &&
-                          <button disabled={busy} className={action} onClick={() => void publishChallenge()}>Xuất bản challenge</button>}
+                          <button disabled={busy} className={action} onClick={() => void publishChallenge()}>Publish challenge</button>}
                       </div>
                       <h3 className="text-2xl font-extrabold">{challenge.title}</h3>
                       <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-600">{challenge.brief}</p>
-                      {challenge.learningOutcomes && <p className="mt-2 text-sm">Mục tiêu: {challenge.learningOutcomes}</p>}
+                      {challenge.learningOutcomes && <p className="mt-2 text-sm">Learning outcomes: {challenge.learningOutcomes}</p>}
                       {challenge.milestones.length > 0 && <div className="mt-5 border-t pt-4">
                         <p className="mb-2 text-sm font-bold">Milestones</p>
                         <div className="space-y-2">{challenge.milestones.map((m) => <p key={m.id} className="text-sm text-slate-600">
@@ -536,26 +536,26 @@ export default function DesignStudioPage() {
                     {canManageChallenge && (
                       <div className="grid gap-4 md:grid-cols-2">
                         <form onSubmit={(event) => void createMilestone(event)} className={card + ' space-y-3'}>
-                          <h4 className="font-bold">Thêm milestone</h4>
+                          <h4 className="font-bold">Add milestone</h4>
                           <input required maxLength={160} className={input} placeholder="Milestone title" value={milestoneTitle} onChange={(e) => setMilestoneTitle(e.target.value)}/>
                           <input type="datetime-local" aria-label="Deadline" className={input} value={milestoneDate} onChange={(e) => setMilestoneDate(e.target.value)}/>
-                          <button className={minor} disabled={busy}>Lưu milestone</button>
+                          <button className={minor} disabled={busy}>Save milestone</button>
                         </form>
                         <form onSubmit={(event) => void assignTemplate(event)} className={card + ' space-y-3'}>
-                          <h4 className="font-bold">Gán activity template</h4>
+                          <h4 className="font-bold">Assign activity template</h4>
                           <select required className={input} value={templateToAssign} onChange={(e) => setTemplateToAssign(e.target.value)}>
-                            <option value="">Chọn template</option>
+                            <option value="">Choose a template</option>
                             {templates.filter((t) => !assigned.some((a) => a.templateId === t.id)).map((t) => <option key={t.id} value={t.id}>{t.mode} · {t.name}</option>)}
                           </select>
-                          <button disabled={busy || !templateToAssign} className={minor}>Gán vào challenge</button>
+                          <button disabled={busy || !templateToAssign} className={minor}>Assign to challenge</button>
                         </form>
                       </div>
                     )}
 
                     <section className={card}>
                       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                        <h3 className="flex items-center gap-2 text-lg font-bold"><Users size={20}/> Nhóm thực hiện</h3>
-                        {challenge && <span className="text-xs text-slate-600">{teams.length} nhóm có thể truy cập</span>}
+                        <h3 className="flex items-center gap-2 text-lg font-bold"><Users size={20}/> Project teams</h3>
+                        {challenge && <span className="text-xs text-slate-600">{teams.length} teams can access</span>}
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {teams.map((item) => <button key={item.id} className={team?.id === item.id ? action : minor}
@@ -563,32 +563,32 @@ export default function DesignStudioPage() {
                       </div>
                       {isStudent && challenge.status === 'PUBLISHED' && !myTeams.some(item => item.challengeId === challenge.id) && (
                         <form id="studio-create-team" tabIndex={-1} onSubmit={(event) => void createTeam(event)} className="mt-4 flex flex-wrap gap-2">
-                          <input required maxLength={160} className={input + ' min-w-0 flex-1'} placeholder="Tên nhóm / dự án" value={teamName} onChange={(e) => setTeamName(e.target.value)}/>
-                          <button disabled={busy} className={action}><Plus size={16} className="mr-1 inline"/> Tạo nhóm</button>
+                          <input required maxLength={160} className={input + ' min-w-0 flex-1'} placeholder="Team / project name" value={teamName} onChange={(e) => setTeamName(e.target.value)}/>
+                          <button disabled={busy} className={action}><Plus size={16} className="mr-1 inline"/> Create team</button>
                         </form>
                       )}
                     </section>
 
                     {!team && <section className={card}>
-                      <h3 className="text-lg font-black text-[#173445]">Bạn sẽ làm gì trong giai đoạn {guideForStage(mode).title}?</h3>
+                      <h3 className="text-lg font-black text-[#173445]">What will you do in the {guideForStage(mode).title}?</h3>
                       <p className="mt-2 text-sm leading-7 text-[#526970]">{guideForStage(mode).question}</p>
-                      <p className="mt-2 text-xs font-semibold text-[#ac4f3b]">Đầu ra: {guideForStage(mode).deliverable}</p>
+                      <p className="mt-2 text-xs font-semibold text-[#ac4f3b]">Deliverable: {guideForStage(mode).deliverable}</p>
                       <details className="mt-4 rounded-xl border border-[#d6e2db] bg-white p-3">
-                        <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">Xem ví dụ mô phỏng ở giai đoạn này</summary>
+                        <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#315d57]">View an example for this stage</summary>
                         <div className="mt-2"><SampleTeamGallery stage={mode} compact/></div>
                       </details>
-                      <p className="mt-3 text-sm text-[#526970]">Chọn nhóm đã tham gia hoặc tạo nhóm mới để lưu bài làm thật. Ví dụ trên không phải dữ liệu người dùng thật.</p>
+                      <p className="mt-3 text-sm text-[#526970]">Choose an existing team or create one to save actual work. The example above is synthetic.</p>
                     </section>}
                     {team && (
                       <>
                         <section id="studio-team-workspace" tabIndex={-1} className={card}>
                           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                              <h3 className="text-lg font-black">{team.title} · Team Workspace</h3>
-                             <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Nộp minh chứng hoặc link Drive ↗</Link>
+                             <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Submit evidence or a Drive link ↗</Link>
                            </div>
                           <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#eaf3ed] p-3 text-xs leading-6 text-[#365d57]">
-                            <span className="flex-1">Muốn dự án xuất hiện tại Cộng đồng? Nộp bản làm và nhận đánh giá, nhờ giảng viên duyệt trưng bày, sau đó chủ dự án tự chọn công bố.</span>
-                            <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#c0dbca] bg-white px-3 font-black">Mở Cộng đồng →</Link>
+                            <span className="flex-1">Want your project to appear in the Community? Submit work, receive an assessment, request lecturer approval for display, and publish only with the team’s permission.</span>
+                            <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#c0dbca] bg-white px-3 font-black">Open Community →</Link>
                           </div>
                           <div className="mb-4 flex flex-wrap gap-2">
                             {team.members.map((m) => <span key={m.id} className="rounded-full bg-[#eaf0fa] px-3 py-1.5 text-xs font-semibold">
@@ -596,11 +596,11 @@ export default function DesignStudioPage() {
                             </span>)}
                           </div>
                           {isOwner && <form onSubmit={(event) => void invite(event)} className="mb-4 flex flex-wrap gap-2">
-                            <input required type="email" className={input + ' min-w-0 flex-1'} placeholder="Email thành viên đã ghi danh" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}/>
-                            <button disabled={busy} className={minor}><Send size={15} className="mr-1 inline"/> Mời</button>
+                            <input required type="email" className={input + ' min-w-0 flex-1'} placeholder="Enrolled team member's email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)}/>
+                            <button disabled={busy} className={minor}><Send size={15} className="mr-1 inline"/> Invite</button>
                           </form>}
                           <details className="mt-4 rounded-xl border border-[#d7e4db] bg-[#f9fbf8] p-3">
-                            <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">Quản lý công việc nhóm · mở khi cần</summary>
+                            <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">Manage team tasks · optional</summary>
                             <div className="mt-3">
                               <h4 className="mb-2 flex items-center gap-2 text-sm font-bold"><ClipboardList size={17}/> Taskboard</h4>
                           <div className="space-y-2">
@@ -612,11 +612,11 @@ export default function DesignStudioPage() {
                                 <button type="button" className={minor} disabled={!canEditTeam || busy} onClick={() => void updateTask(task)}>{task.status.replace('_', ' ')}</button>
                               </div>
                             ))}
-                            {!team.tasks.length && <p className="text-sm text-slate-600">Chưa có công việc nào.</p>}
+                            {!team.tasks.length && <p className="text-sm text-slate-600">No tasks yet.</p>}
                           </div>
                           {canEditTeam && <form onSubmit={(event) => void createTask(event)} className="mt-3 grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,160px)_auto]">
                             <input required maxLength={160} className={input} placeholder="Task title" value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)}/>
-                            <select className={input} aria-label="Giao việc cho" value={taskAssigneeId} onChange={(e) => setTaskAssigneeId(e.target.value)}>
+                            <select className={input} aria-label="Assign task to" value={taskAssigneeId} onChange={(e) => setTaskAssigneeId(e.target.value)}>
                               <option value="">Unassigned</option>
                               {team.members.map((m) => <option key={m.userId} value={m.userId}>{m.user.fullName}</option>)}
                             </select>
@@ -628,43 +628,43 @@ export default function DesignStudioPage() {
 
                         <ProjectDiscussion projectId={team.id} token={token} viewerId={user.id}/>
                         <details className="rounded-2xl border border-[#dae5de] bg-white p-4">
-                          <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">Bảng cộng tác ngoài UII · chỉ mở khi cần</summary>
+                          <summary className="min-h-11 cursor-pointer text-sm font-bold text-[#365d57]">External collaboration board · optional</summary>
                           <div className="mt-3"><ExternalCollaborationBoard/></div>
                         </details>
                         <section id="studio-stage-tools" tabIndex={-1} className={card}>
-                          <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Năm chế độ Design Thinking">
+                          <div className="mb-5 flex min-w-0 flex-wrap gap-2" role="tablist" aria-label="Five Design Thinking stages">
                             {MODES.map((item) => (
                               <button key={item.id} type="button" role="tab" aria-selected={mode === item.id}
                                 onClick={() => selectMode(item.id)}
                                 className={'rounded-xl px-3 py-3 text-xs font-bold sm:text-sm ' + (mode === item.id ? 'bg-[#153b77] text-white' : 'bg-[#eef2f8] text-[#153b77]')}>
-                                {item.label}{mode === item.id && <span className="ml-2 text-[11px] font-bold">· Bạn ở đây</span>}
+                                {item.label}{mode === item.id && <span className="ml-2 text-[11px] font-bold">· You are here</span>}
                               </button>
                             ))}
                           </div>
                           <h3 className="text-xl font-extrabold">{MODES.find((m) => m.id === mode)?.label} Workspace</h3>
                           <p className="mt-2 text-sm font-bold text-[#274951]">{guideForStage(mode).question}</p>
-                          <p className="mt-1 text-xs leading-6 text-[#65757a]">Đầu ra: {guideForStage(mode).deliverable}</p>
+                          <p className="mt-1 text-xs leading-6 text-[#65757a]">Deliverable: {guideForStage(mode).deliverable}</p>
                           <div className="mt-3 grid gap-2 sm:grid-cols-3">
                             {guideForStage(mode).prompts.map((q,i)=><p key={q} className="rounded-xl border border-[#dce5df] bg-[#fbfaf5] p-3 text-xs leading-6"><span className="font-black text-[#a94330]">0{i+1}. </span>{q}</p>)}
                           </div>
                            <Link href={"/demo?tool="+encodeURIComponent(mode==="EMPATHIZE"?"Empathy Map":mode==="DEFINE"?"POV Builder":mode==="IDEATE"?"Crazy 8s":mode==="PROTOTYPE"?"Storyboard":"Feedback Canvas")+"#tools"}
                              className="my-3 inline-flex min-h-11 items-center rounded-full border border-[#aacabd] bg-[#eaf5e6] px-4 text-xs font-black text-[#173445]">
-                             Mở canvas thực hành theo chế độ {mode} ↗
+                             Open the practice canvas for {mode} ↗
                            </Link>
-                          <p className="mb-4 text-sm text-slate-600">{MODES.find((m) => m.id === mode)?.hint} · Có thể quay lại bất kỳ mode nào.</p>
+                          <p className="mb-4 text-sm text-slate-600">{MODES.find((m) => m.id === mode)?.hint} · You can revisit any stage.</p>
 
                           <div className="mb-5 grid gap-3 sm:grid-cols-2">
                             {templates.filter((t) => t.mode === mode).map((template) => (
                               <div key={template.id} className="rounded-xl border border-[#e6eaf2] bg-[#fbfcfe] p-4">
                                 <p className="font-bold">{template.name}</p>
                                 <p className="my-2 text-xs leading-5 text-slate-600">{template.instructions}</p>
-                                {canEditTeam && <button disabled={busy} className={minor} onClick={() => void startActivity(template)}><Plus size={14} className="mr-1 inline"/> Bắt đầu</button>}
-                                {assigned.some((a) => a.templateId === template.id) && <p className="mt-2 text-xs font-semibold text-emerald-700">Được giao bởi giảng viên</p>}
+                                {canEditTeam && <button disabled={busy} className={minor} onClick={() => void startActivity(template)}><Plus size={14} className="mr-1 inline"/> Start</button>}
+                                {assigned.some((a) => a.templateId === template.id) && <p className="mt-2 text-xs font-semibold text-emerald-700">Assigned by lecturer</p>}
                               </div>
                             ))}
                           </div>
 
-                          <h4 className="mb-2 text-sm font-bold">Activities đã lưu</h4>
+                          <h4 className="mb-2 text-sm font-bold">Saved activities</h4>
                           <div className="mb-5 flex flex-wrap gap-2">
                             {activities.filter((a) => a.mode === mode).map((a) => (
                               <button key={a.id} className={activeActivity?.id === a.id ? action : minor} onClick={() => selectActivity(a)}>
@@ -692,12 +692,12 @@ export default function DesignStudioPage() {
                                 </label>
                               ))}
                               </div>
-                              <p className="text-xs leading-6 text-[#65787a]">Các ô được lưu trong hoạt động của nhóm trên máy chủ. Nếu cần bản đồ thấu cảm hoặc storyboard chi tiết, sử dụng canvas Miro từ bộ công cụ.</p>
+                              <p className="text-xs leading-6 text-[#65787a]">These entries are saved as team activities on the server. For a detailed empathy map or storyboard, use the Miro canvas in the toolkit.</p>
                               {canEditTeam && <div className="flex flex-wrap gap-3">
-                                <button disabled={busy} className={minor} onClick={() => void saveActivity(false)}><RefreshCcw size={15} className="mr-1 inline"/> Lưu nháp</button>
-                                <button disabled={busy} className={action} onClick={() => void saveActivity(true)}><CheckCircle2 size={15} className="mr-1 inline"/> Hoàn thành activity</button>
+                                <button disabled={busy} className={minor} onClick={() => void saveActivity(false)}><RefreshCcw size={15} className="mr-1 inline"/> Save draft</button>
+                                <button disabled={busy} className={action} onClick={() => void saveActivity(true)}><CheckCircle2 size={15} className="mr-1 inline"/> Complete activity</button>
                               </div>}
-                              {dirty && <p className="text-xs font-semibold text-amber-700">Có thay đổi chưa lưu.</p>}
+                              {dirty && <p className="text-xs font-semibold text-amber-700">You have unsaved changes.</p>}
                             </div>
                           )}
                         </section>

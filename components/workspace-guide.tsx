@@ -7,29 +7,29 @@ import { useRef, useState } from "react";
 export type WorkspaceRole = "STUDENT" | "LECTURER" | "ADMIN" | "MENTOR";
 type Guide = { question: string; steps: string[]; href: string; action: string };
 const login: Guide = {
-  question: "Làm sao để bắt đầu?",
-  steps: ["Mở trang đăng nhập. Dùng email và mật khẩu hoặc Google nếu đã được bật.", "Nếu tạo tài khoản mới, hãy kiểm tra email để xác nhận. Quyền giảng viên và quản trị do nhà trường cấp."],
-  href: "/learn", action: "Mở trang đăng nhập",
+  question: "How do I get started?",
+  steps: ["Open Sign in. Use your email and password, or Google if available.", "If you create an account, confirm your email. Lecturer and administrator access must be assigned by authorized staff."],
+  href: "/learn", action: "Open Sign in",
 };
 const student: Guide[] = [
-  { question: "Bắt đầu hoặc tiếp tục học ở đâu?", steps: ["Mở Khóa học, chọn một khóa đang mở và nhấn Ghi danh.", "Vào Tổng quan để mở bài chưa hoàn thành tiếp theo. Đánh dấu hoàn thành ở cuối bài để lưu tiến độ."], href: "/learn#course-catalog", action: "Tìm khóa học" },
-  { question: "Tham gia nhóm dự án thế nào?", steps: ["Ghi danh khóa học trước, rồi mở Dự án và chọn thử thách của khóa đó.", "Tạo nhóm hoặc chấp nhận lời mời. Chọn hoạt động thiết kế phù hợp với công việc nhóm đang làm."], href: "/studio", action: "Mở dự án" },
-  { question: "Nộp bài và đọc phản hồi ở đâu?", steps: ["Trong Minh chứng & phản hồi, chọn dự án và lưu tệp hoặc ghi chép của nhóm.", "Chọn phiên bản minh chứng để nộp. Khi có nhận xét, mở Thông báo để xem bài và các điểm cần cải thiện."], href: "/evidence", action: "Mở minh chứng" },
+  { question: "Where do I start or resume learning?", steps: ["Open Courses, choose an available course, and select Enroll.", "Use Dashboard to resume your next lesson. Mark it complete when finished to save progress."], href: "/learn#course-catalog", action: "Find a course" },
+  { question: "How do I join a project team?", steps: ["Enroll first, then open Projects and choose a related challenge.", "Create a team or accept an invitation. Choose a Design Thinking activity appropriate to your project stage."], href: "/studio", action: "Open Projects" },
+  { question: "Where do I submit work and read feedback?", steps: ["In Evidence & Feedback, choose your project and save a file or team notes.", "Select evidence versions to submit. When feedback arrives, open Notifications to review and revise."], href: "/evidence", action: "Open Evidence" },
 ];
 const teaching: Guide[] = [
-  { question: "Tạo và công bố khóa học thế nào?", steps: ["Mở Khóa học và tạo một bản nháp.", "Chọn khóa vừa tạo để thêm bài học, sau đó công bố bài và khóa khi nội dung đã sẵn sàng."], href: "/learn", action: "Quản lý khóa học" },
-  { question: "Giao thử thách cho lớp thế nào?", steps: ["Mở Dự án, chọn khóa học mình quản lý rồi tạo thử thách.", "Nêu rõ đầu ra, thiết lập mốc nộp và công bố để sinh viên có thể tham gia."], href: "/studio", action: "Quản lý thử thách" },
-  { question: "Chấm bài và gửi phản hồi thế nào?", steps: ["Vào Đánh giá, chọn thử thách và công bố bộ tiêu chí.", "Chọn bài trong danh sách chờ, chấm theo tiêu chí và ghi rõ bước cải thiện trước khi gửi phản hồi."], href: "/review", action: "Mở hàng chờ đánh giá" },
+  { question: "How do I publish a course?", steps: ["Open Courses and create a draft.", "Add lessons to the draft, then publish lessons and the course when ready."], href: "/learn", action: "Manage courses" },
+  { question: "How do I assign a classroom challenge?", steps: ["Open Projects, choose a course you manage, and create a challenge.", "Specify the deliverables and milestones, then publish for students to join."], href: "/studio", action: "Manage challenges" },
+  { question: "How do I review submissions and give feedback?", steps: ["Open Submission Review, select a challenge, and publish the rubric.", "Choose a pending submission, assess against the rubric, and explain the next improvement before publishing feedback."], href: "/review", action: "Open review queue" },
 ];
 const admin: Guide = {
-  question: "Kiểm tra tài khoản và quyền ở đâu?",
-  steps: ["Mở Quản trị để xem danh sách tài khoản và vai trò đang được hệ thống ghi nhận.", "Khi cần cấp hoặc đổi quyền, dùng quy trình quản trị được nhà trường phê duyệt."],
-  href: "/admin", action: "Mở danh sách tài khoản",
+  question: "Where can I review accounts and permissions?",
+  steps: ["Open Administration to view recorded accounts and roles.", "Use your institution's authorized process to grant or change roles."],
+  href: "/admin", action: "View accounts",
 };
 const mentor: Guide = {
-  question: "Tìm dự án được chia sẻ với tôi ở đâu?",
-  steps: ["Mở Dự án để xem các mục tài khoản của bạn có quyền truy cập.", "Nếu không thấy dự án, hãy hỏi giảng viên quản lý khóa học về quyền truy cập."],
-  href: "/studio", action: "Mở dự án",
+  question: "Where can I find projects shared with me?",
+  steps: ["Open Projects to view projects your account may access.", "If no project appears, ask the course lecturer to check your access."],
+  href: "/studio", action: "Open Projects",
 };
 const guides = { STUDENT: student, LECTURER: teaching, ADMIN: [admin, ...teaching], MENTOR: [mentor] };
 
@@ -41,17 +41,17 @@ export function WorkspaceGuide({ role, triggerClassName }: { role?: WorkspaceRol
     <>
       <button type="button" onClick={() => { setSelected(null); dialog.current?.showModal(); }}
         className={"flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-semibold " + (triggerClassName ?? "text-slate-700 hover:bg-slate-100")}>
-        <MessageCircle aria-hidden="true" size={17}/> <span>Trợ giúp</span>
+        <MessageCircle aria-hidden="true" size={17}/> <span>Help</span>
       </button>
       <dialog ref={dialog} aria-labelledby="workspace-guide-title"
         className="m-auto max-h-[85dvh] w-[calc(100%_-_2rem)] max-w-md overflow-y-auto rounded-xl border border-slate-200 bg-white p-0 text-slate-900 shadow-xl backdrop:bg-slate-950/45">
         <div className="flex items-center justify-between border-b px-4 py-2">
-          <h2 id="workspace-guide-title" className="text-base font-semibold">Hướng dẫn sử dụng</h2>
-          <button type="button" onClick={() => dialog.current?.close()} aria-label="Đóng hướng dẫn"
+          <h2 id="workspace-guide-title" className="text-base font-semibold">How to use the hub</h2>
+          <button type="button" onClick={() => dialog.current?.close()} aria-label="Close guide"
             className="grid size-11 place-items-center rounded-md hover:bg-slate-100"><X size={18} aria-hidden="true"/></button>
         </div>
         <div className="space-y-4 p-4">
-          <p className="text-sm text-slate-600">Bạn muốn làm gì trên nền tảng?</p>
+          <p className="text-sm text-slate-600">What would you like to do?</p>
           <div className="grid gap-2">
             {topics.map(topic => (
               <button key={topic.question} type="button" onClick={() => setSelected(topic)} aria-pressed={selected === topic}

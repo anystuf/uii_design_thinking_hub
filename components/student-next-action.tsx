@@ -14,21 +14,21 @@ export function deriveRecommendedStep(
   enrolled: boolean, lessons: LessonSummary[], completedIds: ReadonlySet<string>,
 ): RecommendedStep {
   if (!enrolled) return {
-    type: "enroll", title: "Ghi danh để bắt đầu",
-    reason: "Ghi danh một lần để lưu tiến độ và mở các hoạt động dành cho người học.",
+    type: "enroll", title: "Enroll to get started",
+    reason: "Enroll once to save progress and unlock learner activities.",
   };
   if (lessons.length === 0) return {
-    type: "unavailable", title: "Chưa có bài học để bắt đầu",
-    reason: "Giảng viên chưa công bố bài học. Bạn có thể khám phá khóa học khác trong lúc chờ.",
+    type: "unavailable", title: "No published lessons yet",
+    reason: "Your lecturer has not published lessons yet. Explore other courses while you wait.",
   };
   const next = lessons.find(lesson => !completedIds.has(lesson.id));
   if (next) return {
     type: "lesson", title: next.title, lessonId: next.id,
-    reason: "Học bài này, luyện tập để tự kiểm tra rồi thử áp dụng vào dự án của nhóm.",
+    reason: "Study this lesson, practise, and apply the method to your team project.",
   };
   return {
-    type: "apply", title: "Chuyển kiến thức thành sản phẩm",
-    reason: "Bạn đã đánh dấu hoàn thành các bài hiện có. Hãy vận dụng cùng nhóm, lưu minh chứng và xin phản hồi.",
+    type: "apply", title: "Turn learning into project evidence",
+    reason: "You have completed the available lessons. Apply the methods with your team, save evidence, and request feedback.",
   };
 }
 
@@ -57,9 +57,9 @@ export function StudentNextAction({
           {step.type === "apply" ? <CheckCircle2 size={22}/> : <Compass size={22}/>}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-black uppercase tracking-[.13em] text-[#476c5f]">UII · Bước tiếp theo dành cho bạn</p>
+          <p className="text-[11px] font-black uppercase tracking-[.13em] text-[#476c5f]">UII · YOUR NEXT STEP</p>
           <h3 id="student-next-action-title" className="mt-1 text-lg font-black leading-snug sm:text-xl">
-            {step.type === "lesson" ? "Tiếp tục: " + step.title : step.title}
+            {step.type === "lesson" ? "Continue: " + step.title : step.title}
           </h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[#4f6b68]">{step.reason}</p>
         </div>
@@ -67,25 +67,25 @@ export function StudentNextAction({
           {step.type === "enroll" && (
             <button type="button" disabled={busy} onClick={onEnroll}
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 text-sm font-bold text-white hover:bg-[#285851] disabled:opacity-50 sm:w-auto">
-              <Users size={17}/> Ghi danh khóa học
+              <Users size={17}/> Enroll in course
             </button>
           )}
           {step.type === "lesson" && (
             <button type="button" disabled={busy} onClick={() => onOpenLesson(step.lessonId)}
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 text-sm font-bold text-white hover:bg-[#285851] disabled:opacity-50 sm:w-auto">
-              <PlayCircle size={17}/> Học tiếp bài này <ArrowRight size={16}/>
+              <PlayCircle size={17}/> Continue lesson <ArrowRight size={16}/>
             </button>
           )}
           {step.type === "apply" && (
             <Link href={"/studio?course=" + encodeURIComponent(courseId)}
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 text-sm font-bold text-white hover:bg-[#285851] sm:w-auto">
-              <Compass size={17}/> Đến Design Studio <ArrowRight size={16}/>
+              <Compass size={17}/> Open Design Studio <ArrowRight size={16}/>
             </Link>
           )}
           {step.type === "unavailable" && (
             <a href="#course-catalog"
               className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#173445] px-5 text-sm font-bold text-white hover:bg-[#285851] sm:w-auto">
-              <BookOpen size={17}/> Khám phá khóa học <ArrowRight size={16}/>
+              <BookOpen size={17}/> Browse courses <ArrowRight size={16}/>
             </a>
           )}
         </div>
@@ -94,18 +94,18 @@ export function StudentNextAction({
         <div className="mt-4 border-t border-[#c7e0d3] pt-3">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#426d5e]">
             <span className="font-bold">{lessons.length > 0
-              ? "Đã hoàn thành " + completedCount + "/" + lessons.length + " bài đang hiển thị"
-              : "Tiến độ tổng quan từ máy chủ"}</span>
-            <span>{validProgress === null ? "Tiến độ máy chủ chưa sẵn sàng" : validProgress + "% tiến độ đã lưu"}</span>
+              ? "Completed " + completedCount + "/" + lessons.length + " lessons shown"
+              : "Progress reported by the server"}</span>
+            <span>{validProgress === null ? "Progress data unavailable" : validProgress + "% saved progress"}</span>
           </div>
           {validProgress !== null && (
-            <div role="progressbar" aria-label="Tiến độ khóa học" aria-valuemin={0} aria-valuemax={100}
+            <div role="progressbar" aria-label="Course progress" aria-valuemin={0} aria-valuemax={100}
               aria-valuenow={validProgress} className="mt-2 h-2.5 overflow-hidden rounded-full bg-[#cbe2d5]">
               <div className="h-full rounded-full bg-[#3c8065]" style={{width: validProgress + "%"}}/>
             </div>
           )}
           {step.type === "lesson" && <p className="mt-2 text-xs leading-5 text-[#58766b]">
-            Sau bài học: luyện tập → thực hiện phương pháp trong Studio → lưu minh chứng.
+            After the lesson: practise → apply the method in Studio → save your evidence.
           </p>}
         </div>
       )}
