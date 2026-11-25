@@ -136,7 +136,7 @@ test('password update route denies access without a valid recovery session', asy
   await page.goto('/reset-password');
   await expect(page.getByRole('heading',{name:'Invalid or expired link'})).toBeVisible();
   await expect(page.getByRole('button',{name:'Update password'})).toHaveCount(0);
-  await expect(page.getByRole('link',{name:/Request a new recovery email/})).toHaveAttribute('href','/learn');
+  await expect(page.getByRole('link',{name:/Request a new recovery email/})).toHaveAttribute('href','/forgot-password?reason=expired');
 });
 
 
@@ -178,7 +178,7 @@ test('password recovery pages disable decorative ink and floating chatbot', asyn
     await page.mouse.move(40,40);
     await page.mouse.move(320,240,{steps:16});
     const canvas = page.getByTestId('creative-pointer-trail');
-    await expect(canvas).toHaveAttribute('data-active','false');
+    await expect(canvas).toHaveCount(0);
     await expect(page.getByRole('button',{name:/Open UII learning assistant/})).toHaveCount(0);
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   }
