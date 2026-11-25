@@ -45,7 +45,7 @@ function ExerciseActivity({ exercise, onComplete }: { exercise: DemoExercise; on
     {exercise.kind==="WRITTEN" && <div>
       <label htmlFor="demo-reflection" className="text-sm font-extrabold">Your reflection (visible only in this tab)</label>
       <textarea id="demo-reflection" value={thought} onChange={e=>setThought(e.target.value)} rows={5} placeholder="I observed… I am not sure whether… I want to investigate…" className="mt-3 w-full rounded-2xl border-2 border-[#c8d9d4] bg-white p-4 text-sm leading-7 focus:border-[#d65039]"/>
-      <p className="mt-2 text-xs text-[#536b70]">Nothing is saved to the server or your account. Do not enter interviewees' personal information.</p>
+      <p className="mt-2 text-xs text-[#536b70]">Nothing is saved to the server or your account. Do not enter interviewees’ personal information.</p>
     </div>}
     {exercise.kind==="PROJECT" && <div className="rounded-2xl border-2 border-dashed border-[#c3d7c9] bg-[#f1f8ef] p-5">
       <div className="flex gap-3"><UploadCloud className="shrink-0 text-[#27694f]" size={30}/><div>
