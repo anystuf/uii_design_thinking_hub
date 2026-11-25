@@ -261,7 +261,7 @@ export default function ReviewPage() {
         {session && !account && busy && <WorkspaceLoading label="Verifying your account…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</p>}
-        {authReady && !session && <section className={panel}>You must <Link href="/learn" className="font-bold underline">sign in</Link> trước.</section>}
+        {authReady && !session && <section className={panel}>You must <Link href="/learn" className="font-bold underline">sign in</Link> first.</section>}
         {session && account && !isReviewer && <section className={panel}>This page is for lecturers and administrators. Students can view feedback in <Link className="font-bold underline" href="/evidence">Evidence & Submissions</Link>.</section>}
         {isReviewer && (
           <div className="grid gap-5 lg:grid-cols-[370px_minmax(0,1fr)]">
