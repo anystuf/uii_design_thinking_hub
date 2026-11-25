@@ -80,7 +80,7 @@ export default function CommunityPage(){
      authenticatedApi<Project[]>("/projects",token),
      workspaceProfile<Viewer>(token),
    ]).then(([posts,mine,me])=>{if(active){setFeed(posts);setProjects(mine);setViewer(me);}})
-     .catch(e=>{if(active)setError(e instanceof Error?e.message:"Không mở được không gian cộng đồng.");})
+     .catch(e=>{if(active)setError(e instanceof Error?e.message:"Could not open Community.");})
      .finally(()=>{if(active)setLoading(false);});
    return()=>{active=false;};
  },[token]);
@@ -90,7 +90,7 @@ export default function CommunityPage(){
    setError("");setBusy(true);
    try{const items=await authenticatedApi<Comment[]>("/community/posts/"+id+"/comments",token);
      setComments(items);setActivePost(id);
-   }catch(e){setError(e instanceof Error?e.message:"Không tải được bình luận.");}
+   }catch(e){setError(e instanceof Error?e.message:"Could not load comments.");}
    finally{setBusy(false);}
  }
  async function sendComment(e:FormEvent<HTMLFormElement>){
@@ -101,8 +101,8 @@ export default function CommunityPage(){
      setDraft("");
      setComments(await authenticatedApi<Comment[]>("/community/posts/"+activePost+"/comments",token));
      await reload();
-     setNotice("Đã đăng bình luận trong cộng đồng.");
-   }catch(e){setError(e instanceof Error?e.message:"Không gửi được bình luận.");}
+     setNotice("Comment posted to Community.");
+   }catch(e){setError(e instanceof Error?e.message:"Could not post the comment.");}
    finally{setBusy(false);}
  }
  async function like(post:CommunityPost){
@@ -112,7 +112,7 @@ export default function CommunityPage(){
    try{
      await authenticatedApi("/community/posts/"+post.id+"/reactions"+(mine?"/LIKE":""),token,{method:mine?"DELETE":"POST",...(mine?{}:{body:JSON.stringify({type:"LIKE"})})});
      await reload();
-   }catch(e){setError(e instanceof Error?e.message:"Không cập nhật được cảm xúc.");}
+   }catch(e){setError(e instanceof Error?e.message:"Could not update the reaction.");}
    finally{setBusy(false);}
  }
  async function publish(e:FormEvent<HTMLFormElement>){
@@ -121,80 +121,80 @@ export default function CommunityPage(){
    try{
      await authenticatedApi("/community/posts",token,{method:"POST",body:JSON.stringify({projectId,caption:caption.trim(),visibility:"COMMUNITY"})});
      await reload();
-     setCaption("");setShowPublish(false);setNotice("Dự án đã được chia sẻ lên không gian cộng đồng.");
-   }catch(e){setError(e instanceof Error?e.message:"Không thể đăng. Dự án cần được phê duyệt và bạn phải là chủ dự án.");}
+     setCaption("");setShowPublish(false);setNotice("Project shared to Community.");
+   }catch(e){setError(e instanceof Error?e.message:"Could not publish. The project needs approval and you must be its owner.");}
    finally{setBusy(false);}
  }
  return <div className="uii-workspace min-h-screen">
-   <WorkspaceNav title="Cộng đồng sáng tạo" role={viewer?.role} guest={authReady&&!session}/>
+   <WorkspaceNav title="Community" role={viewer?.role} guest={authReady&&!session}/>
    <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-7 sm:py-9">
      <header className="overflow-hidden rounded-[31px] bg-[#d5edc4] p-6 sm:p-10">
        <p className="text-xs font-black uppercase tracking-[.15em] text-[#99503b]">UII COMMUNITY · ASK, ANSWER, SHARE</p>
-       <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-[-.045em] text-[#163844] sm:text-5xl">Cộng đồng học hỏi, hỏi đáp & sáng tạo.</h1>
-       <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3d5960]">Hỏi như Quora, trao đổi với bạn học và giảng viên, bình chọn những chia sẻ hữu ích. Đồng thời khám phá dự án Design Thinking đã được duyệt. Mọi hoạt động diễn ra ngay trong UII.</p>
+       <h1 className="mt-3 max-w-3xl text-3xl font-black tracking-[-.045em] text-[#163844] sm:text-5xl">A community for learning, questions, and new ideas.</h1>
+       <p className="mt-3 max-w-3xl text-sm leading-7 text-[#3d5960]">Ask questions, learn from peers and lecturers, and highlight helpful answers. Explore approved Design Thinking projects, all within UII.</p>
        <div className="mt-5 flex flex-wrap gap-2">
-         <Link href="/studio" className={btn}><Users size={17}/> Vào nhóm và Studio <ArrowRight size={16}/></Link>
-         <Link href="/learn" className="inline-flex min-h-11 items-center rounded-full border border-[#53716d] bg-white/80 px-4 text-sm font-black text-[#173445]">Quay lại khóa học</Link>
+         <Link href="/studio" className={btn}><Users size={17}/> Open your team in Studio <ArrowRight size={16}/></Link>
+         <Link href="/learn" className="inline-flex min-h-11 items-center rounded-full border border-[#53716d] bg-white/80 px-4 text-sm font-black text-[#173445]">Back to Courses</Link>
        </div>
      </header>
-     {!authReady&&<WorkspaceLoading label="Đang xác minh tài khoản…"/>}
+     {!authReady&&<WorkspaceLoading label="Verifying your account…"/>}
      {authReady&&!session&&<section className="rounded-2xl border border-[#dce4d9] bg-white p-6">
-       <p className="text-sm leading-7">Đăng nhập để xem bài chia sẻ đã được duyệt và tham gia bình luận. Bạn vẫn có thể xem hai tình huống minh họa bên dưới.</p>
-       <Link href="/learn" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-sm font-bold text-white">Đăng nhập để tham gia <ArrowRight size={17}/></Link>
+       <p className="text-sm leading-7">Sign in to view approved posts and join discussions. Two fictional examples remain visible below.</p>
+       <Link href="/learn" className="mt-3 inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-sm font-bold text-white">Sign in to participate <ArrowRight size={17}/></Link>
      </section>}
      {viewer&&<div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#dce6e0] bg-white p-4">
-       <div><p className="text-sm font-black">Chào {viewer.fullName}</p><p className="mt-1 text-xs text-[#5b7177]">Hỏi đáp chung nằm ngay bên dưới; trao đổi riêng của nhóm vẫn ở Studio.</p></div>
+       <div><p className="text-sm font-black">Hello {viewer.fullName}</p><p className="mt-1 text-xs text-[#5b7177]">Public questions appear below; private team discussions remain in Studio.</p></div>
        <div className="flex flex-wrap gap-2">
-         <button type="button" disabled={busy} onClick={()=>{void reload().catch(e=>setError(e instanceof Error?e.message:"Không tải được bài đăng."));}} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cbdcd6] px-4 text-xs font-black"><RefreshCcw size={16}/> Làm mới</button>
-         {shareable.length>0&&<button type="button" aria-expanded={showPublish} onClick={()=>setShowPublish(x=>!x)} className={btn}><Plus size={16}/> Đăng dự án đã duyệt</button>}
+         <button type="button" disabled={busy} onClick={()=>{void reload().catch(e=>setError(e instanceof Error?e.message:"Could not load posts."));}} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#cbdcd6] px-4 text-xs font-black"><RefreshCcw size={16}/> Refresh</button>
+         {shareable.length>0&&<button type="button" aria-expanded={showPublish} onClick={()=>setShowPublish(x=>!x)} className={btn}><Plus size={16}/> Share an approved project</button>}
        </div>
      </div>}
      {showPublish&&viewer&&<form onSubmit={e=>void publish(e)} className="space-y-3 rounded-2xl border border-[#d8e6dd] bg-white p-5">
-       <h2 className="text-lg font-black text-[#173445]">Đăng dự án của nhóm lên cộng đồng</h2>
-       <p className="text-xs leading-6 text-[#647779]">Chỉ chủ dự án được tự chọn công bố dự án đã được giảng viên duyệt để trưng bày; quản trị viên không tự đăng thay chủ dự án. Bài đăng hiển thị cho thành viên đăng nhập. Không đăng thông tin cá nhân của người được phỏng vấn.</p>
-       <label htmlFor="share-project" className="block text-sm font-bold">Dự án đã duyệt</label>
+       <h2 className="text-lg font-black text-[#173445]">Share your team's project in Community</h2>
+       <p className="text-xs leading-6 text-[#647779]">Only the project owner may choose to share a lecturer-approved project. Administrators cannot publish on an owner's behalf. Posts are visible to signed-in members. Never publish identifying details about interviewees.</p>
+       <label htmlFor="share-project" className="block text-sm font-bold">Approved project</label>
        <select id="share-project" required value={projectId} onChange={e=>setProjectId(e.target.value)} className="min-h-11 w-full rounded-xl border bg-white px-3">
-         <option value="">Chọn dự án</option>{shareable.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}
+         <option value="">Select project</option>{shareable.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}
        </select>
-       <label htmlFor="share-caption" className="block text-sm font-bold">Giới thiệu dự án và điều cần phản hồi</label>
+       <label htmlFor="share-caption" className="block text-sm font-bold">Project overview and feedback request</label>
        <textarea id="share-caption" required maxLength={2000} rows={4} value={caption} onChange={e=>setCaption(e.target.value)}
-         placeholder="Nhóm đang kiểm chứng giả định nào? Mời các nhóm góp ý về điểm chưa rõ…" className="w-full resize-y rounded-xl border p-3 text-base"/>
-       <button disabled={busy||!projectId||!caption.trim()} className={btn}>Công bố trong cộng đồng <ArrowRight size={16}/></button>
+         placeholder="Which assumption is your team testing? Invite constructive questions…" className="w-full resize-y rounded-xl border p-3 text-base"/>
+       <button disabled={busy||!projectId||!caption.trim()} className={btn}>Publish to Community <ArrowRight size={16}/></button>
      </form>}
      {error&&<p role="alert" className="rounded-xl border border-[#eab9b0] bg-[#fff2ec] p-4 text-sm text-[#933d31]">{error}</p>}
      {notice&&<p role="status" className="rounded-xl border border-[#cce8d4] bg-[#e9f6ed] p-4 text-sm text-[#215944]"><Check size={17} className="mr-2 inline"/>{notice}</p>}
      {viewer&&<CommunityQaBoard token={token} viewer={viewer}/>}
      {viewer&&<section aria-labelledby="real-feed-heading">
        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-         <div><p className="text-xs font-black uppercase tracking-[.15em] text-[#aa4831]">PROJECT SHOWCASE · DỮ LIỆU THẬT</p>
-           <h2 id="real-feed-heading" className="mt-1 text-xl font-black text-[#173445] sm:text-2xl">Dự án được chia sẻ trong UII</h2></div>
-         <span className="rounded-full bg-[#f0f6ed] px-3 py-2 text-xs font-bold text-[#43605a]">{genuinePosts.length} dự án đã công bố</span>
+         <div><p className="text-xs font-black uppercase tracking-[.15em] text-[#aa4831]">PROJECT SHOWCASE · VERIFIED RECORDS</p>
+           <h2 id="real-feed-heading" className="mt-1 text-xl font-black text-[#173445] sm:text-2xl">Projects shared on UII</h2></div>
+         <span className="rounded-full bg-[#f0f6ed] px-3 py-2 text-xs font-bold text-[#43605a]">{genuinePosts.length} published projects</span>
        </div>
-       {loading&&<WorkspaceLoading label="Đang tải dự án cộng đồng…"/>}
-       {!loading&&genuinePosts.length===0&&<p className="rounded-2xl border border-[#dce9dd] bg-white p-5 text-sm leading-7 text-[#567077]">Chưa có bài chia sẻ từ các dự án đã được duyệt. Hai ví dụ bên dưới là minh họa, không phải bài đăng thật.</p>}
+       {loading&&<WorkspaceLoading label="Loading community projects…"/>}
+       {!loading&&genuinePosts.length===0&&<p className="rounded-2xl border border-[#dce9dd] bg-white p-5 text-sm leading-7 text-[#567077]">No approved projects have been shared yet. The two examples below are fictional.</p>}
        <div className="grid gap-4 lg:grid-cols-2">{genuinePosts.map((post,index)=>(
          <article key={post.id} className="overflow-hidden rounded-[24px] border border-[#dce5dd] bg-white shadow-sm">
            <div className="p-5 sm:p-6" style={{backgroundColor:colors[index%colors.length]}}>
-             <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#7b4336]"><span>ĐÃ CÔNG BỐ · DỰ ÁN THẬT</span><span>• {post.project.currentStage}</span></div>
+             <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase tracking-wide text-[#7b4336]"><span>PUBLISHED · REAL PROJECT</span><span>• {post.project.currentStage}</span></div>
              <h3 className="mt-2 text-xl font-black tracking-tight text-[#173445]">{post.project.title}</h3>
-             <p className="mt-2 text-sm leading-6 text-[#365660]">{post.project.description||"Dự án đang được trình bày bởi nhóm."}</p>
+             <p className="mt-2 text-sm leading-6 text-[#365660]">{post.project.description||"This project is being presented by the team."}</p>
            </div>
            <div className="space-y-3 p-5">
-             <p className="text-xs font-bold text-[#566d74]">Đăng bởi {post.author?.fullName} · {post.project.course?.title}</p>
+             <p className="text-xs font-bold text-[#566d74]">Posted by {post.author?.fullName} · {post.project.course?.title}</p>
              {post.caption&&<p className="whitespace-pre-wrap break-words text-sm leading-7">{post.caption}</p>}
              <div className="flex flex-wrap items-center gap-2">
                <button type="button" disabled={busy} onClick={()=>void like(post)} aria-pressed={post.reactions.some(x=>x.userId===viewer.id&&x.type==="LIKE")}
                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#d5e1db] px-3 text-xs font-black text-[#193e47]">
-                 <Heart size={16} fill={post.reactions.some(x=>x.userId===viewer.id&&x.type==="LIKE")?"#db6a61":"none"}/> {post._count.reactions} quan tâm
+                 <Heart size={16} fill={post.reactions.some(x=>x.userId===viewer.id&&x.type==="LIKE")?"#db6a61":"none"}/> {post._count.reactions} reactions
                </button>
                <button type="button" disabled={busy} onClick={()=>void showComments(post.id)} aria-expanded={activePost===post.id}
                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#d5e1db] px-3 text-xs font-black">
-                 <MessageCircle size={16}/> {post._count.comments} bình luận
+                 <MessageCircle size={16}/> {post._count.comments} comments
                </button>
-               <Link className="inline-flex min-h-11 items-center gap-1 text-xs font-black text-[#173445] underline" href={"/studio?course="+encodeURIComponent(post.project.course.id)+"&mode="+post.project.currentStage}>Khám phá Studio <ArrowRight size={14}/></Link>
+               <Link className="inline-flex min-h-11 items-center gap-1 text-xs font-black text-[#173445] underline" href={"/studio?course="+encodeURIComponent(post.project.course.id)+"&mode="+post.project.currentStage}>Explore in Studio <ArrowRight size={14}/></Link>
              </div>
-             {activePost===post.id&&<section className="space-y-3 rounded-2xl border border-[#dce6de] bg-[#f7f9f4] p-3" aria-label={"Trao đổi dự án "+post.project.title}>
-               {comments.length===0&&<p className="text-xs text-[#697b7a]">Chưa có bình luận. Hãy đặt câu hỏi đầu tiên.</p>}
+             {activePost===post.id&&<section className="space-y-3 rounded-2xl border border-[#dce6de] bg-[#f7f9f4] p-3" aria-label={"Project discussion: "+post.project.title}>
+               {comments.length===0&&<p className="text-xs text-[#697b7a]">Chưa có comments. Hãy đặt câu hỏi đầu tiên.</p>}
                {comments.map(c=><div key={c.id} className="rounded-xl bg-white p-3">
                  <p className="text-xs font-black text-[#284650]">{c.author?.fullName} · {c.author?.role}</p>
                  <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{c.content}</p>
@@ -203,10 +203,10 @@ export default function CommunityPage(){
                  </div>)}
                </div>)}
                <form onSubmit={e=>void sendComment(e)} className="space-y-2">
-                 <label className="block text-xs font-black" htmlFor={"comment-"+post.id}>Bình luận hoặc hỏi giảng viên</label>
+                 <label className="block text-xs font-black" htmlFor={"comment-"+post.id}>Comment or ask your lecturer</label>
                  <textarea required id={"comment-"+post.id} maxLength={2000} rows={3} value={draft} onChange={e=>setDraft(e.target.value)}
-                   placeholder="Nhóm đã thử nghiệm giả định này với người dùng chưa?" className="w-full resize-y rounded-xl border border-[#cdded4] bg-white p-3 text-base"/>
-                 <button disabled={!draft.trim()||busy} className={btn}><Send size={16}/> Gửi bình luận</button>
+                   placeholder="Has your team tested this assumption with users?" className="w-full resize-y rounded-xl border border-[#cdded4] bg-white p-3 text-base"/>
+                 <button disabled={!draft.trim()||busy} className={btn}><Send size={16}/> Gửi comments</button>
                </form>
              </section>}
            </div>
@@ -215,11 +215,11 @@ export default function CommunityPage(){
      </section>}
      <section aria-labelledby="samples-heading" className="space-y-4">
        <div><p className="text-xs font-black uppercase tracking-[.14em] text-[#aa4d34]">HOW IT WORKS · DEMO ONLY</p>
-         <h2 id="samples-heading" className="mt-1 text-xl font-black text-[#173445] sm:text-2xl">Hình dung hai nhóm cùng học Design Thinking</h2></div>
+         <h2 id="samples-heading" className="mt-1 text-xl font-black text-[#173445] sm:text-2xl">Imagine two teams learning Design Thinking together</h2></div>
        <SampleTeamGallery stage="EMPATHIZE"/>
        <div className="rounded-2xl border border-[#dce6df] bg-[#e7f3ed] p-4 text-xs leading-6 text-[#466268]">
-         <p className="flex items-center gap-2 font-black text-[#214e4c]"><ShieldCheck size={16}/> Riêng tư và nguồn lực</p>
-         UII chỉ lưu văn bản phản hồi, liên kết dự án và tương tác nhỏ trên backend hiện có. Không tự đồng bộ hay công khai Facebook cá nhân. Bảng Miro hoặc Padlet có thể mở/nhúng riêng nếu chủ bảng cho phép; dữ liệu người tham gia vẫn phải được xin phép trước khi đăng công khai.
+         <p className="flex items-center gap-2 font-black text-[#214e4c]"><ShieldCheck size={16}/> Privacy and resources</p>
+         UII stores small feedback interactions and project links on its existing backend. It never automatically publishes personal social profiles. External Miro or Padlet boards may be embedded only with the owner's permission, and participant data must not be made public without consent.
        </div>
      </section>
    </main>
