@@ -82,9 +82,9 @@ export default function NotificationsPage() {
         </header>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-slate-600">Track your deadlines and feedback.</p>
-          {(account?.role === 'ADMIN' || account?.role === 'LECTURER') && <Link href="/console" className="inline-flex min-h-11 items-center rounded-xl bg-[#173445] px-4 text-sm font-bold text-white">Soạn thông báo trong Console</Link>}
+          {(account?.role === 'ADMIN' || account?.role === 'LECTURER') && <Link href="/console" className="inline-flex min-h-11 items-center rounded-xl bg-[#173445] px-4 text-sm font-bold text-white">Compose in Course Console</Link>}
         </div>
-        {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Thử lại</button></div>}
+        {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}<button disabled={busy} onClick={() => ready && session ? setReload((n) => n + 1) : window.location.reload()} className={button + ' ml-3'}>Retry</button></div>}
         {!ready ? <WorkspaceLoading label="Checking sign-in…"/> : busy && <WorkspaceLoading label="Loading notifications…"/>}
         {ready && !session && <div className="rounded-xl bg-white p-5">You must <Link className="font-bold underline" href="/learn">sign in</Link>.</div>}
         {session && (
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
                   <p className="mt-2 text-xs text-slate-600">{new Date(notice.createdAt).toLocaleString('vi-VN')}</p>
                   <Link href={notice.entityType === 'SubmissionSnapshot' ? '/evidence' : notice.entityType === 'Course' ? '/learn?course='+encodeURIComponent(notice.entityId) : notice.entityType === 'Platform' ? '/dashboard' : '/studio'}
                     className="mt-3 inline-block text-sm font-bold text-[#153b77] underline">
-                    {notice.entityType === 'SubmissionSnapshot' ? 'View submission & feedback' : notice.entityType === 'Course' ? 'Open course' : notice.entityType === 'Platform' ? 'Mở tổng quan' : 'Xem thử thách'}
+                    {notice.entityType === 'SubmissionSnapshot' ? 'View submission & feedback' : notice.entityType === 'Course' ? 'Open course' : notice.entityType === 'Platform' ? 'Open Dashboard' : 'View challenge'}
                   </Link>
                 </div>
                 {!notice.readAt ?
