@@ -46,21 +46,21 @@ async function api<T>(token: string, path: string, init?: RequestInit): Promise<
 }
 
 const initialCriteria: CriterionDraft[] = [
-  { title: 'Thấu hiểu người dùng', description: 'Dẫn chứng phỏng vấn và quan sát', weight: 30, maxScore: 4 },
-  { title: 'Tổng hợp insight', description: 'POV và HMW dựa trên evidence', weight: 25, maxScore: 4 },
-  { title: 'Thử nghiệm và cải tiến', description: 'Prototype, kết quả test và iteration', weight: 30, maxScore: 4 },
-  { title: 'Truyền đạt thiết kế', description: 'Rõ ràng, có logic và truy xuất minh chứng', weight: 15, maxScore: 4 },
+  { title: 'User empathy', description: 'Interview and observation evidence', weight: 30, maxScore: 4 },
+  { title: 'Synthesize insights', description: 'Evidence-based POV and HMW statements', weight: 25, maxScore: 4 },
+  { title: 'Testing and iteration', description: 'Prototype, test findings, and iterations', weight: 30, maxScore: 4 },
+  { title: 'Design communication', description: 'Clear logic, communication, and traceable evidence', weight: 15, maxScore: 4 },
 ];
 
 // Project-presentation rubric from the lecturer's classroom handoff.
 // The overall course assessment (discussion 20 / mid-term 30 / poster 30 / report 20)
 // is a distinct grading scheme and is not silently substituted here.
 const classroomProjectCriteria: CriterionDraft[] = [
-  { title: 'Vấn đề (Problem)', description: 'Thấu cảm qua quan sát, phỏng vấn; hiểu hoàn cảnh và khó khăn người dùng. Thu thập, tổng hợp, phân tích dữ kiện để chứng minh vấn đề có thật và cấp thiết; xác định nguyên nhân cốt lõi, lập luận Problem Statement.', weight: 30, maxScore: 4 },
-  { title: 'Giải pháp (Solution)', description: 'Khởi tạo ý tưởng, so sánh với giải pháp hiện hữu và tìm hiểu chuyên môn. Lập luận dựa trên thấu cảm, phù hợp quan điểm, điều kiện và bối cảnh người dùng; nêu kế hoạch mẫu thử, thử nghiệm, tính khả thi và nguồn lực.', weight: 30, maxScore: 4 },
-  { title: 'Tính sáng tạo (Creativity)', description: 'Mẫu thử trực quan hóa ý tưởng; cách thử nghiệm sáng tạo, hiệu quả để người dùng hiểu và phản hồi. Đánh giá cách tiếp cận vấn đề và đề xuất giải pháp.', weight: 15, maxScore: 4 },
-  { title: 'Thuyết trình (Presentation)', description: 'Trình bày lưu loát, mạch lạc, ngắn gọn; biết nhấn mạnh thông tin quan trọng, có giá trị.', weight: 10, maxScore: 4 },
-  { title: 'Vấn đáp (Q&A)', description: 'Tư duy phản biện, khả năng thuyết phục và lập luận có minh chứng rõ ràng.', weight: 15, maxScore: 4 },
+  { title: 'Problem', description: 'Show empathy through observations and interviews; understand users' context and difficulties. Collect and analyze evidence proving that the problem is real and important, identify root causes, and justify the problem statement.', weight: 30, maxScore: 4 },
+  { title: 'Solution', description: 'Generate and compare ideas with existing solutions and relevant expertise. Justify choices using empathy and user context; explain the prototype, test plan, feasibility, and resources.', weight: 30, maxScore: 4 },
+  { title: 'Creativity', description: 'Use prototypes to communicate ideas and creative, effective testing to gather user feedback. Evaluate the approach to the problem and proposed solution.', weight: 15, maxScore: 4 },
+  { title: 'Presentation', description: 'Communicate fluently, logically, and concisely; emphasize valuable and relevant points.', weight: 10, maxScore: 4 },
+  { title: 'Q&A', description: 'Demonstrate critical thinking, persuasive reasoning, and clear supporting evidence.', weight: 15, maxScore: 4 },
 ];
 
 export default function ReviewPage() {
@@ -96,7 +96,7 @@ export default function ReviewPage() {
     let active = true;
     try {
       const auth = getSupabaseBrowserClient().auth;
-      void withAuthDeadline(() => auth.getSession()).then(({ data }) => { if (active) { setSession(data.session); setAuthReady(true); } }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
+      void withAuthDeadline(() => auth.getSession()).then(({ data }) => { if (active) { setSession(data.session); setAuthReady(true); } }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Unable to read the sign-in session.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, s) => { if (active) setSession(s); });
       return () => { active = false; subscription.unsubscribe(); };
     } catch (err) {
@@ -168,7 +168,7 @@ export default function ReviewPage() {
       await loadRubrics();
       setDraftCriteria(initialCriteria);
       setSelectedDraft({ rubricId: created.id, versionId: created.versions[0].id });
-      setMessage('Đã tạo rubric draft. Hãy lưu các tiêu chí rồi publish.');
+      setMessage('Draft rubric created. Save its criteria, then publish.');
     });
   }
 
@@ -189,7 +189,7 @@ export default function ReviewPage() {
         method: 'PUT', body: JSON.stringify({ criteria: draftCriteria }),
       });
       await loadRubrics();
-      setMessage('Đã lưu draft rubric vào database.');
+      setMessage('Draft rubric saved to the database.');
     });
   }
 
@@ -201,7 +201,7 @@ export default function ReviewPage() {
       });
       await api(token, '/rubric-versions/' + selectedDraft.versionId + '/publish', { method: 'POST' });
       setSelectedDraft(null); await loadRubrics();
-      setMessage('Rubric đã xuất bản và bất biến theo phiên bản.');
+      setMessage('Rubric published and locked to this version.');
     });
   }
 
@@ -209,7 +209,7 @@ export default function ReviewPage() {
     await run(async () => {
       const created = await api<RubricVersion>(token, '/rubrics/' + rubricId + '/versions', { method: 'POST' });
       await loadRubrics(); chooseDraft(rubricId, created);
-      setMessage('Đã tạo bản draft mới từ rubric trước đó.');
+      setMessage('New rubric draft created from the previous version.');
     });
   }
 
@@ -232,7 +232,7 @@ export default function ReviewPage() {
         method: 'POST',
         body: JSON.stringify({ rubricVersionId, scores, decision, feedback }),
       });
-      setMessage('Đã công bố review (' + result.totalScore + '/100). Đã tạo thông báo cho nhóm.');
+      setMessage('Published assessment (' + result.totalScore + '/100). A notification was sent to the team.');
       setQueue(await api<Submission[]>(token, '/assessments/queue'));
       setSubmission(null); setDetails(null); setRubricVersionId(''); setRatings({});
     });
@@ -247,27 +247,27 @@ export default function ReviewPage() {
 
   return (
     <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Đánh giá bài nộp" role={account?.role} guest={authReady && !session} />
+      <WorkspaceNav title="Submission Review" role={account?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div>
           <header className="rounded-[28px] border border-[#e5d6c9] bg-[#ffe3cd] p-6 sm:p-9">
             <p className="text-xs font-black uppercase tracking-[.16em] text-[#823f2f]">LEARN · ASSESS · IMPROVE</p>
-            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Đánh giá bài nộp.</h1>
-            <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Mỗi phản hồi là một cơ hội cải tiến. Chấm bài theo rubric và khuyến khích sinh viên thử lại.</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Submission Review.</h1>
+            <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Every feedback cycle is a chance to improve. Assess with a rubric and encourage students to revise.</p>
           </header>
           <p className="mt-1 text-sm text-slate-600">{account?.fullName ?? 'Authorizing reviewer'} · {account?.role ?? ''}</p>
         </div>
-        {busy && account && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</p>}
-        {session && !account && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
+        {busy && account && <p className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Saving or loading changes…</p>}
+        {session && !account && busy && <WorkspaceLoading label="Verifying your account…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {message && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</p>}
-        {authReady && !session && <section className={panel}>Bạn cần <Link href="/learn" className="font-bold underline">đăng nhập</Link> trước.</section>}
-        {session && account && !isReviewer && <section className={panel}>Trang này chỉ dành cho Lecturer/Admin. Sinh viên xem đánh giá trong <Link className="font-bold underline" href="/evidence">Evidence & Submissions</Link>.</section>}
+        {authReady && !session && <section className={panel}>You must <Link href="/learn" className="font-bold underline">sign in</Link> trước.</section>}
+        {session && account && !isReviewer && <section className={panel}>This page is for lecturers and administrators. Students can view feedback in <Link className="font-bold underline" href="/evidence">Evidence & Submissions</Link>.</section>}
         {isReviewer && (
           <div className="grid gap-5 lg:grid-cols-[370px_minmax(0,1fr)]">
             <aside className="space-y-5">
               <section className={panel}>
-                <h3 className="mb-3 text-lg font-bold">Chọn khóa học / challenge</h3>
+                <h3 className="mb-3 text-lg font-bold">Choose course / challenge</h3>
                 <select aria-label="Course" className={field} value={courseId} onChange={(e) => setCourseId(e.target.value)}>
                   {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
                 </select>
@@ -276,7 +276,7 @@ export default function ReviewPage() {
                 </select>
               </section>
               <section className={panel + ' space-y-3'}>
-                <h3 className="text-lg font-bold">Bộ tiêu chí chấm</h3>
+                <h3 className="text-lg font-bold">Assessment rubric</h3>
                 {rubrics.map((r) => (
                   <div key={r.id} className="rounded-xl border p-3">
                     <h4 className="font-bold">{r.title}</h4>
@@ -285,7 +285,7 @@ export default function ReviewPage() {
                         <div key={v.id} className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-xs">v{v.version} · {v.status} · {v.criteria.length} criteria</span>
                           {v.status === 'DRAFT' ?
-                            <button type="button" className={minor} onClick={() => chooseDraft(r.id, v)}>Sửa</button>
+                            <button type="button" className={minor} onClick={() => chooseDraft(r.id, v)}>Edit</button>
                             : <button type="button" className={minor} onClick={() => void nextVersion(r.id)}>Clone v{v.version + 1}</button>}
                         </div>
                       ))}
@@ -293,24 +293,24 @@ export default function ReviewPage() {
                   </div>
                 ))}
                 {challengeId && <form onSubmit={(e) => void createRubric(e)} className="space-y-3 border-t pt-4">
-                  <label className="block text-sm font-semibold">Tên rubric
+                  <label className="block text-sm font-semibold">Rubric name
                     <input required maxLength={160} className={field + ' mt-2'} value={rubricTitle}
                       placeholder="Design Thinking Project Assessment" onChange={(e) => setRubricTitle(e.target.value)}/>
                   </label>
-                  <button className={primary} disabled={busy}><Plus size={15} className="mr-1 inline"/> Tạo rubric</button>
+                  <button className={primary} disabled={busy}><Plus size={15} className="mr-1 inline"/> Create rubric</button>
                 </form>}
               </section>
               <section className={panel}>
-                <h3 className="mb-3 text-lg font-bold">Bài chờ đánh giá ({queue.length})</h3>
+                <h3 className="mb-3 text-lg font-bold">Pending reviews ({queue.length})</h3>
                 <div className="space-y-2">
                   {queue.map((item) => (
                     <button key={item.id} onClick={() => void selectSubmission(item)}
                       className={'w-full rounded-xl border p-3 text-left hover:border-[#153b77] ' + (submission?.id === item.id ? 'border-[#153b77] bg-[#eef3fb]' : 'bg-white')}>
                       <span className="block font-semibold">{item.project.title} · v{item.version}</span>
-                      <span className="mt-1 block text-xs text-slate-600">{item.submittedBy.fullName} · {new Date(item.submittedAt).toLocaleString('vi-VN')}</span>
+                      <span className="mt-1 block text-xs text-slate-600">{item.submittedBy.fullName} · {new Date(item.submittedAt).toLocaleString('en-US')}</span>
                     </button>
                   ))}
-                  {!queue.length && <p className="text-sm text-slate-600">Không có bài nộp nào đang chờ đánh giá.</p>}
+                  {!queue.length && <p className="text-sm text-slate-600">No submissions are awaiting review.</p>}
                 </div>
               </section>
             </aside>
@@ -318,29 +318,29 @@ export default function ReviewPage() {
               {selectedDraft && (
                 <section className={panel + ' space-y-4'}>
                   <h3 className="text-xl font-bold">Rubric draft editor</h3>
-                  <p className="text-sm text-slate-600">Tổng trọng số phải bằng 100%. Published rubric không thể sửa trực tiếp.</p>
+                  <p className="text-sm text-slate-600">Criterion weights must total 100%. A published rubric cannot be edited directly.</p>
                   <div className="rounded-xl border border-[#d3e5d8] bg-[#f2f8f2] p-4">
-                    <p className="text-sm font-bold">Mẫu rubric dự án · lớp cô Thanh</p>
+                    <p className="text-sm font-bold">Classroom project rubric · Lecturer Thanh</p>
                     <p className="mt-1 text-xs leading-5 text-[#516765]">
                       Problem 30% · Solution 30% · Creativity 15% · Presentation 10% · Q&A 15%.
-                      Khác với cơ cấu điểm môn học (Discussion 20% · Mid-term 30% · Poster 30% · Report 20%).
+                      This differs from the course grade distribution (Discussion 20% · Mid-term 30% · Poster 30% · Report 20%).
                     </p>
                     <button type="button" className={minor + ' mt-3'} disabled={busy}
                       onClick={() => setDraftCriteria(classroomProjectCriteria.map(item => ({ ...item })))}>
-                      Dùng mẫu 5 tiêu chí dự án
+                      Use the five-criterion project rubric
                     </button>
-                    <p className="mt-2 text-xs text-[#516765]">Chỉ thay đổi bản nháp trên màn hình, chưa lưu hoặc xuất bản.</p>
+                    <p className="mt-2 text-xs text-[#516765]">This only changes the on-screen draft; nothing has been saved or published.</p>
                   </div>
                   {draftCriteria.map((c, i) => (
                     <div key={i} className="rounded-xl border bg-[#f9fbfe] p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <p className="text-sm font-bold">Criterion {i + 1}</p>
-                        <button className="text-xs font-semibold text-red-700" onClick={() => setDraftCriteria((v) => v.filter((_, ix) => ix !== i))}>Xóa</button>
+                        <button className="text-xs font-semibold text-red-700" onClick={() => setDraftCriteria((v) => v.filter((_, ix) => ix !== i))}>Remove</button>
                       </div>
-                      <label className="block text-sm">Tên tiêu chí
+                      <label className="block text-sm">Criterion name
                         <input className={field + ' mt-1'} value={c.title} onChange={(e) => editCriterion(i, { title: e.target.value })}/>
                       </label>
-                      <label className="mt-3 block text-sm">Mô tả
+                      <label className="mt-3 block text-sm">Description
                         <textarea className={field + ' mt-1'} rows={2} value={c.description} onChange={(e) => editCriterion(i, { description: e.target.value })}/>
                       </label>
                       <div className="mt-3 grid grid-cols-2 gap-3">
@@ -354,11 +354,11 @@ export default function ReviewPage() {
                     </div>
                   ))}
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <button className={minor} disabled={draftCriteria.length >= 30} onClick={() => setDraftCriteria((v) => [...v, { title: '', description: '', weight: 1, maxScore: 4 }])}>+ Tiêu chí</button>
-                    <span className="text-sm font-bold">Tổng: {draftCriteria.reduce((n, c) => n + c.weight, 0)}%</span>
+                    <button className={minor} disabled={draftCriteria.length >= 30} onClick={() => setDraftCriteria((v) => [...v, { title: '', description: '', weight: 1, maxScore: 4 }])}>+ Add criterion</button>
+                    <span className="text-sm font-bold">Total: {draftCriteria.reduce((n, c) => n + c.weight, 0)}%</span>
                   </div>
                   <div className="flex gap-3">
-                    <button className={minor} disabled={busy} onClick={() => void storeDraft()}>Lưu draft</button>
+                    <button className={minor} disabled={busy} onClick={() => void storeDraft()}>Save draft</button>
                     <button className={primary} disabled={busy || draftCriteria.reduce((n, c) => n + c.weight, 0) !== 100}
                       onClick={() => void publishRubric()}>Publish rubric</button>
                   </div>
@@ -371,25 +371,25 @@ export default function ReviewPage() {
                     <span className="rounded-full bg-[#edf3fc] px-3 py-1 text-xs font-bold">Snapshot v{submission.version}</span>
                   </div>
                   <div className="mb-5 space-y-2">
-                    <h4 className="text-sm font-bold">Evidence được nộp</h4>
+                    <h4 className="text-sm font-bold">Submitted evidence</h4>
                     {details.items.map((item) => (
                       <div key={item.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f6f8fc] p-3">
                         <div><p className="text-sm font-bold">{item.evidenceVersion.title} · v{item.evidenceVersion.version}</p>
-                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || parseEvidenceSource(item.evidenceVersion.description).notes || 'Không có ghi chú'}</p>
+                          <p className="text-xs text-slate-600">{item.evidenceVersion.reflection || parseEvidenceSource(item.evidenceVersion.description).notes || 'No notes'}</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {parseEvidenceSource(item.evidenceVersion.description).url && <a href={parseEvidenceSource(item.evidenceVersion.description).url!}
-                            target="_blank" rel="noopener noreferrer" className={minor}>Xem link Drive / công cụ ↗</a>}
+                            target="_blank" rel="noopener noreferrer" className={minor}>Open Drive / tool link ↗</a>}
                           {item.evidenceVersion.fileAsset && <button className={minor} onClick={() => void openFile(item.evidenceVersion.fileAsset!.id)}>Xem file</button>}
                         </div>
                       </div>
                     ))}
                   </div>
                   <form onSubmit={(e) => void submitReview(e)} className="space-y-4 border-t pt-5">
-                    <label className="block text-sm font-bold">Rubric đã xuất bản
+                    <label className="block text-sm font-bold">Published rubric
                       <select required className={field + ' mt-2'} value={rubricVersionId}
                         onChange={(e) => { setRubricVersionId(e.target.value); setRatings({}); }}>
-                        <option value="">Chọn rubric</option>
+                        <option value="">Choose rubric</option>
                         {eligible.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
                       </select>
                     </label>
@@ -400,39 +400,39 @@ export default function ReviewPage() {
                             <p className="text-xs text-slate-600">{c.description || ''}</p></div>
                           <span className="text-xs font-bold">{c.weight}%</span>
                         </div>
-                        <label className="text-sm">Điểm (0–{c.maxScore})
+                        <label className="text-sm">Score (0–{c.maxScore})
                           <input type="number" required step="0.5" min={0} max={c.maxScore} className={field + ' mt-2'}
                             value={ratings[c.id]?.score ?? ''} onChange={(e) => setRatings((old) => ({
                               ...old, [c.id]: { criterionId: c.id, score: Number(e.target.value), comment: old[c.id]?.comment },
                             }))}/>
                         </label>
-                        <textarea rows={2} placeholder="Nhận xét theo tiêu chí (tùy chọn)" className={field + ' mt-2'}
+                        <textarea rows={2} placeholder="Criterion feedback (optional)" className={field + ' mt-2'}
                           value={ratings[c.id]?.comment ?? ''} onChange={(e) => setRatings((old) => ({
                             ...old, [c.id]: { criterionId: c.id, score: old[c.id]?.score ?? 0, comment: e.target.value },
                           }))}/>
                       </div>
                     ))}
-                    <label className="block text-sm font-bold">Quyết định
+                    <label className="block text-sm font-bold">Decision
                       <select className={field + ' mt-2'} value={decision} onChange={(e) => setDecision(e.target.value as 'APPROVED' | 'REVISION_REQUESTED')}>
                         <option value="REVISION_REQUESTED">Request Revision</option>
                         <option value="APPROVED">Approve</option>
                       </select>
                     </label>
-                    <label className="block text-sm font-bold">Phản hồi tổng quát
+                    <label className="block text-sm font-bold">Overall feedback
                       <textarea rows={4} required={decision === 'REVISION_REQUESTED'} maxLength={3000} className={field + ' mt-2'}
-                        value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="Điều làm tốt và các bước cần cải thiện"/>
+                        value={feedback} onChange={(e) => setFeedback(e.target.value)} placeholder="Strengths and concrete next improvements"/>
                     </label>
                     <button className={primary} disabled={busy || !activeVersion ||
                       activeVersion.criteria.some((c) => ratings[c.id]?.score === undefined)}>
-                      <Send size={15} className="mr-2 inline"/> Công bố đánh giá
+                      <Send size={15} className="mr-2 inline"/> Publish assessment
                     </button>
                   </form>
                 </section>
               ) : (
                 <section className={panel + ' py-16 text-center'}>
                   <ShieldCheck className="mx-auto mb-4 text-[#153b77]" size={32}/>
-                  <h3 className="text-xl font-bold">Chọn bài nộp để đánh giá</h3>
-                  <p className="mt-2 text-sm text-slate-600">Rubric công bố sẽ được gắn với đúng phiên bản bài nộp, không ảnh hưởng lịch sử.</p>
+                  <h3 className="text-xl font-bold">Select a submission to review</h3>
+                  <p className="mt-2 text-sm text-slate-600">The published rubric is attached to the selected submission version without changing history.</p>
                 </section>
               )}
             </div>
