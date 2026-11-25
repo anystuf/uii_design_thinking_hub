@@ -18,7 +18,7 @@ export const FIRST_FINDINGS_FIELDS = [
   { key: 'affectedPeople', label: 'Who is affected by this problem?', hint: 'Describe the people affected; do not include interviewee names or phone numbers.' },
   { key: 'currentResponse', label: 'How are they currently dealing with this problem?', hint: 'Include existing workarounds, even if they are not effective.' },
   { key: 'resourcesInUse', label: 'What resources are they using to cope?', hint: 'Consider time, money, equipment, support networks, and current methods.' },
-  { key: 'value', label: 'Why is this problem worth solving?', hint: 'Explain the value for users and what is achievable within the team's scope.' },
+  { key: 'value', label: 'Why is this problem worth solving?', hint: 'Explain the value for users and what is achievable within the scope of your team.' },
 ] as const satisfies ReadonlyArray<{ key: keyof FirstFindingsProblem; label: string; hint: string }>;
 
 export const EMPTY_FIRST_FINDINGS_PROBLEM: FirstFindingsProblem = {
