@@ -173,7 +173,7 @@ export function LearningAuthForm() {
         className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#cbded3] px-4 text-sm font-semibold text-[#173445] disabled:cursor-not-allowed disabled:opacity-50">
         <RefreshCcw size={16}/>{resendPending ? "Requesting another email…" : resendCooldown ? "Resend available in " + resendCooldown + " seconds" : "Didn't receive it? Resend confirmation"}
       </button>
-      <p className="mt-4 text-center text-xs leading-5 text-[#6c7c7e]">No need to register again. This page does not reveal anyone else's account status or password.</p>
+      <p className="mt-4 text-center text-xs leading-5 text-[#6c7c7e]">No need to register again. This page does not reveal anyone else’s account status or password.</p>
     </section>
   );
 
