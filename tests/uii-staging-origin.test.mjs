@@ -19,7 +19,7 @@ test("reject unrelated or unsafe frontend origins", () => {
     "https://uii-dt-thanh-pilot.vercel.app/path",
     "https://uii-dt-thanh-pilot.vercel.app?password=bad",
     "https://uii-dt-thanh-pilot.vercel.app/#hash",
-  ]) assert.throws(() => assertUiiStagingOrigin(origin, "frontend"), /origin|HTTPS|approved|path|query|fragment|credentials/i);
+  ]) assert.throws(() => assertUiiStagingOrigin(origin, "frontend"), /origin|HTTPS|approved|verified|path|query|fragment|credentials/i);
 });
 
 test("readiness checks only accept UII staging API", () => {
