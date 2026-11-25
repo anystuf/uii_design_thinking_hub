@@ -73,7 +73,7 @@ export function TeacherClassroomBoard({ token, challenges, courseId }: {
         }));
         if (active) setRows(results);
       } catch {
-        if (active) setError('Chưa tải được danh sách nhóm. Không suy đoán tiến độ khi API chưa xác minh.');
+        if (active) setError('Could not load the team list. Progress cannot be inferred until the API responds.');
       } finally { if (active) setLoading(false); }
     })();
     return () => { active = false; };
@@ -81,44 +81,44 @@ export function TeacherClassroomBoard({ token, challenges, courseId }: {
 
   const hasUnknown = rows.some(row => row.status === 'UNKNOWN');
 
-  return <section aria-label="Tiến độ các nhóm" className="rounded-[22px] border border-[#d2dcd6] bg-white p-4 shadow-sm sm:p-6">
+  return <section aria-label="Team progress" className="rounded-[22px] border border-[#d2dcd6] bg-white p-4 shadow-sm sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
-        <p className="text-xs font-black uppercase tracking-widest text-[#a94716]">GIẢNG VIÊN · THEO DÕI NHÓM</p>
-        <h2 className="mt-2 text-xl font-black">Tiến độ các nhóm dự án</h2>
+        <p className="text-xs font-black uppercase tracking-widest text-[#a94716]">LECTURER · TEAM PROGRESS</p>
+        <h2 className="mt-2 text-xl font-black">Team progress dự án</h2>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-[#49616a]">
-          Hiển thị bài nộp và minh chứng đã được API xác nhận, không chấm điểm hoặc suy đoán mức độ thấu hiểu người dùng.
+          Displays only submissions and evidence confirmed by the API. It does not infer grades or student understanding.
         </p>
       </div>
       <button type="button" onClick={() => setRefresh(n => n + 1)} disabled={loading}
         className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold disabled:opacity-50">
-        <RefreshCcw size={16} aria-hidden="true"/> Tải lại
+        <RefreshCcw size={16} aria-hidden="true"/> Refresh
       </button>
     </div>
-    {loading && <p role="status" className="mt-4 text-sm">Đang xác minh tiến độ từ database…</p>}
+    {loading && <p role="status" className="mt-4 text-sm">Checking progress against the database…</p>}
     {error && <p role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-900">{error}</p>}
     {hasUnknown && <p role="alert" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
-      Một số nhóm chưa thể tải đầy đủ. Hãy kiểm tra API trước khi kết luận nhóm chưa nộp.
+      Some teams could not be loaded. Check API access before concluding that they have not submitted.
     </p>}
     {truncated && <p role="status" className="mt-3 text-sm text-amber-900">
-      Đang hiển thị tối đa {MAX_PILOT_GROUPS} nhóm. Lọc theo khóa học hoặc thử thách để xem tiếp.
+      Showing up to {MAX_PILOT_GROUPS} teams. Filter by course or challenge for additional teams.
     </p>}
     {!loading && !error && !rows.length && <p className="mt-4 rounded-xl bg-[#f5f7f3] p-3 text-sm">
-      Chưa có nhóm thuộc thử thách đã xuất bản trong khóa học này. Mở Studio để chuẩn bị buổi học.
+      No teams were found for published challenges in this course. Open Studio to prepare the session.
     </p>}
     {!!rows.length && <div className="mt-4 overflow-x-auto">
       <table className="w-full min-w-[640px] border-collapse text-left text-sm">
         <thead><tr className="border-b text-[#51636b]">
-          <th className="py-3 pr-3">Nhóm / thử thách</th>
+          <th className="py-3 pr-3">Team / challenge</th>
           <th className="px-3 py-3">Activity 2</th>
-          <th className="px-3 py-3">Tình trạng</th>
-          <th className="py-3 pl-3 text-right">Hành động</th>
+          <th className="px-3 py-3">Status</th>
+          <th className="py-3 pl-3 text-right">Action</th>
         </tr></thead>
         <tbody>{rows.map(row => <tr key={row.id} className="border-b border-[#e8eee8]">
           <td className="py-3 pr-3"><span className="block font-bold">{row.title}</span>
             <span className="block text-xs text-[#667b7e]">{row.challengeTitle}</span></td>
           <td className="px-3 py-3">
-            {row.firstFindings === undefined ? 'Chưa xác minh' : row.firstFindings ? 'Đã lưu' : 'Chưa lưu'}
+            {row.firstFindings === undefined ? 'Not verified' : row.firstFindings ? 'Saved' : 'Not saved'}
           </td>
           <td className="px-3 py-3">
             <span className={'inline-block rounded-lg px-2.5 py-1 text-xs font-semibold ' +
@@ -127,12 +127,12 @@ export function TeacherClassroomBoard({ token, challenges, courseId }: {
                 row.status === 'REVISION_REQUESTED' ? 'bg-orange-100 text-orange-950' : 'bg-slate-100 text-slate-700')}>
               {PILOT_GROUP_LABELS[row.status]}
             </span>
-            {row.evidenceCount !== undefined && <span className="ml-2 text-xs text-[#657579]">{row.evidenceCount} minh chứng</span>}
+            {row.evidenceCount !== undefined && <span className="ml-2 text-xs text-[#657579]">{row.evidenceCount} evidence items</span>}
           </td>
           <td className="py-3 pl-3 text-right">
             <Link href={'/evidence?projectId=' + encodeURIComponent(row.id)}
               className="inline-flex min-h-11 items-center gap-1 font-bold text-[#173445] underline">
-              Xem minh chứng <ArrowRight size={14} aria-hidden="true"/>
+              View evidence <ArrowRight size={14} aria-hidden="true"/>
             </Link>
           </td>
         </tr>)}</tbody>
@@ -140,8 +140,8 @@ export function TeacherClassroomBoard({ token, challenges, courseId }: {
     </div>}
     {!!rows.length && <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl bg-[#f1f7f2] p-3 text-sm">
       <ShieldCheck size={18} aria-hidden="true"/>
-      <span>Chỉ giảng viên có quyền trên khóa học mới truy cập được dữ liệu. Gallery Walk chưa công khai minh chứng.</span>
-      <Link href="/review" className="font-bold underline">Đến hàng đợi chấm bài</Link>
+      <span>Only authorized lecturers may access course data. Gallery Walk has not published any private evidence.</span>
+      <Link href="/review" className="font-bold underline">Open review queue</Link>
     </div>}
   </section>;
 }
