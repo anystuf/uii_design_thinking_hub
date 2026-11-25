@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import './globals.css';
-import { CreativePointerTrail } from '@/components/creative-pointer-trail';
 import { WorkspaceChatbot } from '@/components/workspace-chatbot';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'], variable: '--font-sans-sharp', display: 'swap' });
@@ -27,7 +26,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi">
       <body className={`${inter.variable} ${jakarta.variable} ${playfair.variable}`}>
         {children}
-        <CreativePointerTrail />
         <WorkspaceChatbot />
       </body>
     </html>
