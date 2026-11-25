@@ -454,7 +454,7 @@ export default function LearningFoundationPage() {
                 </button>;
               })}
             </div>
-            {!visibleCourses.length && <div role="status" className="rounded-2xl border border-dashed bg-white p-10 text-center text-sm text-slate-600">{busy ? 'Loading courses…' : courseSearch || levelFilter !== 'all' ? 'No matching courses. Try a different search.' : catalogView === 'enrolled' ? 'You haven't enrolled yet. Select All to explore courses.' : 'Courses will appear here after the lecturer publishes them.'}</div>}
+            {!visibleCourses.length && <div role="status" className="rounded-2xl border border-dashed bg-white p-10 text-center text-sm text-slate-600">{busy ? 'Loading courses…' : courseSearch || levelFilter !== 'all' ? 'No matching courses. Try a different search.' : catalogView === 'enrolled' ? 'You have not enrolled yet. Select All to explore courses.' : 'Courses will appear here after the lecturer publishes them.'}</div>}
           </section>
 
           {canTeach && <details className="rounded-2xl border bg-white p-5" id="course-authoring">
