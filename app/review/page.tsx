@@ -56,7 +56,7 @@ const initialCriteria: CriterionDraft[] = [
 // The overall course assessment (discussion 20 / mid-term 30 / poster 30 / report 20)
 // is a distinct grading scheme and is not silently substituted here.
 const classroomProjectCriteria: CriterionDraft[] = [
-  { title: 'Problem', description: 'Show empathy through observations and interviews; understand users' context and difficulties. Collect and analyze evidence proving that the problem is real and important, identify root causes, and justify the problem statement.', weight: 30, maxScore: 4 },
+  { title: 'Problem', description: 'Show empathy through observations and interviews; understand users’ context and difficulties. Collect and analyze evidence proving that the problem is real and important, identify root causes, and justify the problem statement.', weight: 30, maxScore: 4 },
   { title: 'Solution', description: 'Generate and compare ideas with existing solutions and relevant expertise. Justify choices using empathy and user context; explain the prototype, test plan, feasibility, and resources.', weight: 30, maxScore: 4 },
   { title: 'Creativity', description: 'Use prototypes to communicate ideas and creative, effective testing to gather user feedback. Evaluate the approach to the problem and proposed solution.', weight: 15, maxScore: 4 },
   { title: 'Presentation', description: 'Communicate fluently, logically, and concisely; emphasize valuable and relevant points.', weight: 10, maxScore: 4 },
