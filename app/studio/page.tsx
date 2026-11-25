@@ -587,7 +587,7 @@ export default function DesignStudioPage() {
                              <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Submit evidence or a Drive link ↗</Link>
                            </div>
                           <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#eaf3ed] p-3 text-xs leading-6 text-[#365d57]">
-                            <span className="flex-1">Want your project to appear in the Community? Submit work, receive an assessment, request lecturer approval for display, and publish only with the team's permission.</span>
+                            <span className="flex-1">Want your project to appear in the Community? Submit work, receive an assessment, request lecturer approval for display, and publish only with the team’s permission.</span>
                             <Link href="/community" className="inline-flex min-h-11 items-center rounded-full border border-[#c0dbca] bg-white px-3 font-black">Open Community →</Link>
                           </div>
                           <div className="mb-4 flex flex-wrap gap-2">
