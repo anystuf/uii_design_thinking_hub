@@ -372,7 +372,7 @@ export function LiveHubDashboard() {
             </section>
             <section aria-labelledby="classic-overview-title">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="classic-overview-title" className="mt-1 text-2xl font-extrabold">Today's dashboard</h2></div>
+                <div><p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ad4007]">YOUR WORKSPACE</p><h2 id="classic-overview-title" className="mt-1 text-2xl font-extrabold">Today’s dashboard</h2></div>
                 <button aria-label="Refresh dashboard data" disabled={loading} className="min-h-11 rounded-xl border bg-white px-4 font-semibold hover:border-orange-300" onClick={() => setReload((n) => n + 1)}>Refresh</button>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
