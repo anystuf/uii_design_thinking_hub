@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { ArrowLeft, Mail } from 'lucide-react';
 
 import { authRedirectUrl } from '@/lib/auth-redirect';
@@ -14,6 +14,11 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [expired, setExpired] = useState(false);
+
+  useEffect(() => {
+    setExpired(new URLSearchParams(window.location.search).get('reason') === 'expired');
+  }, []);
 
   async function requestReset(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,10 +54,15 @@ export default function ForgotPasswordPage() {
         </div>
         <p className="text-xs font-black uppercase tracking-widest text-emerald-800">UII Design Thinking Hub</p>
         <h1 className="mt-3 text-2xl font-black">{submitted ? 'Check your email' : 'Reset password'}</h1>
+        {expired && !submitted && (
+          <p role="alert" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            The previous recovery link has expired or has already been used. Request a fresh email below, then open only the newest link. If the problem repeats immediately, the email provider may be scanning links before you click them.
+          </p>
+        )}
         {submitted ? (
           <p role="status" className="mt-4 rounded-xl bg-emerald-50 p-4 text-sm leading-6 text-emerald-900">
             If this email belongs to a UII account, password-reset instructions will be sent to it.
-            Check your spam folder and avoid sending repeated requests.
+            Check your spam folder. Use only the newest recovery email, and do not reopen the same one-time link.
           </p>
         ) : (
           <>
