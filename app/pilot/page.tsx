@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, BookOpenCheck, ClipboardCheck, FileCheck2, LockKeyhole, MessageSquareText, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, ClipboardCheck, FileCheck2, LockKeyhole, ShieldCheck, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Hướng dẫn thử nghiệm lớp học | UII Design Thinking Hub",
@@ -58,7 +58,7 @@ export default function ClassroomPilotPage() {
         <LockKeyhole className="mt-0.5 shrink-0" size={20}/><div><strong>Quan trọng trước khi thử nộp thật:</strong> Giảng viên và người quản trị cần xác nhận tài khoản thử nghiệm, môi trường đăng nhập, phân quyền, sao lưu và backend trước khi cho phép ghi dữ liệu. Nếu chưa được xác nhận, chỉ thử demo và gửi nhận xét UX. Không nhập dữ liệu nhận diện người phỏng vấn, mật khẩu hay thông tin sinh viên thật.</div>
       </div>
 
-      <section className="mt-10 rounded-[24px] border border-[#e0e7df] bg-white p-5 sm:p-8" aria-labelledby="student-pilot">
+      <section className="mt-10 rounded-[24px] border border-[#e0e7df] bg-white p-5 sm:p-8" aria-label="Hướng dẫn sinh viên thử nghiệm">
         <SectionHeading number="01 · SINH VIÊN" title="Các bạn thử theo sáu bước" description="Mỗi nhóm làm độc lập trên thiết bị của mình. Một nhóm ưu tiên máy tính, nhóm còn lại có thể kiểm tra trên điện thoại."/>
         <ol className="space-y-5">
           {studentSteps.map((step,i)=><li key={step.title} className="flex gap-4 border-b border-[#edf0eb] pb-5 last:border-0 last:pb-0">
@@ -68,7 +68,7 @@ export default function ClassroomPilotPage() {
         </ol>
       </section>
 
-      <section className="mt-6 rounded-[24px] border border-[#e0e7df] bg-white p-5 sm:p-8" aria-labelledby="teacher-pilot">
+      <section className="mt-6 rounded-[24px] border border-[#e0e7df] bg-white p-5 sm:p-8" aria-label="Hướng dẫn giảng viên thử nghiệm">
         <SectionHeading number="02 · GIẢNG VIÊN" title="Kiểm tra vòng phản hồi của nhóm" description="Cần một giảng viên có tài khoản Lecturer được cấp quyền hợp lệ và hai nhóm thử nghiệm đã được tạo trên backend."/>
         <ol className="space-y-4">{teacherSteps.map((step,i)=><li key={step.title} className="flex gap-3 text-sm leading-7"><span className="font-black text-[#0f6754]">{i+1}.</span><div><strong>{step.title}.</strong> <span className="text-[#52656b]">{step.body}</span></div></li>)}</ol>
         <div className="mt-5 flex flex-wrap gap-3"><Link href="/classroom" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#173445] px-4 py-3 text-sm font-bold text-white"><Users size={18}/> Bảng Buổi học</Link><Link href="/review" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#9bbaae] px-4 py-3 text-sm font-bold text-[#173445]"><FileCheck2 size={18}/> Đánh giá bài nộp</Link></div>
