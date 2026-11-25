@@ -159,7 +159,7 @@ export function WorkspaceChatbot() {
              message.mode==="verified-data"?"Verified API progress":
              message.mode==="verified-status"?"System status":
              message.aiStatus && message.aiStatus!=="ok" && message.aiStatus!=="not-configured" ?
-               "Fallback guidance · Gemini: "+({["invalid-key"]:"invalid API key",["quota"]:"rate limit reached",["model-unavailable"]:"model unavailable",["timeout"]:"timeout",["empty-response"]:"không có nội dung trả lời",["provider-unavailable"]:"dịch vụ tạm gián đoạn",["request-rejected"]:"request bị từ chối",["invalid-model"]:"cấu hình model không hợp lệ"} as Record<string,string>)[message.aiStatus] + (message.providerHttpStatus?" (HTTP "+message.providerHttpStatus+")":""):
+               "Fallback guidance · Gemini: "+({["invalid-key"]:"invalid API key",["quota"]:"rate limit reached",["model-unavailable"]:"model unavailable",["timeout"]:"timeout",["empty-response"]:"empty response",["provider-unavailable"]:"dịch vụ tạm gián đoạn",["request-rejected"]:"request bị từ chối",["invalid-model"]:"cấu hình model không hợp lệ"} as Record<string,string>)[message.aiStatus] + (message.providerHttpStatus?" (HTTP "+message.providerHttpStatus+")":""):
              "Guidance from platform data"}
           </p>}
         </div>)}
