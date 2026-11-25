@@ -338,7 +338,7 @@ export default function EvidenceStudioPage() {
                             <div className="min-w-0"><p className="text-sm font-semibold">Version {version.version}</p>
                               <p className="text-xs text-slate-600">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('en-US')}</p>
                               {version.fileAsset && <p className="text-xs text-slate-600">{version.fileAsset.fileName}</p>}
-                              {parseEvidenceSource(version.description).url && <a href={parseEvidenceSource(version.description).url!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-[#173445] underline">Mở link sản phẩm đã nộp ↗</a>}
+                              {parseEvidenceSource(version.description).url && <a href={parseEvidenceSource(version.description).url!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-[#173445] underline">Open submitted deliverable link ↗</a>}
                             </div>
                             {version.fileAsset && <button className={secondary} onClick={() => void getDownload(version.fileAsset!.id)}>Download</button>}
                           </div>)}
@@ -385,7 +385,7 @@ export default function EvidenceStudioPage() {
                           {item.versions.map((version) => <option key={version.id} value={version.id}>Version {version.version} · {version.title}</option>)}
                         </select>
                       </label>)}
-                      {!evidence.length && <p className="text-sm text-slate-600">Bạn cần tạo evidence first.</p>}
+                      {!evidence.length && <p className="text-sm text-slate-600">Create evidence first.</p>}
                       <textarea rows={3} className={input} maxLength={3000} placeholder="Submission note (optional)" value={submissionNote} onChange={(e) => setSubmissionNote(e.target.value)}/>
                       <button className={primary} disabled={busy || !evidence.length}><Shield size={15} className="mr-1 inline"/> Submit snapshot</button>
                     </form>
