@@ -150,8 +150,8 @@ export default function CommunityPage(){
        </div>
      </div>}
      {showPublish&&viewer&&<form onSubmit={e=>void publish(e)} className="space-y-3 rounded-2xl border border-[#d8e6dd] bg-white p-5">
-       <h2 className="text-lg font-black text-[#173445]">Share your team's project in Community</h2>
-       <p className="text-xs leading-6 text-[#647779]">Only the project owner may choose to share a lecturer-approved project. Administrators cannot publish on an owner's behalf. Posts are visible to signed-in members. Never publish identifying details about interviewees.</p>
+       <h2 className="text-lg font-black text-[#173445]">Share your team’s project in Community</h2>
+       <p className="text-xs leading-6 text-[#647779]">Only the project owner may choose to share a lecturer-approved project. Administrators cannot publish on an owner’s behalf. Posts are visible to signed-in members. Never publish identifying details about interviewees.</p>
        <label htmlFor="share-project" className="block text-sm font-bold">Approved project</label>
        <select id="share-project" required value={projectId} onChange={e=>setProjectId(e.target.value)} className="min-h-11 w-full rounded-xl border bg-white px-3">
          <option value="">Select project</option>{shareable.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}
@@ -219,7 +219,7 @@ export default function CommunityPage(){
        <SampleTeamGallery stage="EMPATHIZE"/>
        <div className="rounded-2xl border border-[#dce6df] bg-[#e7f3ed] p-4 text-xs leading-6 text-[#466268]">
          <p className="flex items-center gap-2 font-black text-[#214e4c]"><ShieldCheck size={16}/> Privacy and resources</p>
-         UII stores small feedback interactions and project links on its existing backend. It never automatically publishes personal social profiles. External Miro or Padlet boards may be embedded only with the owner's permission, and participant data must not be made public without consent.
+         UII stores small feedback interactions and project links on its existing backend. It never automatically publishes personal social profiles. External Miro or Padlet boards may be embedded only with the owner’s permission, and participant data must not be made public without consent.
        </div>
      </section>
    </main>
