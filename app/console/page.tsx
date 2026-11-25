@@ -251,7 +251,7 @@ export default function ContentConsole(){
               </select></label>}
               <label className={titleStyle}>Title<input required minLength={4} maxLength={120} value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className={field}/></label>
               <label className={titleStyle}>Content<textarea required minLength={10} maxLength={1500} rows={6} value={annBody} onChange={e=>setAnnBody(e.target.value)} className={field}/></label>
-              <div className="rounded-xl bg-[#f2f7f3] p-4 text-sm leading-7"><b>Preview:</b><p className="mt-2 whitespace-pre-wrap break-words">{annTitle||"Announcement title"}</p><p className="mt-2 whitespace-pre-wrap break-words">{annBody||"Content thông báo"}</p></div>
+              <div className="rounded-xl bg-[#f2f7f3] p-4 text-sm leading-7"><b>Preview:</b><p className="mt-2 whitespace-pre-wrap break-words">{annTitle||"Announcement title"}</p><p className="mt-2 whitespace-pre-wrap break-words">{annBody||"Announcement content"}</p></div>
               <button disabled={busy} className={primary}><Bell size={16}/> Send announcement ngay</button>
               <p className="text-xs text-[#698079]">Announcements are sent immediately after server confirmation; scheduling and server-side drafts are not supported yet.</p>
             </form>
