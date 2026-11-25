@@ -34,7 +34,7 @@ export default function AdminPage() {
           if (!controller.signal.aborted) setUsers(list);
         }
       } catch (err) {
-        if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Không tải được tài khoản.');
+        if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Unable to load accounts.');
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -52,30 +52,30 @@ export default function AdminPage() {
       });
       return () => subscription.unsubscribe();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.');
+      setError(err instanceof Error ? err.message : 'Could not read the sign-in session.');
     }
   }, []);
 
   return <div className="uii-workspace min-h-screen bg-[#f6f8fc]">
-    <WorkspaceNav title="Quản trị" role={account?.role} />
+    <WorkspaceNav title="Administration" role={account?.role} />
     <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-6 px-5 py-8">
-      {loading && <p role="status">Đang kiểm tra quyền quản trị…</p>}
+      {loading && <p role="status">Verifying administrator access…</p>}
       <header className="rounded-[28px] border border-[#e3d8ec] bg-[#e7e2fb] p-6 sm:p-9">
           <p className="text-xs font-black uppercase tracking-[.16em] text-[#7a3a47]">UII · PEOPLE & GOVERNANCE</p>
-          <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Quản trị và phát triển cộng đồng.</h1>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Quản lý tài khoản, điều phối khóa học và theo dõi hoạt động đổi mới. Vai trò và quyền truy cập được xác minh bởi máy chủ.</p>
+          <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Administration và phát triển cộng đồng.</h1>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-[#48606b]">Manage accounts, coordinate courses, and support innovation activities. Roles and access are verified by máy chủ.</p>
         </header>
-      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{error}<button className="ml-3 min-h-11 underline" onClick={() => setReload((value) => value + 1)}>Thử lại</button></div>}
-      {!loading && !account && !error && <p>Đăng nhập để tiếp tục. <Link href="/learn" className="underline">Đăng nhập</Link></p>}
-      {account && account.role !== 'ADMIN' && <p role="alert">Trang này dành cho quản trị viên. <Link href="/dashboard" className="underline">Về tổng quan</Link></p>}
+      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">{error}<button className="ml-3 min-h-11 underline" onClick={() => setReload((value) => value + 1)}>Retry</button></div>}
+      {!loading && !account && !error && <p>Sign in to continue. <Link href="/learn" className="underline">Sign in</Link></p>}
+      {account && account.role !== 'ADMIN' && <p role="alert">This page is restricted to administrators. <Link href="/dashboard" className="underline">Back to Dashboard</Link></p>}
       {account?.role === 'ADMIN' && !loading && !error && <>
         <section className="rounded-2xl border bg-white p-6">
-          <h2 className="text-2xl font-bold">Tài khoản trên nền tảng</h2>
-          <p className="mt-2 text-slate-600">{users.length} tài khoản</p>
+          <h2 className="text-2xl font-bold">Platform accounts</h2>
+          <p className="mt-2 text-slate-600">{users.length} accounts</p>
           <ul className="mt-5 divide-y">{users.map((user) => <li key={user.id} className="flex flex-wrap items-center justify-between gap-2 py-4"><span className="font-semibold">{user.fullName}</span><span className="rounded-lg bg-blue-50 px-3 py-2 text-sm">{user.role}</span></li>)}</ul>
-          {!users.length && <p className="mt-4">Chưa có tài khoản để hiển thị.</p>}
+          {!users.length && <p className="mt-4">Chưa có accounts để hiển thị.</p>}
         </section>
-        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/console">Console: khóa học & thông báo</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
+        <div className="flex flex-wrap gap-4"><Link className="rounded-xl border bg-white p-4 font-semibold" href="/console">Console: courses & announcements</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/learn">Khóa học</Link><Link className="rounded-xl border bg-white p-4 font-semibold" href="/review">Xem bài nộp & đánh giá</Link></div>
       </>}
     </main>
   </div>;
