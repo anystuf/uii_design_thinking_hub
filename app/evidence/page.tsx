@@ -87,7 +87,7 @@ export default function EvidenceStudioPage() {
       const auth = getSupabaseBrowserClient().auth;
       void withAuthDeadline(() => auth.getSession()).then(({ data }) => {
         if (active) { setSession(data.session); setAuthReady(true); }
-      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Không đọc được phiên đăng nhập.'); setAuthReady(true); });
+      }).catch((err: unknown) => { setError(err instanceof Error ? err.message : 'Unable to read the sign-in session.'); setAuthReady(true); });
       const { data: { subscription } } = auth.onAuthStateChange((_event, next) => {
         if (active) setSession(next);
       });
@@ -163,7 +163,7 @@ export default function EvidenceStudioPage() {
       });
       setFileAsset(asset);
       setChosenFile(null);
-      setNotice('File thật đã được lưu và xác minh trong private storage.');
+      setNotice('The uploaded file was saved and verified in private storage.');
     });
   }
 
@@ -188,7 +188,7 @@ export default function EvidenceStudioPage() {
         });
       }
       await load(project.id);
-      setNotice(newVersionOf ? 'Đã lưu phiên bản evidence mới.' : 'Đã tạo evidence phiên bản 1.');
+      setNotice(newVersionOf ? 'A new evidence version was saved.' : 'Evidence version 1 was created.');
     });
   }
 
@@ -219,14 +219,14 @@ export default function EvidenceStudioPage() {
       });
       setIterationReason(''); setIterationDecision('');
       setIterations(await api<Iteration[]>(token, '/projects/' + project.id + '/iteration-notes'));
-      setNotice('Iteration decision đã được lưu.');
+      setNotice('Iteration decision saved.');
     });
   }
 
   async function submitSnapshot(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!project) return;
     const ids = Object.values(selectedVersions).filter(Boolean);
-    if (!ids.length) { setError('Chọn tối thiểu một evidence version.'); return; }
+    if (!ids.length) { setError('Select at least one evidence version.'); return; }
     await run(async () => {
       const submission = await api<Submission>(token, '/projects/' + project.id + '/snapshot-submissions', {
         method: 'POST',
@@ -238,90 +238,90 @@ export default function EvidenceStudioPage() {
       });
       setSelectedVersions({}); setSubmissionNote('');
       setSubmissions(await api<Submission[]>(token, '/projects/' + project.id + '/snapshot-submissions'));
-      setNotice('Đã nộp snapshot bất biến, phiên bản #' + submission.version + '.');
+      setNotice('Submitted immutable snapshot, version #' + submission.version + '.');
     });
   }
 
   return (
     <div className="uii-workspace min-h-screen bg-[#f6f8fc] text-[#12284a]">
-      <WorkspaceNav title="Minh chứng & phản hồi" role={user?.role} guest={authReady && !session} />
+      <WorkspaceNav title="Evidence & Feedback" role={user?.role} guest={authReady && !session} />
       <main id="main-content" tabIndex={-1} className="mx-auto max-w-6xl space-y-5 px-3 py-5 sm:space-y-6 sm:px-5 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-[28px] bg-[#fae2d3] p-5 sm:p-8">
           <div>
             <p className="text-xs font-black uppercase tracking-[.16em] text-[#9a4536]">MAKE · DOCUMENT · IMPROVE</p>
-            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Minh chứng và phản hồi.</h1>
-            <p className="mt-2 text-sm text-[#50666b]">Lưu bản nháp, dẫn liên kết sản phẩm, nộp theo phiên bản và học từ phản hồi.</p>
-            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Đăng nhập để xem dự án'}</p>
+            <h1 className="mt-2 text-2xl font-black tracking-[-.045em]">Evidence & Feedback.</h1>
+            <p className="mt-2 text-sm text-[#50666b]">Save drafts, link deliverables, submit versioned work, and learn from feedback.</p>
+            <p className="mt-1 text-sm text-slate-600">{user ? user.fullName + ' · ' + user.role : 'Sign in to view projects'}</p>
           </div>
-          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Đang lưu hoặc tải thay đổi…</span>}
+          {busy && user && <span className="flex items-center gap-2 text-sm text-slate-600"><LoaderCircle size={16} className="animate-spin"/> Saving or loading changes…</span>}
         </div>
-        {session && !user && busy && <WorkspaceLoading label="Đang xác minh tài khoản…"/>}
+        {session && !user && busy && <WorkspaceLoading label="Verifying your account…"/>}
         {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p>}
         {notice && <p role="status" className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800">{notice}</p>}
-        {!authReady && <p>Đang kiểm tra phiên…</p>}
-        {authReady && !session && <div className={panel}>Cần đăng nhập trước: <Link className="font-bold underline" href="/learn">trang đăng nhập</Link>.</div>}
+        {!authReady && <p>Checking your session…</p>}
+        {authReady && !session && <div className={panel}>Sign in first: <Link className="font-bold underline" href="/learn">Sign in</Link>.</div>}
         {session && user && (
           <>
             <section className={panel}>
-              <label className="mb-2 block text-sm font-bold" htmlFor="project">Chọn dự án</label>
+              <label className="mb-2 block text-sm font-bold" htmlFor="project">Select project</label>
               <select id="project" className={input} value={project?.id ?? ''} onChange={(event) => selectProject(event.target.value)}>
-                {!projects.length && <option value="">Chưa có dự án</option>}
+                {!projects.length && <option value="">No projects available</option>}
                 {projects.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
               </select>
-              {!projects.length && <p className="mt-3 text-sm text-slate-600">Tạo hoặc tham gia nhóm trong <Link className="underline" href="/studio">Dự án</Link> trước.</p>}
+              {!projects.length && <p className="mt-3 text-sm text-slate-600">Create or join a team in <Link className="underline" href="/studio">Projects</Link> first.</p>}
             </section>
             {project && (
               <div className="grid items-start gap-5 lg:grid-cols-[1fr_1fr]">
                 <div className="space-y-5">
                   {canWrite && <section id="evidence-editor" className={panel + ' space-y-4'}>
                     <div className="flex items-center gap-2"><FileUp className="text-[#153b77]" size={22}/>
-                      <h3 className="text-xl font-bold">{newVersionOf ? 'Tạo phiên bản minh chứng' : 'Thêm minh chứng'}</h3></div>
+                      <h3 className="text-xl font-bold">{newVersionOf ? 'Create evidence version' : 'Add evidence'}</h3></div>
                     {newVersionOf && <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#eef3fc] p-3 text-sm">
-                      <span>Chỉnh sửa: <strong>{newVersionOf.title}</strong> (v{newVersionOf.activeVersion})</span>
+                      <span>Editing: <strong>{newVersionOf.title}</strong> (v{newVersionOf.activeVersion})</span>
                       <button type="button" className={secondary} onClick={() => {
                         setNewVersionOf(null); setTitle(''); setDescription(''); setExternalUrl(''); setReflection('');
                         setFileAsset(null); setChosenFile(null);
-                      }}>Hủy</button>
+                      }}>Cancel</button>
                     </div>}
                     <form onSubmit={(event) => void submitEvidence(event)} className="space-y-3">
-                      <label className="block text-sm font-semibold">Hoạt động thiết kế
+                      <label className="block text-sm font-semibold">Design Thinking stage
                         <select className={input + ' mt-2'} disabled={!!newVersionOf} value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
                           {modes.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
                       </label>
-                      <label className="block text-sm font-semibold">Loại minh chứng
+                      <label className="block text-sm font-semibold">Evidence type
                         <select className={input + ' mt-2'} value={evidenceType} onChange={(e) => setEvidenceType(e.target.value)}>
                           {types.map((item) => <option key={item} value={item}>{item}</option>)}
                         </select>
                       </label>
-                      <label className="block text-sm font-semibold">Tiêu đề
+                      <label className="block text-sm font-semibold">Title
                         <input required maxLength={160} className={input + ' mt-2'} value={title} onChange={(e) => setTitle(e.target.value)}/>
                       </label>
-                      <label className="block text-sm font-semibold">Mô tả
+                      <label className="block text-sm font-semibold">Description
                         <textarea rows={3} maxLength={1900} className={input + ' mt-2'} value={description} onChange={(e) => setDescription(e.target.value)}/>
                       </label>
                       <div className="rounded-2xl border border-[#c8e4da] bg-[#f2faf1] p-4">
-                        <label htmlFor="external-evidence-url" className="block text-sm font-extrabold text-[#173445]">Liên kết sản phẩm · Google Drive / Miro / Figma (tùy chọn)</label>
+                        <label htmlFor="external-evidence-url" className="block text-sm font-extrabold text-[#173445]">Deliverable link · Google Drive / Miro / Figma (optional)</label>
                         <input id="external-evidence-url" type="url" maxLength={1000} value={externalUrl}
                           onChange={event=>setExternalUrl(event.target.value)}
                           placeholder="https://drive.google.com/…"
                           aria-describedby="external-evidence-tip"
                           className={input + ' mt-2'} />
-                        <p id="external-evidence-tip" className="mt-2 text-xs leading-6 text-[#466c68]">Khuyến nghị dùng đường dẫn xem được bởi giảng viên qua quyền chia sẻ phù hợp, không nhất thiết công khai cho cả Internet. Nộp link không tải tệp lên UII, tiết kiệm dung lượng. Link được lưu trong từng phiên bản, nhưng tệp bên ngoài vẫn có thể thay đổi.</p>
-                        {!!externalUrl.trim() && !safeEvidenceUrl(externalUrl) && <p role="alert" className="mt-2 text-xs font-semibold text-[#9e3328]">Chỉ dùng liên kết HTTPS chính thức từ Drive, Docs, Miro, Figma, Canva, GitHub, Notion hoặc OneDrive.</p>}
+                        <p id="external-evidence-tip" className="mt-2 text-xs leading-6 text-[#466c68]">Use a link your lecturer can access with appropriate sharing permissions; it need not be public. Linking a file avoids uploading it to UII. The link is versioned, but external files may change independently.</p>
+                        {!!externalUrl.trim() && !safeEvidenceUrl(externalUrl) && <p role="alert" className="mt-2 text-xs font-semibold text-[#9e3328]">Only official HTTPS links from Drive, Docs, Miro, Figma, Canva, GitHub, Notion, or OneDrive are accepted.</p>}
                       </div>
                       <label className="block text-sm font-semibold">Reflection
                         <textarea rows={3} maxLength={3000} className={input + ' mt-2'} value={reflection} onChange={(e) => setReflection(e.target.value)}/>
                       </label>
                       <div className="rounded-xl border border-dashed p-4">
-                        <label className="mb-2 block text-sm font-bold">File đính kèm riêng tư (tùy chọn)</label>
+                        <label className="mb-2 block text-sm font-bold">Private attachment (optional)</label>
                         <input type="file" onChange={attachFile} className="w-full text-sm" accept=".pdf,.png,.jpg,.jpeg,.mp3,.mp4,.txt"/>
                         {chosenFile && <p className="mt-2 text-xs text-slate-600">{chosenFile.name} · {Math.round(chosenFile.size/1024)} KB</p>}
                         {chosenFile && <button type="button" className={secondary + ' mt-3'} disabled={busy} onClick={() => void upload()}><Upload size={15} className="mr-1 inline"/> Upload & verify</button>}
-                        {fileAsset && <p className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15}/>{fileAsset.fileName} — đã xác minh</p>}
-                        {newVersionOf && !fileAsset && <p className="mt-2 text-xs text-slate-600">Nếu không tải file mới, phiên bản tiếp theo giữ tham chiếu file trước đó.</p>}
+                        {fileAsset && <p className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700"><CheckCircle2 size={15}/>{fileAsset.fileName} — verified</p>}
+                        {newVersionOf && !fileAsset && <p className="mt-2 text-xs text-slate-600">Without a new upload, the next version retains its previous file reference.</p>}
                       </div>
-                      <button className={primary} disabled={busy}><CheckCircle2 size={15} className="mr-1 inline"/> {newVersionOf ? 'Lưu phiên bản mới' : 'Lưu evidence v1'}</button>
+                      <button className={primary} disabled={busy}><CheckCircle2 size={15} className="mr-1 inline"/> {newVersionOf ? 'Save new version' : 'Save evidence v1'}</button>
                     </form>
                   </section>}
 
@@ -336,16 +336,16 @@ export default function EvidenceStudioPage() {
                         <div className="space-y-2 pt-3">
                           {item.versions.map((version) => <div key={version.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-[#f6f8fc] p-3">
                             <div className="min-w-0"><p className="text-sm font-semibold">Version {version.version}</p>
-                              <p className="text-xs text-slate-600">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('vi-VN')}</p>
+                              <p className="text-xs text-slate-600">{version.createdBy.fullName} · {new Date(version.createdAt).toLocaleString('en-US')}</p>
                               {version.fileAsset && <p className="text-xs text-slate-600">{version.fileAsset.fileName}</p>}
                               {parseEvidenceSource(version.description).url && <a href={parseEvidenceSource(version.description).url!} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-xs font-bold text-[#173445] underline">Mở link sản phẩm đã nộp ↗</a>}
                             </div>
                             {version.fileAsset && <button className={secondary} onClick={() => void getDownload(version.fileAsset!.id)}>Download</button>}
                           </div>)}
                         </div>
-                        {canWrite && <button className={secondary + ' mt-3'} onClick={() => revise(item)}><Wand2 size={15} className="mr-1 inline"/> Tạo phiên bản cải tiến</button>}
+                        {canWrite && <button className={secondary + ' mt-3'} onClick={() => revise(item)}><Wand2 size={15} className="mr-1 inline"/> Create revised version</button>}
                       </div>)}
-                      {!evidence.length && <p className="text-sm text-slate-600">Chưa có evidence.</p>}
+                      {!evidence.length && <p className="text-sm text-slate-600">No evidence yet.</p>}
                     </div>
                   </section>
 
@@ -354,13 +354,13 @@ export default function EvidenceStudioPage() {
                     <div className="space-y-2">
                       {iterations.map((item) => <div key={item.id} className="rounded-lg bg-[#f6f8fc] p-3 text-sm">
                         <p className="font-semibold">{item.mode || 'Project'} · {item.reason}</p>
-                        <p className="mt-1 text-slate-600">Quyết định tiếp theo: {item.nextDecision}</p>
+                        <p className="mt-1 text-slate-600">Next decision: {item.nextDecision}</p>
                       </div>)}
-                      {!iterations.length && <p className="text-sm text-slate-600">Chưa có iteration notes.</p>}
+                      {!iterations.length && <p className="text-sm text-slate-600">No iteration notes yet.</p>}
                     </div>
                     {canWrite && <form onSubmit={(event) => void recordIteration(event)} className="mt-4 space-y-3">
-                      <textarea required maxLength={2500} rows={2} className={input} placeholder="Vì sao cần thay đổi?" value={iterationReason} onChange={(e) => setIterationReason(e.target.value)}/>
-                      <textarea required maxLength={2500} rows={2} className={input} placeholder="Nhóm quyết định thử nghiệm gì tiếp theo?" value={iterationDecision} onChange={(e) => setIterationDecision(e.target.value)}/>
+                      <textarea required maxLength={2500} rows={2} className={input} placeholder="Why is a change needed?" value={iterationReason} onChange={(e) => setIterationReason(e.target.value)}/>
+                      <textarea required maxLength={2500} rows={2} className={input} placeholder="What will your team test next?" value={iterationDecision} onChange={(e) => setIterationDecision(e.target.value)}/>
                       <button disabled={busy} className={secondary}>+ Ghi iteration</button>
                     </form>}
                   </section>
@@ -368,26 +368,26 @@ export default function EvidenceStudioPage() {
 
                 <div className="space-y-5">
                   {canWrite && <section className={panel + ' space-y-4'}>
-                    <div className="flex items-center gap-2"><Send size={20} className="text-[#153b77]"/><h3 className="text-xl font-bold">Nộp bài theo phiên bản</h3></div>
-                    <p className="text-xs text-slate-600">Mỗi lần nộp tạo snapshot riêng; phiên bản evidence sau đó không thay đổi nội dung đã nộp.</p>
+                    <div className="flex items-center gap-2"><Send size={20} className="text-[#153b77]"/><h3 className="text-xl font-bold">Submit a versioned snapshot</h3></div>
+                    <p className="text-xs text-slate-600">Every submission creates a separate snapshot; later evidence changes never overwrite submitted work.</p>
                     <form onSubmit={(event) => void submitSnapshot(event)} className="space-y-3">
                       <label className="block text-sm font-semibold">Submission scope
                         <select className={input + ' mt-2'} value={milestoneId} onChange={(e) => setMilestoneId(e.target.value)}>
-                          <option value="">Toàn bộ project</option>
+                          <option value="">Entire project</option>
                           {project.challenge?.milestones?.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
                         </select>
                       </label>
-                      <p className="text-sm font-bold">Chọn phiên bản evidence để nộp</p>
+                      <p className="text-sm font-bold">Select evidence versions to submit</p>
                       {evidence.map((item) => <label key={item.id} className="block rounded-xl border p-3 text-sm">
                         <span className="mb-2 block font-semibold">{item.title}</span>
                         <select className={input} value={selectedVersions[item.id] ?? ''} onChange={(e) => setSelectedVersions((prev) => ({ ...prev, [item.id]: e.target.value }))}>
-                          <option value="">Không chọn</option>
+                          <option value="">None selected</option>
                           {item.versions.map((version) => <option key={version.id} value={version.id}>Version {version.version} · {version.title}</option>)}
                         </select>
                       </label>)}
-                      {!evidence.length && <p className="text-sm text-slate-600">Bạn cần tạo evidence trước.</p>}
-                      <textarea rows={3} className={input} maxLength={3000} placeholder="Submission note (tùy chọn)" value={submissionNote} onChange={(e) => setSubmissionNote(e.target.value)}/>
-                      <button className={primary} disabled={busy || !evidence.length}><Shield size={15} className="mr-1 inline"/> Tạo snapshot & nộp</button>
+                      {!evidence.length && <p className="text-sm text-slate-600">Bạn cần tạo evidence first.</p>}
+                      <textarea rows={3} className={input} maxLength={3000} placeholder="Submission note (optional)" value={submissionNote} onChange={(e) => setSubmissionNote(e.target.value)}/>
+                      <button className={primary} disabled={busy || !evidence.length}><Shield size={15} className="mr-1 inline"/> Submit snapshot</button>
                     </form>
                   </section>}
 
@@ -399,7 +399,7 @@ export default function EvidenceStudioPage() {
                           <h4 className="font-bold">{item.scopeKey} · v{item.version}</h4>
                           <span className="rounded-full bg-[#eaf0fa] px-3 py-1 text-xs font-bold text-[#153b77]">{item.status}</span>
                         </div>
-                        <p className="mt-2 text-xs text-slate-600">{new Date(item.submittedAt).toLocaleString('vi-VN')} {item.isLate ? '· Nộp muộn' : ''}</p>
+                        <p className="mt-2 text-xs text-slate-600">{new Date(item.submittedAt).toLocaleString('en-US')} {item.isLate ? '· Late submission' : ''}</p>
                         {item.note && <p className="mt-2 text-sm">{item.note}</p>}
                         {item.assessments?.map((assessment) => <div key={assessment.id} className="mt-3 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm">
                           <p className="font-bold">{assessment.decision === 'APPROVED' ? '✓ Approved' : '↻ Revision requested'} · {assessment.totalScore}/100</p>
@@ -416,7 +416,7 @@ export default function EvidenceStudioPage() {
                           </div>)}
                         </div>
                       </div>)}
-                      {!submissions.length && <p className="text-sm text-slate-600">Chưa có submission.</p>}
+                      {!submissions.length && <p className="text-sm text-slate-600">No submissions yet.</p>}
                     </div>
                   </section>
                 </div>
