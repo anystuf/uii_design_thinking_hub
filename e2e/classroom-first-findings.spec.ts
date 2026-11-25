@@ -18,9 +18,9 @@ test('Activity 2 preserves all source prompts and stays within backend text limi
   expect(payload.mode).toBe('DEFINE');
   expect(payload.type).toBe('DOCUMENT');
   expect(payload.title).toBe(FIRST_FINDINGS_TITLE);
-  expect(payload.description).toContain('VẤN ĐỀ 1');
-  expect(payload.reflection).toContain('VẤN ĐỀ 2');
-  expect(payload.description).toContain('Làm sao biết vấn đề có thật? Nguồn nào?');
+  expect(payload.description).toContain('PROBLEM 1');
+  expect(payload.reflection).toContain('PROBLEM 2');
+  expect(payload.description).toContain('How do you know this problem is real? What is your source?');
   expect(payload.description.length).toBeLessThanOrEqual(3000);
   expect(payload.reflection.length).toBeLessThanOrEqual(3000);
 });
@@ -40,8 +40,8 @@ test('teacher board never turns missing API state into completed', () => {
 test('Activity 2 never exposes student form without authenticated student role', async ({ page }) => {
   await page.goto('/classroom/first-findings');
   await expect(page.getByRole('heading', { name: 'Activity 2 · First Findings' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Đăng nhập để tiếp tục' })).toHaveAttribute('href', '/learn');
-  await expect(page.getByRole('button', { name: 'Lưu minh chứng Activity 2' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Sign in to continue' })).toHaveAttribute('href', '/learn');
+  await expect(page.getByRole('button', { name: 'Save Activity 2 Evidence' })).toHaveCount(0);
 });
 
 function fakeSession() {
@@ -69,8 +69,8 @@ test('student answers two problems, saves real API-shaped evidence and receives 
         const body = route.request().postDataJSON();
         expect(body.title).toBe(FIRST_FINDINGS_TITLE);
         expect(body.mode).toBe('DEFINE');
-        expect(body.description).toContain('VẤN ĐỀ 1');
-        expect(body.reflection).toContain('VẤN ĐỀ 2');
+        expect(body.description).toContain('PROBLEM 1');
+        expect(body.reflection).toContain('PROBLEM 2');
         stored = true;
         data = { evidence: { id: 'evidence-1' }, version: { id: 'v-1', version: 1 } };
       } else {
@@ -81,18 +81,18 @@ test('student answers two problems, saves real API-shaped evidence and receives 
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/classroom/first-findings');
-  const problemGroups = page.getByRole('group', { name: /^Vấn đề [12]$/ });
+  const problemGroups = page.getByRole('group', { name: /^Problem [12]$/ });
   await expect(problemGroups).toHaveCount(2);
   for (let i = 0; i < 2; i++) {
     const fields = problemGroups.nth(i).locator('textarea');
     await expect(fields).toHaveCount(6);
-    for (let k = 0; k < 6; k++) await fields.nth(k).fill('Giả lập dữ kiện không có thông tin cá nhân ' + (i + 1) + ' ' + (k + 1));
+    for (let k = 0; k < 6; k++) await fields.nth(k).fill('Synthetic evidence without personal information ' + (i + 1) + ' ' + (k + 1));
   }
-  await page.getByLabel(/Nhóm có những nguồn lực/).fill('Giả lập: 2 ngày, 3 thành viên, ngân sách nhỏ');
-  await page.getByRole('button', { name: 'Lưu minh chứng Activity 2' }).click();
-  await expect(page.getByRole('heading', { name: 'Đã lưu Activity 2 trong dự án' })).toBeVisible();
+  await page.getByLabel(/What resources and constraints does your team have/).fill('Synthetic: 2 days, 3 members, small budget');
+  await page.getByRole('button', { name: 'Save Activity 2 Evidence' }).click();
+  await expect(page.getByRole('heading', { name: 'Activity 2 evidence saved' })).toBeVisible();
   expect(writes).toBe(1);
-  await expect(page.getByRole('link', { name: /Đến bước Minh chứng và nộp bài/ }))
+  await expect(page.getByRole('link', { name: /Continue to Evidence & Submission/ }))
     .toHaveAttribute('href', '/evidence?projectId=team-1');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
@@ -120,13 +120,13 @@ test('lecturer can inspect two groups without seeing a false submission', async 
     await route.fulfill({ json: data });
   });
   await page.goto('/classroom');
-  await expect(page.getByRole('heading', { name: 'Tiến độ các nhóm dự án' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Project team progress' })).toBeVisible();
   const a = page.getByRole('row').filter({ hasText: 'Group A' });
   const b = page.getByRole('row').filter({ hasText: 'Group B' });
-  await expect(a).toContainText('Đã lưu');
-  await expect(a).toContainText('Cần cải tiến');
-  await expect(b).toContainText('Chưa lưu');
-  await expect(b).toContainText('Chưa lưu minh chứng');
-  await expect(a.getByRole('link', { name: /Xem minh chứng/ }))
+  await expect(a).toContainText('Saved');
+  await expect(a).toContainText('Revision requested');
+  await expect(b).toContainText('Not saved');
+  await expect(b).toContainText('Not started');
+  await expect(a.getByRole('link', { name: /View evidence/ }))
     .toHaveAttribute('href', '/evidence?projectId=team-1');
 });
