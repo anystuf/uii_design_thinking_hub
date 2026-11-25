@@ -140,7 +140,7 @@ export function WorkspaceChatbot() {
               availability==="loading"?"Checking assistant status…":
               availability==="configured"?<><Sparkles size={13}/> Gemini configured · connection not verified</>:
               availability==="degraded"?<><BookOpen size={13}/> Gemini unavailable · using built-in guidance</>:
-              <><BookOpen size={13}/> Guidance from UII's knowledge base</>}
+              <><BookOpen size={13}/> Guidance from UII’s knowledge base</>}
           </p>
         </div>
         <button type="button" className="grid size-10 place-items-center rounded-lg hover:bg-white/10" aria-label="Close chat window" onClick={()=>setOpen(false)}><X size={18} aria-hidden="true"/></button>
