@@ -194,7 +194,7 @@ export default function CommunityPage(){
                <Link className="inline-flex min-h-11 items-center gap-1 text-xs font-black text-[#173445] underline" href={"/studio?course="+encodeURIComponent(post.project.course.id)+"&mode="+post.project.currentStage}>Explore in Studio <ArrowRight size={14}/></Link>
              </div>
              {activePost===post.id&&<section className="space-y-3 rounded-2xl border border-[#dce6de] bg-[#f7f9f4] p-3" aria-label={"Project discussion: "+post.project.title}>
-               {comments.length===0&&<p className="text-xs text-[#697b7a]">Chưa có comments. Hãy đặt câu hỏi đầu tiên.</p>}
+               {comments.length===0&&<p className="text-xs text-[#697b7a]">No comments yet. Ask the first question.</p>}
                {comments.map(c=><div key={c.id} className="rounded-xl bg-white p-3">
                  <p className="text-xs font-black text-[#284650]">{c.author?.fullName} · {c.author?.role}</p>
                  <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{c.content}</p>
@@ -206,7 +206,7 @@ export default function CommunityPage(){
                  <label className="block text-xs font-black" htmlFor={"comment-"+post.id}>Comment or ask your lecturer</label>
                  <textarea required id={"comment-"+post.id} maxLength={2000} rows={3} value={draft} onChange={e=>setDraft(e.target.value)}
                    placeholder="Has your team tested this assumption with users?" className="w-full resize-y rounded-xl border border-[#cdded4] bg-white p-3 text-base"/>
-                 <button disabled={!draft.trim()||busy} className={btn}><Send size={16}/> Gửi comments</button>
+                 <button disabled={!draft.trim()||busy} className={btn}><Send size={16}/> Post comment</button>
                </form>
              </section>}
            </div>
