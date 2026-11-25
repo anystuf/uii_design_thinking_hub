@@ -47,7 +47,7 @@ export function WorkspaceChatbot() {
   const [role,setRole]=useState<HubRole>("GUEST");
   const [availability,setAvailability]=useState<"loading"|"configured"|"gemini"|"guided"|"degraded">("loading");
   const [messages,setMessages]=useState<ChatMessage[]>([
-    {id:0,from:"bot",text:"Hello! I'm your UII Learning Assistant. I can explain features, guide you step by step, and help you check progress after sign-in. Bạn muốn khám phá điều gì trước?"},
+    {id:0,from:"bot",text:"Hello! I'm your UII Learning Assistant. I can explain features, guide you step by step, and help you check progress after sign-in. What would you like to explore first?"},
   ]);
   const control=useRef<HTMLInputElement>(null);
   const transcript=useRef<HTMLDivElement>(null);
@@ -105,8 +105,8 @@ export function WorkspaceChatbot() {
     }catch(error){
       if(controller.signal.aborted)return;
       const fallback:GuideReply=deterministicGuide(question,role,pathname);
-      const msg=error instanceof Error&&error.message.includes("too many questions")
-        ?"Bạn gửi too many questions liên tiếp. Mình vẫn có thể hướng dẫn cơ bản; bạn hãy thử hỏi AI lại sau một ít phút.\n\n"+fallback.text
+      const msg=error instanceof Error&&(error.message.includes("nhiều câu hỏi") || error.message.includes("too many questions"))
+        ?"You've asked several questions quickly. Built-in guidance is still available; please try again later.\n\n"+fallback.text
         :"The AI service is unavailable. Here's guidance from the UII help library:\n\n"+fallback.text;
       setMessages(previous=>[...previous.slice(-19),{id:id+1,from:"bot",text:msg,links:fallback.links,mode:"guided"}]);
     }finally {
@@ -143,7 +143,7 @@ export function WorkspaceChatbot() {
               <><BookOpen size={13}/> Guidance from UII's knowledge base</>}
           </p>
         </div>
-        <button type="button" className="grid size-10 place-items-center rounded-lg hover:bg-white/10" aria-label="Close cửa sổ chatbot" onClick={()=>setOpen(false)}><X size={18} aria-hidden="true"/></button>
+        <button type="button" className="grid size-10 place-items-center rounded-lg hover:bg-white/10" aria-label="Close chat window" onClick={()=>setOpen(false)}><X size={18} aria-hidden="true"/></button>
       </header>
       <div ref={transcript} role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation history"
         className="min-h-[145px] flex-1 space-y-3 overflow-y-auto overscroll-contain bg-[#f5f8f7] p-4">
