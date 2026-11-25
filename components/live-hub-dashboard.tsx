@@ -360,7 +360,7 @@ export function LiveHubDashboard() {
                   <p className="mb-2 text-sm font-semibold text-slate-200">Hello, {account.fullName}</p>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Learning workspace</p>
                   <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">{student ? <>Today, <span className="text-[#ffb47f]">what should you do next?</span></> : <>Hello {account.fullName.split(" ").slice(-1)[0] || "there"}, <span className="text-[#ff9b59]">keep making a difference.</span></>}</h1>
-                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Start in Classroom: see your current task, work with your team, save deliverables, and receive feedback. Other tools are available when needed." : lecturer ? "Guide ideas, support students, and offer actionable feedback." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
+                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Start in Classroom: see your current task, work with your team, save deliverables, and receive feedback. Other tools are available when needed." : lecturer ? "Guide ideas, support students, and offer actionable feedback." : "Manage learning activities, support lecturers, and grow the innovation community."}</p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Link href={student ? "/classroom" : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? "See today's task" : lecturer ? (data.queue?.length ? "Review submissions" : "View teaching tasks") : "Manage users"} <ArrowRight size={17} aria-hidden="true"/></Link>
                     {!student && <><Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Courses</Link>
@@ -615,7 +615,7 @@ export function LiveHubDashboard() {
                   <p>Notifications could not be loaded.</p>
                 ) : data.notifications.length === 0 ? (
                   <p className="mb-4">
-                    Chưa có thông báo. Feedback & reminders được gửi đến bạn sẽ
+                    No notifications yet. Feedback and reminders will
                     appear here.
                   </p>
                 ) : (
