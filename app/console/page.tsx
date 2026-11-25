@@ -176,7 +176,7 @@ export default function ContentConsole(){
       {success&&<p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">{success}</p>}
       {ready&&canEdit&&<div className="grid items-start gap-5 lg:grid-cols-[210px_minmax(0,1fr)]">
         <nav aria-label="Console sections" className="space-y-2 rounded-2xl border border-[#d6e4d9] bg-white p-3 lg:sticky lg:top-6">
-          {([{id:"courses",text:"Khóa học",icon:BookOpen},{id:"announcements",text:"Thông báo",icon:Bell},{id:"showcase",text:"Project showcase",icon:FolderKanban}] as const).map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setError("");setSuccess("");}} aria-current={tab===t.id?"page":undefined} className={"flex min-h-11 w-full items-center gap-2 rounded-xl p-3 text-left text-sm font-bold "+(tab===t.id?"bg-[#dcefe4]":"hover:bg-[#f0f6f2]")}><t.icon size={17}/>{t.text}</button>)}
+          {([{id:"courses",text:"Courses",icon:BookOpen},{id:"announcements",text:"Announcements",icon:Bell},{id:"showcase",text:"Project showcase",icon:FolderKanban}] as const).map(t=><button key={t.id} type="button" onClick={()=>{setTab(t.id);setError("");setSuccess("");}} aria-current={tab===t.id?"page":undefined} className={"flex min-h-11 w-full items-center gap-2 rounded-xl p-3 text-left text-sm font-bold "+(tab===t.id?"bg-[#dcefe4]":"hover:bg-[#f0f6f2]")}><t.icon size={17}/>{t.text}</button>)}
         </nav>
         <div className="min-w-0 space-y-5">
           {tab==="courses"&&<>
@@ -205,33 +205,33 @@ export default function ContentConsole(){
                       <option value="DRAFT">Draft</option><option value="PUBLISHED">Published · Open for enrollment</option><option value="ARCHIVED">Archived</option>
                     </select></label>
                   </div>
-                  <p className="text-xs leading-6 text-[#698079]">Tổng thời lượng được tự động tính từ từng lessons học, không nhập hai lần.</p>
-                  <button disabled={busy} className={primary}><Save size={17}/> {selected?"Save changes":"Create course nháp"}</button>
+                  <p className="text-xs leading-6 text-[#698079]">Total duration is calculated from each lesson; do not enter it twice.</p>
+                  <button disabled={busy} className={primary}><Save size={17}/> {selected?"Save changes":"Create course draft"}</button>
                 </form>}
                 {selected&&<section className="space-y-4 rounded-2xl border border-[#d9e5dc] bg-white p-5 sm:p-6">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div><h3 className="text-lg font-black">Course syllabus</h3><p className="mt-1 flex items-center gap-1 text-xs text-[#487567]"><Clock3 size={15}/>{duration} min · {selected.lessons?.length??0} lessons</p></div>
-                    <button type="button" className={secondary} onClick={()=>beginLesson()}><Plus size={16}/> Thêm lessons</button>
+                    <button type="button" className={secondary} onClick={()=>beginLesson()}><Plus size={16}/> Add lesson</button>
                   </div>
                   {selected.lessons?.map((lesson,i)=><div key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e5ece5] p-3">
                     <div><p className="text-sm font-bold">{i+1}. {lesson.title}</p><p className="text-xs text-[#697e78]">{lesson.durationMinutes} min · {lesson.publishedAt?"Published":"Draft"}</p></div>
                     <button type="button" onClick={()=>beginLesson(lesson)} className={secondary}>Edit</button>
                   </div>)}
                   {editLessonId&&<form onSubmit={e=>void saveLesson(e)} className="space-y-3 rounded-xl bg-[#f1f7f3] p-4">
-                    <h4 className="font-black">{editLessonId==="new"?"Tạo lessons học":"Edit lessons học"}</h4>
-                    <label className={titleStyle}>Tên lessons học<input required maxLength={160} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className={field}/></label>
+                    <h4 className="font-black">{editLessonId==="new"?"Create lesson":"Edit lesson"}</h4>
+                    <label className={titleStyle}>Lesson title<input required maxLength={160} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className={field}/></label>
                     <label className={titleStyle}>Description<input maxLength={1200} value={lessonDescription} onChange={e=>setLessonDescription(e.target.value)} className={field}/></label>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className={titleStyle}>Duration (minutes)<input required type="number" min={0} max={600} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))} className={field}/></label>
-                      <label className={titleStyle}>Thứ tự lessons học<input required type="number" min={0} max={500} value={lessonOrder} onChange={e=>setLessonOrder(Number(e.target.value))} className={field}/></label>
+                      <label className={titleStyle}>Lesson order<input required type="number" min={0} max={500} value={lessonOrder} onChange={e=>setLessonOrder(Number(e.target.value))} className={field}/></label>
                     </div>
-                    <label className={titleStyle}>Loại lessons học<select value={lessonType} onChange={e=>setLessonType(e.target.value)} className={field}>
+                    <label className={titleStyle}>Lesson type<select value={lessonType} onChange={e=>setLessonType(e.target.value)} className={field}>
                       <option value="ARTICLE">Article</option><option value="VIDEO">Video</option><option value="WORKSHOP">Workshop</option><option value="TEMPLATE">Template</option><option value="ASSIGNMENT">Assignment</option>
                     </select></label>
                     <label className={titleStyle}>Video / linked resource (URL)<input type="url" maxLength={500} placeholder="https://..." value={lessonVideoUrl} onChange={e=>setLessonVideoUrl(e.target.value)} className={field}/></label>
                     <label className={titleStyle}>Content<textarea maxLength={10000} rows={6} value={lessonContent} onChange={e=>setLessonContent(e.target.value)} className={field}/></label>
-                    <label className="flex min-h-11 items-center gap-2 text-sm font-bold"><input type="checkbox" checked={lessonPublished} onChange={e=>setLessonPublished(e.target.checked)}/> Công bố lessons học</label>
-                    <div className="flex flex-wrap gap-2"><button disabled={busy} className={primary}><Save size={16}/> Lưu lessons học</button><button type="button" disabled={busy} className={secondary} onClick={()=>setEditLessonId("")}>Cancel</button></div>
+                    <label className="flex min-h-11 items-center gap-2 text-sm font-bold"><input type="checkbox" checked={lessonPublished} onChange={e=>setLessonPublished(e.target.checked)}/> Publish lesson</label>
+                    <div className="flex flex-wrap gap-2"><button disabled={busy} className={primary}><Save size={16}/> Save lesson</button><button type="button" disabled={busy} className={secondary} onClick={()=>setEditLessonId("")}>Cancel</button></div>
                   </form>}
                 </section>}
                 {!selected&&!creating&&<div className="rounded-2xl border border-dashed border-[#bad2c3] bg-white p-8 text-center text-sm text-[#59746f]">Select a course to edit, or create a new one.</div>}
@@ -251,7 +251,7 @@ export default function ContentConsole(){
               </select></label>}
               <label className={titleStyle}>Title<input required minLength={4} maxLength={120} value={annTitle} onChange={e=>setAnnTitle(e.target.value)} className={field}/></label>
               <label className={titleStyle}>Content<textarea required minLength={10} maxLength={1500} rows={6} value={annBody} onChange={e=>setAnnBody(e.target.value)} className={field}/></label>
-              <div className="rounded-xl bg-[#f2f7f3] p-4 text-sm leading-7"><b>Preview:</b><p className="mt-2 whitespace-pre-wrap break-words">{annTitle||"Title thông báo"}</p><p className="mt-2 whitespace-pre-wrap break-words">{annBody||"Content thông báo"}</p></div>
+              <div className="rounded-xl bg-[#f2f7f3] p-4 text-sm leading-7"><b>Preview:</b><p className="mt-2 whitespace-pre-wrap break-words">{annTitle||"Announcement title"}</p><p className="mt-2 whitespace-pre-wrap break-words">{annBody||"Content thông báo"}</p></div>
               <button disabled={busy} className={primary}><Bell size={16}/> Send announcement ngay</button>
               <p className="text-xs text-[#698079]">Announcements are sent immediately after server confirmation; scheduling and server-side drafts are not supported yet.</p>
             </form>
@@ -274,8 +274,8 @@ export default function ContentConsole(){
               <li>The lecturer assesses it in Review; the project status is updated.</li>
               <li>The project owner opens Community → Add approved project → Write an introduction → Publish.</li>
             </ol>
-            <div className="flex flex-wrap gap-2"><Link href="/review" className={secondary}>Open Review <ArrowRight size={15}/></Link><Link href="/community" className={secondary}>Xem lessons dự án <Eye size={15}/></Link></div>
-            <p className="text-xs text-[#73817b]">Nhóm mô phỏng trong tab Cộng đồng chỉ minh họa quy trình, không tạo lessons đăng thật.</p>
+            <div className="flex flex-wrap gap-2"><Link href="/review" className={secondary}>Open Review <ArrowRight size={15}/></Link><Link href="/community" className={secondary}>View projects <Eye size={15}/></Link></div>
+            <p className="text-xs text-[#73817b]">Synthetic Community examples illustrate the workflow; they do not create real posts.</p>
           </section>}
         </div>
       </div>}
