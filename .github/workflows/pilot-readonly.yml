@@ -37,7 +37,7 @@ jobs:
       - name: Install Chrome for fixture-only learner and recovery journey tests
         run: npx playwright install --with-deps chrome
       - name: Test student learning, First Findings, password recovery and pilot UX
-        run: npx playwright test e2e/pilot-instructions.spec.ts e2e/recovery-hardening.spec.ts e2e/classroom-first-findings.spec.ts e2e/student-feedback-learning.spec.ts --reporter=line
+        run: npx playwright test e2e/pilot-instructions.spec.ts e2e/recovery-hardening.spec.ts e2e/classroom-first-findings.spec.ts e2e/student-feedback-learning.spec.ts e2e/workspace-auth.spec.ts e2e/login-compat.spec.ts e2e/pilot-a11y.spec.ts --reporter=line
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: local-layout-check
