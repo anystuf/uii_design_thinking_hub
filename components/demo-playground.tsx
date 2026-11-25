@@ -139,7 +139,7 @@ export function DemoPlayground() {
             <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-extrabold">4 activity types</span>
           </div>
         </div>
-        <DemoPhoto src={course.photo} alt={"Ảnh workshop minh họa courses "+course.title} className="aspect-[5/3] rounded-[25px]" tint={course.accent}/>
+        <DemoPhoto src={course.photo} alt={"Illustrative workshop photo for "+course.title} className="aspect-[5/3] rounded-[25px]" tint={course.accent}/>
       </section>}
 
       {!focus&&<div className="mt-8"><StudioGuidedDemo/></div>}
@@ -147,7 +147,7 @@ export function DemoPlayground() {
       <div className="mt-9 grid min-w-0 gap-5 lg:grid-cols-[290px_minmax(0,1fr)]">
         <aside className={focus?"hidden":"min-w-0 space-y-5"}>
           <section className="rounded-[24px] bg-white p-5 shadow-sm">
-            <h2 className="text-base font-black">Chọn courses demo</h2>
+            <h2 className="text-base font-black">Choose a demo course</h2>
             <div className="mt-4 space-y-2">{DEMO_COURSES.map(c=><button type="button" key={c.id} onClick={()=>selectCourse(c.id)} aria-pressed={course.id===c.id} className={"w-full rounded-xl border p-3 text-left text-sm leading-6 transition "+(course.id===c.id?"border-[#d65b3a] bg-[#fff2e8] font-black":"border-[#e6e9e4] bg-white font-semibold hover:bg-[#f3f7f1]")}>
               {c.title}<span className="mt-1 block text-[11px] font-medium text-[#698087]">{c.chapters.length} lessons · {c.level}</span>
             </button>)}</div>
@@ -164,10 +164,10 @@ export function DemoPlayground() {
           <section className="rounded-[26px] border border-[#e6e9e1] bg-white p-5 shadow-sm sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div><p className="text-xs font-black uppercase tracking-[.16em] text-[#cf5a37]">YOU ARE HERE</p><h2 className="mt-2 text-2xl font-black tracking-tight">{course.title}</h2></div>
-              <button type="button" onClick={()=>setFocus(x=>!x)} aria-pressed={focus} className={"inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-xs font-black "+(focus?"bg-[#203c4a] text-white":"border border-[#b5c6c2] bg-[#f7f9f4]")}><Focus size={17}/>{focus?"Thoát Focus Mode":"Focus Mode"}</button>
+              <button type="button" onClick={()=>setFocus(x=>!x)} aria-pressed={focus} className={"inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-xs font-black "+(focus?"bg-[#203c4a] text-white":"border border-[#b5c6c2] bg-[#f7f9f4]")}><Focus size={17}/>{focus?"Exit Focus Mode":"Focus Mode"}</button>
             </div>
-            <div className="mt-6 h-3 overflow-hidden rounded-full bg-[#e7ebe4]" role="progressbar" aria-label="Tiến độ demo trong courses" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><div className="h-full rounded-full bg-[#df6345] transition-[width] duration-200" style={{width:progress+"%"}}/></div>
-            <p className="mt-2 text-xs font-semibold text-[#59717a]">Practised {completedCourse}/{courseExercises.length} lessons · Chỉ tính trong phiên demo hiện tại</p>
+            <div className="mt-6 h-3 overflow-hidden rounded-full bg-[#e7ebe4]" role="progressbar" aria-label="Demo course progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><div className="h-full rounded-full bg-[#df6345] transition-[width] duration-200" style={{width:progress+"%"}}/></div>
+            <p className="mt-2 text-xs font-semibold text-[#59717a]">Practised {completedCourse}/{courseExercises.length} lessons · This demo session only</p>
             <div className="mt-5 grid grid-cols-3 gap-2" aria-label="Sample learning journey">
               {markers.map((stage,i)=><div key={stage} className={"rounded-xl border p-3 text-center text-[11px] font-black "+(i===(exercise.kind==="QUIZ"?1:2)?"border-[#e05c3e] bg-[#fff0e4] text-[#ae422c]":"border-[#e4e8e4] bg-[#f7faf6] text-[#66787b]")}>{String(i+1).padStart(2,"0")} · {stage}</div>)}
             </div>
@@ -176,10 +176,10 @@ export function DemoPlayground() {
           <section className="rounded-[26px] border border-[#e6e9e1] bg-white p-5 shadow-sm sm:p-8">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><span className="text-xs font-black uppercase tracking-widest text-[#ae5738]">LESSON {String(chapterIndex+1).padStart(2,"0")} / {courseExercises.length}</span><span className="rounded-full bg-[#e7f1fa] px-3 py-1.5 text-[11px] font-black text-[#315874]">Self-paced learning</span></div>
             <div className="mb-7 rounded-[20px] bg-[#f4f5ef] p-5 sm:p-6">
-              <div className="flex items-start gap-3"><BookOpen className="mt-1 shrink-0 text-[#cf603f]" size={22}/><div><h3 className="text-lg font-black">Learn · Key takeaway</h3><p className="mt-2 text-sm leading-7 text-[#52686c]">{course.summary} In the lesson “{course.chapters[chapterIndex]}”, hãy xác định một quan sát, một giả định và điều bạn muốn học qua thử nghiệm.</p></div></div>
+              <div className="flex items-start gap-3"><BookOpen className="mt-1 shrink-0 text-[#cf603f]" size={22}/><div><h3 className="text-lg font-black">Learn · Key takeaway</h3><p className="mt-2 text-sm leading-7 text-[#52686c]">{course.summary} In the lesson “{course.chapters[chapterIndex]}”, identify an observation, an assumption, and what you want to learn through testing.</p></div></div>
             </div>
             <ExerciseActivity key={exercise.id} exercise={exercise} onComplete={finish}/>
-            {completed.includes(exercise.id)&&<p className="mt-5 rounded-2xl bg-[#e6f4e0] p-3 text-xs font-black text-[#316543]"><CheckCircle2 className="mr-2 inline" size={15}/> Bạn đã thử bài này trong phiên demo. Kết quả không được lưu vào LMS.</p>}
+            {completed.includes(exercise.id)&&<p className="mt-5 rounded-2xl bg-[#e6f4e0] p-3 text-xs font-black text-[#316543]"><CheckCircle2 className="mr-2 inline" size={15}/> You practised this lesson in the demo. Nothing is saved to your LMS account.</p>}
             <div className="mt-8 flex flex-wrap justify-between gap-2 border-t border-[#e3e9e2] pt-5">
               <button type="button" onClick={()=>setChapterIndex(i=>Math.max(0,i-1))} disabled={chapterIndex===0} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#ccd8d1] px-4 text-xs font-black disabled:opacity-40"><ArrowLeft size={15}/> Previous lesson</button>
               <button type="button" onClick={()=>setChapterIndex(i=>Math.min(courseExercises.length-1,i+1))} disabled={chapterIndex===courseExercises.length-1} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-[#ccd8d1] px-4 text-xs font-black disabled:opacity-40">Next lesson <ArrowRight size={15}/></button>
@@ -198,8 +198,8 @@ export function DemoPlayground() {
             <p className="mt-3 text-sm leading-7 text-[#556b71]">{currentTool.intro}</p>
             <p className="mt-3 text-sm font-bold">Output: {currentTool.output}</p>
             <DemoToolCanvas key={currentTool.name} name={currentTool.name}/>
-            <button type="button" onClick={()=>setToolDone(true)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#214a54] px-5 text-xs font-black text-white"><CheckCircle2 size={16}/> Practised công cụ</button>
-            {toolDone&&<p role="status" className="mt-3 text-sm font-bold text-[#316d4a]">Practised trong giao diện demo — dữ liệu không được gửi lên máy chủ.</p>}
+            <button type="button" onClick={()=>setToolDone(true)} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#214a54] px-5 text-xs font-black text-white"><CheckCircle2 size={16}/> Mark tool practised</button>
+            {toolDone&&<p role="status" className="mt-3 text-sm font-bold text-[#316d4a]">This was practised in the demo. No data was sent to the server.</p>}
           </div>
         </div>}
       </section>}
