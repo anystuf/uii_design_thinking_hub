@@ -13,3 +13,19 @@ export function authRedirectUrl(origin: string, pathname: string): string {
     ? UII_STAGING_ORIGIN : url.origin;
   return new URL(pathname, destination).toString();
 }
+
+/**
+ * Password recovery must finish on the actively maintained classroom pilot,
+ * not an older preview/staging bundle which cannot handle token-hash emails.
+ * Keep signup/OAuth redirects unchanged. Keep localhost isolated for tests.
+ */
+export const UII_RECOVERY_ORIGIN = "https://uii-dt-thanh-pilot.vercel.app";
+
+export function passwordRecoveryRedirectUrl(origin: string): string {
+  const current = authRedirectUrl(origin, '/reset-password');
+  const resolved = new URL(current);
+  if (resolved.origin === UII_STAGING_ORIGIN || resolved.origin === UII_RECOVERY_ORIGIN) {
+    return new URL('/reset-password', UII_RECOVERY_ORIGIN).toString();
+  }
+  return current;
+}
