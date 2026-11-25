@@ -189,7 +189,7 @@ export function LessonPractice({
       <button type="button" onClick={() => setReload(n => n + 1)} className="ml-2 font-bold underline">Retry</button></div>}
     {notice && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">{notice}</p>}
     {!loading && !exercise && !editing && <div className="rounded-2xl border border-[#d3e6d5] bg-[#f5fbf4] p-5 text-sm">
-      {canManage ? <p className="text-[#4d6570]">Chưa có bài tập được công bố. Giảng viên có thể dùng nút Create exercise để thêm quiz và bài thực hành được lưu vào LMS.</p> :
+      {canManage ? <p className="text-[#4d6570]">No published exercise exists for this lesson. Lecturers can create quizzes and applied activities that are saved to the LMS.</p> :
         <div className="space-y-4">
           <div><p className="text-[11px] font-black uppercase tracking-[.12em] text-[#a54733]">TRY · REFLECT · TRY AGAIN</p>
             <h4 className="mt-1 text-lg font-black text-[#173445]">Try a quick practice question</h4>
@@ -273,7 +273,7 @@ export function LessonPractice({
           className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 text-sm font-bold"><Plus size={17}/> Add question</button>
       </fieldset>}
       {kind === "PROJECT" && <p className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6">
-        Students save private files/evidence in <Link href="/evidence" className="font-bold underline">Evidence</Link>, sau đó
+        Students save private files/evidence in <Link href="/evidence" className="font-bold underline">Evidence</Link>, then
         select the associated project and describe your work here. The server validates project access.</p>}
       <div className="grid gap-4 sm:grid-cols-3">
         <label className="block text-sm font-semibold">Passing score (0–100)
@@ -313,7 +313,7 @@ export function LessonPractice({
         </div>}
         {canSubmit && <form onSubmit={event => void submit(event)} className="space-y-5">
           {exercise.kind === "QUIZ" && <fieldset className="space-y-5">
-            <legend className="sr-only">Question hỏi trắc nghiệm</legend>
+            <legend className="sr-only">Multiple-choice questions</legend>
             {exercise.items.map((q,i) => <div key={q.id} className="rounded-xl border p-4">
               <p className="mb-3 font-bold">Question {i+1}. {q.prompt} <span className="text-xs font-normal text-slate-500">({q.points} points)</span></p>
               <div className="grid gap-2">{q.options.map((option,j) => <label key={j} className={"flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm " + (answers[i]===j ? "border-[#153b77] bg-blue-50" : "border-slate-200 hover:bg-slate-50")}>
@@ -344,7 +344,7 @@ export function LessonPractice({
           </button>
         </form>}
         {!canSubmit && <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-          {deadlinePassed ? "The due date has passed." : "Bạn đã sử dụng hết số attempts làm bài."}
+          {deadlinePassed ? "The due date has passed." : "You have used all available attempts."}
         </p>}
         {attempts.length>0 && <details className="rounded-xl border p-4"><summary className="min-h-11 cursor-pointer font-bold">Attempt history ({attempts.length})</summary>
           <ol className="mt-3 space-y-3">{attempts.map(item=><li key={item.id} className="rounded-lg bg-slate-50 p-3 text-sm">
@@ -398,7 +398,7 @@ function ReviewCard({ attempt, token, onReviewed }: { attempt: Attempt; token: s
           onChange={e=>setFeedback(e.target.value)} rows={3} className="mt-1 w-full rounded-lg border p-3"/></label>
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <button disabled={busy} type="submit" className="min-h-11 rounded-xl bg-[#153b77] px-4 text-sm font-bold text-white">
-        Gửi points và phản hồi
+        Publish score and feedback
       </button>
     </form>}
   </div>;
