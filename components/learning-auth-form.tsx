@@ -85,7 +85,7 @@ export function LearningAuthForm() {
         }
       }
     } catch (err) {
-      if (err instanceof AuthTimeoutError || (err instanceof Error && err.message.includes("Sign in chưa được xác nhận"))) {
+      if (err instanceof AuthTimeoutError || (err instanceof Error && err.message.includes("Đăng nhập chưa được xác nhận"))) {
         setTimedOut(true);
         setError("Authentication has not responded. Reload and check your email if you just registered.");
       } else {
@@ -200,7 +200,7 @@ export function LearningAuthForm() {
         <div>
           <div className="flex items-center justify-between">
             <label htmlFor="auth-password" className="text-sm font-semibold">Password</label>
-            <button type="button" onClick={() => setVisible(value => !value)} aria-controls={signUp ? "auth-password auth-confirmation" : "auth-password"} className="min-h-11 px-2 text-sm font-semibold text-[#153b77]">{visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}</button>
+            <button type="button" onClick={() => setVisible(value => !value)} aria-controls={signUp ? "auth-password auth-confirmation" : "auth-password"} className="min-h-11 px-2 text-sm font-semibold text-[#153b77]">{visible ? "Hide password" : "Show password"}</button>
           </div>
           <input id="auth-password" autoComplete={signUp ? "new-password" : "current-password"} required minLength={signUp ? 8 : undefined}
             type={visible ? "text" : "password"} value={password} onChange={event => { setPassword(event.target.value); setConfirmationError(false); }}
@@ -222,7 +222,7 @@ export function LearningAuthForm() {
               </label>
             ))}
           </div>
-          <p className="mt-3 text-xs leading-6 text-[#47606a]">This is a <strong>requested role</strong>, không phải quyền được cấp ngay. Tất cả tài khoản bắt đầu ở quyền Student; quyền Lecturer/Mentor/Quản trị phải được xác minh và cấp bởi quản trị viên.</p>
+          <p className="mt-3 text-xs leading-6 text-[#47606a]">This is a <strong>requested role</strong>, not an assigned permission. Every new account starts as a Student. An administrator must verify and grant Lecturer, Mentor, or Administrator access.</p>
         </fieldset>}
         {signUp && <div>
           <label htmlFor="auth-confirmation" className="text-sm font-semibold">Confirm password</label>
