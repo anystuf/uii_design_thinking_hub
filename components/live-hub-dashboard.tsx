@@ -359,12 +359,12 @@ export function LiveHubDashboard() {
                 <div className="max-w-2xl">
                   <p className="mb-2 text-sm font-semibold text-slate-200">Xin chào, {account.fullName}</p>
                   <p className="inline-flex items-center gap-2 rounded-full border border-[#ffd1aa]/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-[#ffbe90]"><Sparkles size={14} aria-hidden="true"/> {roleName(account.role)} · Không gian học tập</p>
-                  <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">Chào {account.fullName.split(" ").slice(-1)[0] || "bạn"}, <span className="text-[#ff9b59]">tiếp tục tạo khác biệt.</span></h1>
-                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Học hỏi, khám phá, thực hành và phát triển giải pháp hữu ích cho cộng đồng." : lecturer ? "Dẫn dắt những ý tưởng, đồng hành cùng sinh viên và đưa ra phản hồi giá trị." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
+                  <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-[38px]">{student ? <>Hôm nay, <span className="text-[#ffb47f]">bạn cần làm gì?</span></> : <>Chào {account.fullName.split(" ").slice(-1)[0] || "bạn"}, <span className="text-[#ff9b59]">tiếp tục tạo khác biệt.</span></>}</h1>
+                  <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">{student ? "Bắt đầu tại Buổi học: xem nhiệm vụ hiện tại, làm cùng nhóm, lưu sản phẩm và nhận phản hồi. Các công cụ khác chỉ cần mở khi bạn thực sự dùng đến." : lecturer ? "Dẫn dắt những ý tưởng, đồng hành cùng sinh viên và đưa ra phản hồi giá trị." : "Quản lý hoạt động học tập, hỗ trợ giảng viên và phát triển cộng đồng đổi mới."}</p>
                   <div className="mt-6 flex flex-wrap gap-3">
-                    <Link href={student ? (nextCourse ? "/learn?course=" + encodeURIComponent(nextCourse.id) + (nextEnrollment?.progress?.nextLesson ? "&lesson=" + encodeURIComponent(nextEnrollment.progress.nextLesson.id) : "") : "/learn") : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? nextCourse ? "Tiếp tục khóa học" : "Khám phá khóa học" : lecturer ? (data.queue?.length ? "Đánh giá bài nộp" : "Xem công việc giảng dạy") : "Quản trị người dùng"} <ArrowRight size={17} aria-hidden="true"/></Link>
-                    <Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Khóa học</Link>
-                    <Link href="/classroom" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><ClipboardCheck size={17} aria-hidden="true"/> Buổi học Design Thinking</Link>
+                    <Link href={student ? "/classroom" : lecturer ? "/review" : "/admin"} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#b94708] px-5 py-3 text-sm font-bold text-white hover:bg-[#963b08]">{student ? "Xem nhiệm vụ hôm nay" : lecturer ? (data.queue?.length ? "Đánh giá bài nộp" : "Xem công việc giảng dạy") : "Quản trị người dùng"} <ArrowRight size={17} aria-hidden="true"/></Link>
+                    {!student && <><Link href="/learn" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><BookOpen size={17} aria-hidden="true"/> Khóa học</Link>
+                    <Link href="/classroom" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20"><ClipboardCheck size={17} aria-hidden="true"/> Buổi học Design Thinking</Link></>}
                   </div>
                 </div>
                 <span className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold">{roleName(account.role)}</span>
@@ -391,7 +391,7 @@ export function LiveHubDashboard() {
             </section>
             <section aria-labelledby="classic-modules-title">
               <p className="text-xs font-extrabold uppercase tracking-[0.15em] text-[#ad4007]">LEARN · CREATE · ITERATE</p>
-              <h2 id="classic-modules-title" className="mb-4 mt-1 text-2xl font-extrabold">Khám phá không gian học tập</h2>
+              <h2 id="classic-modules-title" className="mb-4 mt-1 text-2xl font-extrabold">{student ? "Các công cụ khác khi cần" : "Khám phá không gian học tập"}</h2>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {[
                   { href: "/learn", title: "Khóa học", subtitle: "Học phương pháp, luyện kỹ năng, lưu tiến độ.", icon: GraduationCap, tint: "bg-blue-50 text-blue-700", number: "01" },
