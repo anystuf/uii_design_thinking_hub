@@ -12,7 +12,7 @@ const layouts:Record<string,ToolLayout>={
   "HMW Reframing":{caption:"How Might We",fields:["How might we… question 1","How might we… question 2","How might we… question 3"],link:MIRO+"research-and-design/",note:"Ask questions broad enough to generate ideas and focused enough to act."},
   "Crazy 8s":{caption:"Eight idea sketches",fields:["Idea 01","Idea 02","Idea 03","Idea 04","Idea 05","Idea 06","Idea 07","Idea 08"],link:MIRO+"crazy-eights/",note:"Quickly sketch eight different approaches. Miro offers drawing tools for visual sketches.",sticky:true},
   "Idea Selection":{caption:"Select ideas",fields:["High impact · high feasibility","High impact · low feasibility","Low impact · high feasibility","Low impact · low feasibility"],link:MIRO+"prioritization/",note:"Sort ideas before choosing what to test.",sticky:true},
-  "Storyboard":{caption:"Storyboard · Four frames",fields:["01 · Context / trước khi bắt đầu","02 · Situation and problem","03 · Interaction with prototype","04 · Outcome and feelings"],link:MIRO+"storyboard/",note:"Each frame shows a scene. Add sticky notes here or open Miro for drawings and images.",sticky:true},
+  "Storyboard":{caption:"Storyboard · Four frames",fields:["01 · Context / before the journey","02 · Situation and problem","03 · Interaction with prototype","04 · Outcome and feelings"],link:MIRO+"storyboard/",note:"Each frame shows a scene. Add sticky notes here or open Miro for drawings and images.",sticky:true},
   "Prototype Checklist":{caption:"Prototype checklist",fields:["Assumption to verify","One core user task","Prototype fidelity","How to test with users","Signs of success"],link:MIRO+"research-and-design/",note:"Keep the prototype small enough to learn quickly; a finished product is unnecessary."},
   "Feedback Canvas":{caption:"Feedback capture grid",fields:["What worked","What users found confusing","New questions","Next iteration"],link:MIRO+"canvas/",note:"Capture concrete evidence before deciding what to improve.",sticky:true},
 };
@@ -55,7 +55,7 @@ export function DemoToolCanvas({name}:{name:string}) {
               className="w-full resize-y rounded-lg border border-transparent bg-transparent p-2 pr-6 text-sm leading-6 text-[#183542] focus:border-[#7fabb4]"
               onChange={e=>update(field,i,e.target.value)}/>
             {layout.sticky&&layoutFields(cards,field).length>1&&<button type="button" onClick={()=>remove(field,i)}
-              aria-label={"Xóa note "+(i+1)+" in "+field} className="absolute right-1 top-1 grid size-8 place-items-center rounded-lg text-[#6b6c62] hover:bg-[#fce1dc]"><Trash2 size={15}/></button>}
+              aria-label={"Delete note "+(i+1)+" in "+field} className="absolute right-1 top-1 grid size-8 place-items-center rounded-lg text-[#6b6c62] hover:bg-[#fce1dc]"><Trash2 size={15}/></button>}
           </div>)}
         </div>
         {layout.sticky&&<button type="button" onClick={()=>add(field)}
