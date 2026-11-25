@@ -28,6 +28,24 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
   if (role === "LECTURER" || role === "ADMIN") navigation.push({ href: "/console", label: "Console biên tập", icon: FilePenLine });
   if (role === "LECTURER" || role === "ADMIN") navigation.push({ href: "/review", label: "Đánh giá bài nộp", icon: ClipboardCheck });
   if (role === "ADMIN") navigation.push({ href: "/admin", label: "Quản trị", icon: Users });
+  // Student research: keep the core learning flow visible; the rest remains discoverable.
+  const coreHrefs = new Set(["/dashboard", "/classroom", "/learn", "/studio", "/evidence"]);
+  const coreNavigation = navigation.filter(link => coreHrefs.has(link.href));
+  const moreNavigation = navigation.filter(link => !coreHrefs.has(link.href));
+  const studentNavigation = (mobile: boolean) => (
+    <>
+      <p className="px-3 pt-2 text-[11px] font-extrabold uppercase tracking-widest text-[#647579]">Bắt đầu từ đây</p>
+      {coreNavigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
+      <details key={mobile ? "mobile-extra-" + pathname : "desktop-extra-" + pathname}
+        open={moreNavigation.some(link => link.href === pathname)}
+        className="rounded-xl border-t border-[#e2e7de] pt-2">
+        <summary className="min-h-11 cursor-pointer rounded-xl px-3 py-3 text-sm font-semibold text-[#344e57] hover:bg-[#e5eee8]">Tiện ích khác</summary>
+        <div className="mt-1 space-y-1 pl-1">
+          {moreNavigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
+        </div>
+      </details>
+    </>
+  );
 
   return (
     <>
@@ -44,14 +62,14 @@ export function WorkspaceNav({ title, role, onSignOut, guest = false, variant = 
             <details key={pathname} className="relative lg:hidden">
               <summary className="flex min-h-11 cursor-pointer items-center rounded-md border border-slate-300 px-3 text-sm font-semibold">Menu</summary>
               <nav aria-label="Điều hướng không gian học tập" className={"absolute right-0 z-40 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-lg border p-2 shadow-lg " + "border-[#d7dfda] bg-[#faf8f1]"}>
-                {navigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
+                {role === "STUDENT" ? studentNavigation(true) : navigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
               </nav>
             </details>
           )}
         </div>
         {!guest && <>
           <nav aria-label="Điều hướng không gian học tập" className={"hidden flex-col gap-1 border-t py-3 lg:flex " + "border-[#e2e7de]"}>
-            {navigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
+            {role === "STUDENT" ? studentNavigation(false) : navigation.map(({ href, label, icon: Icon }) => <NavLink key={href} href={href} label={label} icon={Icon} active={pathname === href} classic={classic}/>)}
           </nav>
           <div className={"flex flex-wrap items-center justify-between gap-x-1 border-t py-1 lg:flex-col lg:items-stretch " + "border-[#e2e7de]"}>
             <p className={"text-sm font-semibold lg:sr-only " + "text-[#14313d]"}>{title}</p>
