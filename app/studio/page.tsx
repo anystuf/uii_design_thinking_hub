@@ -499,7 +499,7 @@ export default function DesignStudioPage() {
                     <h3 className="flex items-center gap-2 font-bold"><Plus size={18}/> Create challenge</h3>
                     <input required maxLength={160} className={input} placeholder="Challenge title" value={newChallengeTitle} onChange={(e) => setNewChallengeTitle(e.target.value)}/>
                     <textarea required maxLength={6000} rows={4} className={input} placeholder="Context and user problem" value={newChallengeBrief} onChange={(e) => setNewChallengeBrief(e.target.value)}/>
-                    <button disabled={busy} className={action}>Create challenge nháp</button>
+                    <button disabled={busy} className={action}>Create draft challenge</button>
                   </form>
                 )}
               </aside>
@@ -584,7 +584,7 @@ export default function DesignStudioPage() {
                         <section id="studio-team-workspace" tabIndex={-1} className={card}>
                           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                              <h3 className="text-lg font-black">{team.title} · Team Workspace</h3>
-                             <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Submit evidence hoặc link Drive ↗</Link>
+                             <Link href={"/evidence?projectId="+encodeURIComponent(team.id)} className="inline-flex min-h-11 items-center rounded-full bg-[#173445] px-4 text-xs font-black text-white hover:bg-[#285365]">Submit evidence or a Drive link ↗</Link>
                            </div>
                           <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-[#eaf3ed] p-3 text-xs leading-6 text-[#365d57]">
                             <span className="flex-1">Want your project to appear in the Community? Submit work, receive an assessment, request lecturer approval for display, and publish only with the team's permission.</span>
